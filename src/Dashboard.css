@@ -1,0 +1,201 @@
+.leaderboard-button {
+    background-color: green;
+    color: rgb(255, 255, 255);
+    padding: 10px 20px;
+    width: 16rem !important;
+    border-radius: 100rem !important;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-image: linear-gradient(45deg, rgb(88, 12, 35), rgb(180, 27, 134));
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+    margin-top: 10px;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.leaderboard-button:hover {
+    transform: scale(1.05) rotate3d(1, 1, 0, 10deg);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 0 10px white;
+}
+
+.leaderboard-button:active {
+    animation: pulse 0.6s;
+    transform: scale(1);
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(0.95); }
+}
+
+.logout-icon {
+    position: fixed;
+    top: 13px;
+    right: 16px;
+}
+
+.notification-status {
+    position: fixed;
+    top: 12px;
+    right: 51px;
+}
+
+.unregister-button {
+    background-color: red;
+    color: rgb(255, 255, 255);
+    padding: 10px 20px;
+    width: 16rem !important;
+    border-radius: 100rem !important;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-image: linear-gradient(45deg, rgb(243, 0, 41), rgb(94, 1, 1));
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+    margin-top: 10px;
+}
+
+.unregister-button:hover {
+    transform: scale(1.05) rotate3d(1, 1, 0, 10deg);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 0 10px white;
+}
+
+.unregister-button:active {
+    animation: pulse 0.6s;
+    transform: scale(1);
+}
+
+.register-button {
+    background-color: green;
+    color: rgb(255, 255, 255);
+    padding: 10px 20px;
+    width: 16rem !important;
+    border-radius: 100rem !important;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-image: linear-gradient(45deg, rgb(12, 88, 12), rgb(27, 63, 180));
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+    margin-top: 10px;
+}
+
+.register-button:hover {
+    transform: scale(1.05) rotate3d(1, 1, 0, 10deg);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 0 10px white;
+}
+
+.register-button:active {
+    animation: pulse 0.6s;
+    transform: scale(1);
+}
+
+.quiz-button {
+    background-color: blue;
+    color: rgb(255, 255, 255);
+    padding: 10px 20px;
+    width: 16rem !important;
+    border-radius: 100rem !important;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-image: linear-gradient(45deg, rgb(67, 50, 226), rgb(13, 123, 196));
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+    margin-top: 10px;
+}
+
+.quiz-button:hover {
+    transform: scale(1.05) rotate3d(1, 1, 0, 10deg);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 0 10px white;
+}
+
+.quiz-button:active {
+    animation: pulse 0.6s;
+    transform: scale(1);
+}
+
+.user-info-container {
+    position: fixed;
+     top: 25%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+}
+
+.countdown-container {
+    position: fixed;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+}
+
+.bottom-dashboard-container {
+    position: fixed;
+     top: 75%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+}
+
+.logout-container {
+    position: fixed;
+     top: 90%;
+     left: 90%;
+}
+
+@keyframes flash {
+    0%, 49% {
+        color: white;
+        opacity: 1;
+    }
+    50%, 100% {
+        color: white;
+        opacity: 0;
+    }
+}
+
+.flash {
+    animation: flash 1s infinite; /* Adjust the duration as needed */
+}
+
+.success-popup {
+    width: 40%;
+    height: 10%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #027a06;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.success-popup button {
+    border-radius: 100rem;
+    background-color: #fff;
+    color: #4caf50;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+}

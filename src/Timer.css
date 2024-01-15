@@ -1,0 +1,21 @@
+.timer-container {
+  position: relative;
+}
+
+.timer-circle {
+  transition: stroke-dashoffset 1s linear;
+  stroke-width: 5;
+}
+
+.timer-text {
+  font-size: 1.5rem;
+  fill: #3498db;
+}
+
+.red-timer {
+  border-color: red;
+}
+
+.red-text {
+  fill: red;
+}
