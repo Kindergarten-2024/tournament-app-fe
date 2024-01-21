@@ -1,5 +1,6 @@
 # pull official base image
-FROM node:20.11.0-bullseye
+FROM node:20.11.0-bullseye as build
+
 
 # set working directory
 WORKDIR /app
@@ -12,8 +13,10 @@ COPY package.json ./
 COPY package-lock.json ./
 RUN npm install
 
-# add app
 COPY . ./
 
-# start app
-CMD ["npm", "start"]    
+RUN npm build
+
+FROM nginx
+
+COPY --from=build /app/build /usr/share/nginx/html
