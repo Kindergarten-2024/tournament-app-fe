@@ -1,23 +1,24 @@
 # pull official base image
-#FROM node:20.11.0-bullseye as build
+FROM node:20.11.0-bullseye as build
 
 
 # set working directory
-#WORKDIR /app
+WORKDIR /app
 
 # add `/app/node_modules/.bin` to $PATH
-#ENV PATH /app/node_modules/.bin:$PATH
+ENV PATH /app/node_modules/.bin:$PATH
 
 # install app dependencies
-#COPY package.json ./
-#COPY package-lock.json ./
-#RUN npm install
+COPY package.json ./
+COPY package-lock.json ./
+COPY nginx.conf ./
+RUN npm install
 
-#COPY . ./
+COPY . ./
 
-#RUN npm run build
+RUN npm run build
 
 FROM nginx
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY --from=build /app/nginx.conf /etc/nginx/nginx.conf
 
-#COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/build /usr/share/nginx/html
