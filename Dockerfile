@@ -1,24 +1,53 @@
-# pull official base image
-FROM node:20.11.0-bullseye as build
+# # pull official base image
+# FROM node:18 as build
 
 
-# set working directory
+# # set working directory
+# WORKDIR /app
+
+# # add `/app/node_modules/.bin` to $PATH
+# ENV PATH /app/node_modules/.bin:$PATH
+
+# # Copy package.json and package-lock.json to the working directory
+# COPY package.json ./
+# COPY package-lock.json ./
+# #install depencencies
+# RUN npm install 
+# COPY nginx.conf ./
+
+# # Copy the entire application code to the container
+# COPY . .
+# #build the react app 
+# RUN npm run build
+
+# FROM nginx
+
+# COPY --from=build /app/nginx.conf /etc/nginx/nginx.conf
+
+# COPY --from=build /app/build /usr/share/nginx/html
+
+FROM node:18.18.2-alpine AS prod
+
 WORKDIR /app
 
-# add `/app/node_modules/.bin` to $PATH
-ENV PATH /app/node_modules/.bin:$PATH
+COPY package.json /app
 
-# install app dependencies
-COPY package.json ./
-COPY package-lock.json ./
-COPY nginx.conf ./
 RUN npm install
 
-COPY . ./
+COPY . /app
 
 RUN npm run build
 
-FROM nginx
-COPY --from=build /app/nginx.conf /etc/nginx/nginx.conf
+FROM nginx:alpine
 
-COPY --from=build /app/build /usr/share/nginx/html
+WORKDIR /usr/local/bin
+
+#COPY --from=prod /app/build /usr/share/nginx/html
+
+
+COPY --from=prod /app/nginx.conf /etc/nginx/nginx.conf
+
+COPY --from=prod /app/build /usr/share/nginx/html
+
+EXPOSE 80
+
