@@ -26,28 +26,38 @@
 
 # COPY --from=build /app/build /usr/share/nginx/html
 
-FROM node:18.18.2-alpine AS prod
+#Stage 1: Building the React application
+#Using a node image to build the React app
+FROM node:18.18.2-alpine AS build
 
+#Set the working directory inside the container
 WORKDIR /app
 
+#Copy package.json and package-lock.json (if available) to the container
 COPY package.json /app
+COPY package-lock.json /app
 
+#Install dependencies
 RUN npm install
 
+#Copy the rest of your app's source code from your host to your image filesystem.
 COPY . /app
 
+#Build the React application
 RUN npm run build
 
+#Stage 2: Setting up the Nginx server
+#Using an Nginx image to serve the React app
 FROM nginx:alpine
 
-WORKDIR /usr/local/bin
+#Copy the React build from the 'build' stage to the Nginx server
+COPY --from=build /app/build /usr/share/nginx/html
 
-#COPY --from=prod /app/build /usr/share/nginx/html
+#Overwrite the default Nginx configuration with the custom one
+COPY --from=build /app/nginx.conf /etc/nginx/nginx.conf
 
-
-COPY --from=prod /app/nginx.conf /etc/nginx/nginx.conf
-
-COPY --from=prod /app/build /usr/share/nginx/html
-
+#Expose port 80 to the outside once the container has launched
 EXPOSE 80
 
+#Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
