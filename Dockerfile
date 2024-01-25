@@ -28,7 +28,7 @@
 
 #Stage 1: Building the React application
 #Using a node image to build the React app
-FROM node:18.18.2-alpine AS build
+FROM node:20.11.0 AS build
 
 #Set the working directory inside the container
 WORKDIR /app
@@ -40,6 +40,7 @@ COPY package-lock.json /app
 #Install dependencies
 RUN npm install
 
+COPY nginx.conf /app
 #Copy the rest of your app's source code from your host to your image filesystem.
 COPY . /app
 
@@ -48,7 +49,7 @@ RUN npm run build
 
 #Stage 2: Setting up the Nginx server
 #Using an Nginx image to serve the React app
-FROM nginx:alpine
+FROM nginx
 
 #Copy the React build from the 'build' stage to the Nginx server
 COPY --from=build /app/build /usr/share/nginx/html
