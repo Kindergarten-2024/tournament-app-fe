@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import "./Quiz.css";
 import Timer from "./Timer";
-import { over } from 'stompjs';
-import SockJS from 'sockjs-client';
-import { AuthContext } from './App';
+import { over } from "stompjs";
+import SockJS from "sockjs-client";
+import { AuthContext } from "./App";
 
 var stompClient = null;
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-
 
 const Quiz = () => {
   const { user } = useContext(AuthContext);
@@ -87,19 +86,19 @@ const Quiz = () => {
     let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
     stompClient = over(Sock);
     stompClient.connect({}, onConnected, onError);
-  }
+  };
 
   const onConnected = () => {
-  stompClient.subscribe('/questions', (questionMessage) => {
-    onPublicMessageRecieved(questionMessage);
+    stompClient.subscribe("/questions", (questionMessage) => {
+      onPublicMessageRecieved(questionMessage);
 
-    stompClient.subscribe('/leaderboard', onLeaderboardMessageRecieved);
-  });
-}
+      stompClient.subscribe("/leaderboard", onLeaderboardMessageRecieved);
+    });
+  };
 
   const onError = (err) => {
     console.log(err);
-  }
+  };
 
   const onPublicMessageRecieved = (payload) => {
     var payloadData = JSON.parse(payload.body);
@@ -109,17 +108,19 @@ const Quiz = () => {
     setQuestionTimer();
     setQuestionIndex(payloadData.questionNumber);
     setShowScore(false);
-  }
+  };
 
   const onLeaderboardMessageRecieved = (payload) => {
     const userDataArray = JSON.parse(payload.body);
-    const leaderboardArray = userDataArray.map(user => ({
+    const leaderboardArray = userDataArray.map((user) => ({
       id: user.username,
-      score: user.score
+      score: user.score,
     }));
-    const playerIndex = leaderboardArray.findIndex(user1 => user1.id === user.login);
+    const playerIndex = leaderboardArray.findIndex(
+      (user1) => user1.id === user.login
+    );
     setPosition(playerIndex + 1);
-    const player = leaderboardArray.find(user1 => user1.id === user.login);
+    const player = leaderboardArray.find((user1) => user1.id === user.login);
     if (player) {
       setScore(player.score);
     }
@@ -152,14 +153,18 @@ const Quiz = () => {
     if (selectedAnswer === "") {
       return;
     }
-    setAnswerTime(Date.now());  // Capture the time immediately when an answer is selected
+    setAnswerTime(Date.now()); // Capture the time immediately when an answer is selected
     const messageObject = {
       time: convertToReadableTime(answerTime),
       answer: selectedAnswer,
       questionId: question.id,
       message: "answered",
     };
-    stompClient.send("/app/sendMessageAndAnswer", {}, JSON.stringify(messageObject));
+    stompClient.send(
+      "/app/sendMessageAndAnswer",
+      {},
+      JSON.stringify(messageObject)
+    );
 
     setSelectedAnswer("");
     setAnswerSubmitted(true);
@@ -192,13 +197,17 @@ const Quiz = () => {
       const messageObject = {
         answer: "-",
         questionId: question.id,
-        message: "didn't answer on time!"
+        message: "didn't answer on time!",
       };
-      stompClient.send("/app/sendMessageAndAnswer", {}, JSON.stringify(messageObject));
+      stompClient.send(
+        "/app/sendMessageAndAnswer",
+        {},
+        JSON.stringify(messageObject)
+      );
     }
 
     // Show 3 Questions
-    if (questionIndex == 3) {
+    if (questionIndex == 4) {
       setQuizEnded(true);
       localStorage.removeItem("showScore");
       localStorage.removeItem("quizQuestion");
@@ -226,7 +235,9 @@ const Quiz = () => {
 
                   {!answerSubmitted ? (
                     <div className="question-container">
-                      <h2 className="start2p">Question {question.questionNumber}</h2>
+                      <h2 className="start2p">
+                        Question {question.questionNumber}
+                      </h2>
                       <div className="progress-bar-container">
                         <div className="progress-bar">
                           <div
@@ -240,9 +251,13 @@ const Quiz = () => {
                         {question.options.map((option, index) => (
                           <button
                             key={index}
-                            className={selectedAnswer === option ? "selected" : ""}
+                            className={
+                              selectedAnswer === option ? "selected" : ""
+                            }
                             onClick={() =>
-                              handleAnswer(selectedAnswer === option ? "" : option)
+                              handleAnswer(
+                                selectedAnswer === option ? "" : option
+                              )
                             }
                           >
                             <span className="option-letter">
@@ -269,7 +284,11 @@ const Quiz = () => {
             </div>
           ) : (
             <section>
-              <table id="rankings" className="leaderboard-results-2" width="100">
+              <table
+                id="rankings"
+                className="leaderboard-results-2"
+                width="100"
+              >
                 <thead>
                   <tr>
                     <th className="leaderboard-font-2">Rank</th>
@@ -291,7 +310,6 @@ const Quiz = () => {
       )}
     </div>
   );
-
 };
 
 export default Quiz;
