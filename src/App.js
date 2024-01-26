@@ -1,16 +1,18 @@
-import {
-  RouterProvider,
-  createBrowserRouter,
-  useNavigate,
-} from "react-router-dom";
-import { BrowserRouter } from "react-router-dom";
-import {
+import React, {
   useEffect,
   useState,
   createContext,
   useContext,
   useCallback,
 } from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  BrowserRouterProvider,
+  useNavigate,
+} from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import {
   GithubLoginButton,
   GoogleLoginButton,
@@ -249,9 +251,12 @@ function App() {
       <InteractiveBackground />
       <header className="App-header">
         <AuthContextProvider>
-          <BrowserRouter>
-            <RouterProvider router={router} />
-          </BrowserRouter>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+            </Routes>
+          </Router>
         </AuthContextProvider>
       </header>
     </div>
