@@ -2,7 +2,6 @@
   "name": "tournament-frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:8080",
   "dependencies": {
     "@g-loot/react-tournament-brackets": "^1.0.30",
     "@leenguyen/react-flip-clock-countdown": "^1.4.1",
