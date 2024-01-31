@@ -28,6 +28,8 @@ import Dashboard from "./Dashboard";
 import Clicker from "./Clicker";
 import { over } from "stompjs";
 import SockJS from "sockjs-client";
+import { useWebSocketContext } from "./WebSocketContext";
+import { WebSocketProvider } from "./WebSocketContext";
 
 // Ensures cookie is sent
 axios.defaults.withCredentials = true;
@@ -66,35 +68,26 @@ const AuthContextProvider = ({ children }) => {
 const useWebSocket = () => {
   const [timerOn, setTimerOn] = useState(true);
   const [round, setRound] = useState(1);
-  const { checkLoginState } = useContext(AuthContext);
-  let stompClient;
+  const { stompClient } = useWebSocketContext(); // Use the context
 
-  const connect = () => {
-    let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
-    stompClient = over(Sock);
-    stompClient.connect({}, onConnected, onError);
-  };
+  useEffect(() => {
+    if (stompClient && stompClient.connected) {
+      const registrationSubscription = stompClient.subscribe(
+        "/registrations-time",
+        onEndingReceive
+      );
 
-  const onConnected = () => {
-    stompClient.subscribe("/registrations-time", onEndingRecieve);
-  };
+      return () => {
+        registrationSubscription.unsubscribe();
+      };
+    }
+  }, [stompClient]);
 
-  const onError = (err) => {
-    console.log(err);
-  };
-
-  const onEndingRecieve = (payload) => {
+  const onEndingReceive = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setTimerOn(payloadData.timerOn);
     setRound(payloadData.round);
   };
-
-  useEffect(() => {
-    // Connect only if the user is logged in
-    if (checkLoginState()) {
-      connect();
-    }
-  }, [checkLoginState]);
 
   return { timerOn, round };
 };
@@ -251,12 +244,14 @@ function App() {
       <InteractiveBackground />
       <header className="App-header">
         <AuthContextProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
-            </Routes>
-          </Router>
+          <WebSocketProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
+              </Routes>
+            </Router>
+          </WebSocketProvider>
         </AuthContextProvider>
       </header>
     </div>

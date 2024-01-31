@@ -4,8 +4,7 @@ import Timer from "./Timer";
 import { over } from "stompjs";
 import SockJS from "sockjs-client";
 import { AuthContext } from "./App";
-
-var stompClient = null;
+import { useWebSocketContext } from "./WebSocketContext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -78,29 +77,27 @@ const Quiz = () => {
     }
   }, []);
 
+  const { stompClient } = useWebSocketContext();
   useEffect(() => {
-    connect();
-  }, []);
+    if (stompClient && stompClient.connected) {
+      stompClient.subscribe("/questions", onPublicMessageReceived);
+      stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+    }
 
-  const connect = () => {
-    let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
-    stompClient = over(Sock);
-    stompClient.connect({}, onConnected, onError);
-  };
-
-  const onConnected = () => {
-    stompClient.subscribe("/questions", (questionMessage) => {
-      onPublicMessageRecieved(questionMessage);
-
-      stompClient.subscribe("/leaderboard", onLeaderboardMessageRecieved);
-    });
-  };
+    // Clean up subscriptions when the component unmounts
+    return () => {
+      if (stompClient) {
+        stompClient.unsubscribe("/questions");
+        stompClient.unsubscribe("/leaderboard");
+      }
+    };
+  }, [stompClient]);
 
   const onError = (err) => {
     console.log(err);
   };
 
-  const onPublicMessageRecieved = (payload) => {
+  const onPublicMessageReceived = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setQuestion(payloadData);
     setAnswerSubmitted(false);
@@ -110,7 +107,7 @@ const Quiz = () => {
     setShowScore(false);
   };
 
-  const onLeaderboardMessageRecieved = (payload) => {
+  const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
     const leaderboardArray = userDataArray.map((user) => ({
       id: user.username,
