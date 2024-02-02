@@ -7,7 +7,7 @@ body {
 /* ............................................................... */
 /* ............................................................... */
 /* ............................................................... */
-#retrobg {
+/* #retrobg {
     position: absolute;
   overflow: hidden;
   width: 100%;
@@ -15,7 +15,21 @@ body {
   color: #a3c;
   background-color: #000;
   z-index: -1;
+} */
+
+
+#retrobg {
+  position: fixed;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 105vh;
+  color: #a3c;
+  background-color: #000;
+  z-index: -1;
 }
+
 
 /* ............................................................... */
 #retrobg-sky {
