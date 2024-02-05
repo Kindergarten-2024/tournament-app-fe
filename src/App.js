@@ -1,4 +1,10 @@
-import React, { useEffect, useState, createContext, useContext, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+  useCallback,
+} from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import InteractiveBackground from "./InteractiveBackground";
 import axios from "axios";
@@ -11,6 +17,7 @@ import Clicker from "./Clicker";
 import { useWebSocketContext } from "./WebSocketContext";
 import { WebSocketProvider } from "./WebSocketContext";
 import UserLeaderboard from "./UserLeaderboard";
+import MainLeaderboard from "./Leaderboard";
 
 // Ensures cookie is sent
 axios.defaults.withCredentials = true;
@@ -106,7 +113,7 @@ const Home = () => {
       <div className="loading-spinner">
         <div className="spinner"></div>
       </div>
-    )
+    );
   }
 
   if (round >= 3) {
@@ -117,7 +124,7 @@ const Home = () => {
         <div className="loading-spinner">
           <div className="spinner"></div>
         </div>
-      )
+      );
     } else if (timerOn === true) {
       return <Dashboard />;
     } else if (timerOn === false) {
@@ -144,6 +151,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/leaderboard" element={<UserLeaderboard />} />
+                <Route path="/mainleaderboard" element={<MainLeaderboard />} />
               </Routes>
             </Router>
           </WebSocketProvider>

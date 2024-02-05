@@ -43,9 +43,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchPlayerPosition = async () => {
       try {
-        const response = await axios.get(
-          `${BACKEND_URL}/player-position`
-        );
+        const response = await axios.get(`${BACKEND_URL}/player-position`);
         setPosition(response.data);
       } catch (error) {
         console.error("Error fetching player position: ", error);
@@ -57,9 +55,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchPlayerScore = async () => {
       try {
-        const response = await axios.get(
-          `${BACKEND_URL}/player-score`
-        );
+        const response = await axios.get(`${BACKEND_URL}/player-score`);
         setScore(response.data);
       } catch (error) {
         console.error("Error fetching player score: ", error);
@@ -157,7 +153,7 @@ const Dashboard = () => {
   const handleLeaderboard = async () => {
     try {
       window.location.assign(
-        `http://localhost:3000/leaderboard`
+        `https://tournament-app-fe-zigpprg2xq-og.a.run.app/leaderboard`
       );
     } catch (err) {
       console.error(err);
