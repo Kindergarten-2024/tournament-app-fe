@@ -27,6 +27,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isTokenFound, setTokenFound] = useState(false);
   const [notification, setNotification] = useState({ title: "", body: "" });
+  const [position, setPosition] = useState();
+  const [score, setScore] = useState();
+
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   // useEffect(() => {
   //   localStorage.removeItem("showScore");
@@ -35,6 +39,34 @@ const Dashboard = () => {
   //   localStorage.removeItem("position");
   //   localStorage.removeItem("score");
   // }, []);
+
+  useEffect(() => {
+    const fetchPlayerPosition = async () => {
+      try {
+        const response = await axios.get(
+          `${BACKEND_URL}/player-position`
+        );
+        setPosition(response.data);
+      } catch (error) {
+        console.error("Error fetching player position: ", error);
+      }
+    };
+    fetchPlayerPosition();
+  }, []);
+
+  useEffect(() => {
+    const fetchPlayerScore = async () => {
+      try {
+        const response = await axios.get(
+          `${BACKEND_URL}/player-score`
+        );
+        setScore(response.data);
+      } catch (error) {
+        console.error("Error fetching player score: ", error);
+      }
+    };
+    fetchPlayerScore();
+  }, []);
 
   useEffect(() => {
     connect();
@@ -125,7 +157,7 @@ const Dashboard = () => {
   const handleLeaderboard = async () => {
     try {
       window.location.assign(
-        `https://tournament-app-fe-zigpprg2xq-og.a.run.app/leaderboard`
+        `http://localhost:3000/leaderboard`
       );
     } catch (err) {
       console.error(err);
@@ -192,6 +224,18 @@ const Dashboard = () => {
                 to={endTime}
                 renderMap={[false, true, true, true]}
               />
+            </div>
+          </div>
+
+          <div className="stats-container">
+            <div className="stat">
+              <h3 className="start2p">POS</h3>
+              <div className="space"></div>
+              <h3 className="start2p">SCORE</h3>
+            </div>
+            <div className="stat">
+              <p className="start2p">{position}</p>
+              <p className="start2p">{score}</p>
             </div>
           </div>
 

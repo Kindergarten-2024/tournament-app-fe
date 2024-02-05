@@ -16,9 +16,17 @@
 }
 
 @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .leaderboard-button:hover {
@@ -33,9 +41,17 @@
 }
 
 @keyframes pulse {
-    0% { transform: scale(0.95); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(0.95); }
+    0% {
+        transform: scale(0.95);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(0.95);
+    }
 }
 
 .logout-icon {
@@ -52,42 +68,65 @@
 
 .user-info-container {
     position: fixed;
-     top: 25%;
-     left: 50%;
-     transform: translate(-50%, -50%);
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .countdown-container {
     position: fixed;
-     top: 50%;
-     left: 50%;
-     transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .bottom-dashboard-container {
     position: fixed;
-     top: 75%;
-     left: 50%;
-     transform: translate(-50%, -50%);
+    top: 85%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.stats-container {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 60%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+}
+
+.space {
+    width: 16px; /* Adjust as needed for horizontal space */
 }
 
 .logout-container {
     position: fixed;
-     top: 90%;
-     left: 90%;
+    top: 90%;
+    left: 90%;
 }
 
 @keyframes flash {
-    0%, 49% {
+
+    0%,
+    49% {
         color: white;
         opacity: 1;
     }
-    50%, 100% {
+
+    50%,
+    100% {
         color: white;
         opacity: 0;
     }
 }
 
 .flash {
-    animation: flash 1s infinite; /* Adjust the duration as needed */
+    animation: flash 1s infinite;
+    /* Adjust the duration as needed */
 }

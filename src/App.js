@@ -1,15 +1,16 @@
 import React, { useEffect, useState, createContext, useContext, useCallback } from "react";
-import { BrowserRouter as Router, Route, Routes} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import InteractiveBackground from "./InteractiveBackground";
 import axios from "axios";
 import "./App.css";
 import Quiz from "./Quiz";
-import Leaderboard from "./Leaderboard";
+import Leaderboard from "./UserLeaderboard";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
 import Clicker from "./Clicker";
 import { useWebSocketContext } from "./WebSocketContext";
 import { WebSocketProvider } from "./WebSocketContext";
+import UserLeaderboard from "./UserLeaderboard";
 
 // Ensures cookie is sent
 axios.defaults.withCredentials = true;
@@ -46,42 +47,80 @@ const AuthContextProvider = ({ children }) => {
 };
 
 const useWebSocket = () => {
-  const [timerOn, setTimerOn] = useState(true);
+  const [timerOn, setTimerOn] = useState(null); // Set initial state to null
   const [round, setRound] = useState(1);
+  const [error, setError] = useState(null);
   const { stompClient } = useWebSocketContext(); // Use the context
 
   useEffect(() => {
-    if (stompClient && stompClient.connected) {
-      const registrationSubscription = stompClient.subscribe(
-        "/registrations-time",
-        onEndingReceive
-      );
+    const fetchData = async () => {
+      try {
+        if (stompClient && stompClient.connected) {
+          const registrationSubscription = stompClient.subscribe(
+            "/registrations-time",
+            onEndingReceive
+          );
 
-      return () => {
-        registrationSubscription.unsubscribe();
-      };
-    }
+          // Add additional logic to fetch initial data if needed
+
+          return () => {
+            registrationSubscription.unsubscribe();
+          };
+        }
+      } catch (error) {
+        setError(error);
+      }
+    };
+
+    fetchData();
   }, [stompClient]);
 
   const onEndingReceive = (payload) => {
-    var payloadData = JSON.parse(payload.body);
-    setTimerOn(payloadData.timerOn);
-    setRound(payloadData.round);
+    try {
+      var payloadData = JSON.parse(payload.body);
+      setTimerOn(payloadData.timerOn);
+      setRound(payloadData.round);
+    } catch (error) {
+      setError(error);
+    }
   };
 
-  return { timerOn, round };
+  return { timerOn, round, error };
 };
 
 const Home = () => {
-  const { loggedIn } = useContext(AuthContext);
+  const { loggedIn, checkLoginState } = useContext(AuthContext);
   const { timerOn, round } = useWebSocket();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await checkLoginState();
+      setIsLoading(false);
+    };
+    fetchData();
+  }, [checkLoginState]);
+
+  if (isLoading) {
+    return (
+      <div className="loading-spinner">
+        <div className="spinner"></div>
+      </div>
+    )
+  }
 
   if (round >= 3) {
     return <p className="start2p">Quiz Finished</p>;
   } else if (loggedIn === true) {
-    if (timerOn === true) {
+    if (timerOn === null) {
+      return (
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+        </div>
+      )
+    } else if (timerOn === true) {
       return <Dashboard />;
-    } else {
+    } else if (timerOn === false) {
       return <Quiz />;
     }
   } else if (loggedIn === false) {
@@ -104,7 +143,7 @@ function App() {
             <Router>
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route path="/leaderboard" element={<UserLeaderboard />} />
               </Routes>
             </Router>
           </WebSocketProvider>
