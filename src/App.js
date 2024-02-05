@@ -1,33 +1,13 @@
-import React, {
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-  useCallback,
-} from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  BrowserRouterProvider,
-  useNavigate,
-} from "react-router-dom";
-import { createBrowserRouter } from "react-router-dom";
-import {
-  GithubLoginButton,
-  GoogleLoginButton,
-} from "react-social-login-buttons";
+import React, { useEffect, useState, createContext, useContext, useCallback } from "react";
+import { BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import InteractiveBackground from "./InteractiveBackground";
-import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
-import logo from "./images/opapLogo.png";
 import axios from "axios";
 import "./App.css";
 import Quiz from "./Quiz";
 import Leaderboard from "./Leaderboard";
 import Dashboard from "./Dashboard";
+import Login from "./Login";
 import Clicker from "./Clicker";
-import { over } from "stompjs";
-import SockJS from "sockjs-client";
 import { useWebSocketContext } from "./WebSocketContext";
 import { WebSocketProvider } from "./WebSocketContext";
 
@@ -92,102 +72,6 @@ const useWebSocket = () => {
   return { timerOn, round };
 };
 
-const Login = () => {
-  const [endTime, setEndTime] = useState(new Date());
-  const [loading, setLoading] = useState(true);
-  const { timerOn, round } = useWebSocket();
-
-  const handleGithubLogin = async () => {
-    try {
-      window.location.assign(`${BACKEND_URL}/oauth/login/github`);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  const handleGoogleLogin = async () => {
-    try {
-      window.location.assign(`${BACKEND_URL}/oauth/login/google`);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    const checkRegistrations = async () => {
-      try {
-        const {
-          data: {
-            registrationsOpen: registrationsOpen,
-            registrationsEndTime,
-            rounds,
-          },
-        } = await axios.get(`${BACKEND_URL}/admin/check/endtime`);
-        setEndTime(registrationsEndTime);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    checkRegistrations();
-  }, [endTime]);
-
-  return (
-    <>
-      <div className="top-container">
-        <h1 className="start2p">Welcome to Opap Tournament</h1>
-      </div>
-      <img src={logo} className="App-logo" alt="logo" />
-
-      {loading ? (
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-        </div>
-      ) : (
-        <div className="middle-container">
-          {timerOn ? (
-            <div>
-              <h1 className="start2p">Round {round} starts in</h1>
-              <FlipClockCountdown
-                to={endTime}
-                renderMap={[false, true, true, true]}
-              />
-            </div>
-          ) : (
-            <div className="middle-container">
-              <h1 className="start2p">Round {round} in progress...</h1>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="bottom-container">
-        <GithubLoginButton className="btn" onClick={handleGithubLogin} />
-        <GoogleLoginButton className="btn" onClick={handleGoogleLogin} />
-      </div>
-    </>
-  );
-};
-
-const Callback = () => {
-  const { checkLoginState, loggedIn } = useContext(AuthContext);
-  const navigate = useNavigate();
-  useEffect(() => {
-    (async () => {
-      if (loggedIn === false) {
-        try {
-          navigate("/");
-        } catch (err) {
-          console.error(err);
-          navigate("/");
-        }
-      } else if (loggedIn === true) {
-        navigate("/");
-      }
-    })();
-  }, [checkLoginState, loggedIn, navigate]);
-  return <></>;
-};
-
 const Home = () => {
   const { loggedIn } = useContext(AuthContext);
   const { timerOn, round } = useWebSocket();
@@ -198,7 +82,7 @@ const Home = () => {
     if (timerOn === true) {
       return <Dashboard />;
     } else {
-      return <Question />;
+      return <Quiz />;
     }
   } else if (loggedIn === false) {
     return <Login />;
@@ -207,35 +91,7 @@ const Home = () => {
   return <></>;
 };
 
-const Question = () => {
-  const { loggedIn } = useContext(AuthContext);
-
-  if (loggedIn === true)
-    return (
-      <div>
-        <Quiz />
-      </div>
-    );
-  if (loggedIn === false) return <Login />;
-  return <></>;
-};
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Home />,
-  },
-  {
-    path: "/auth/callback", // github will redirect here
-    element: <Callback />,
-  },
-  {
-    path: "/leaderboard",
-    element: <Leaderboard />,
-  },
-]);
-
-export { AuthContext };
+export { AuthContext, useWebSocket };
 
 function App() {
   return (

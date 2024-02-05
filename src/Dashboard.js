@@ -14,6 +14,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 var stompClient = null;
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Dashboard = () => {
@@ -27,13 +28,13 @@ const Dashboard = () => {
   const [isTokenFound, setTokenFound] = useState(false);
   const [notification, setNotification] = useState({ title: "", body: "" });
 
-  useEffect(() => {
-    localStorage.removeItem("showScore");
-    localStorage.removeItem("quizQuestion");
-    localStorage.removeItem("answerSubmitted");
-    localStorage.removeItem("position");
-    localStorage.removeItem("score");
-  }, []);
+  // useEffect(() => {
+  //   localStorage.removeItem("showScore");
+  //   // localStorage.removeItem("quizQuestion");
+  //   localStorage.removeItem("answerSubmitted");
+  //   localStorage.removeItem("position");
+  //   localStorage.removeItem("score");
+  // }, []);
 
   useEffect(() => {
     connect();
