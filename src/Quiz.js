@@ -137,7 +137,7 @@ const Quiz = () => {
   };
 
   useEffect(() => {
-    setProgress(questionIndex * 25);
+    setProgress((questionIndex % 10) * 10);
   }, [questionIndex]);
 
   useEffect(() => {
@@ -216,7 +216,7 @@ const Quiz = () => {
     }
 
     // Show 3 Questions
-    if (questionIndex == 4) {
+    if (questionIndex == 10 || questionIndex == 20) {
       setQuizEnded(true);
       localStorage.removeItem("showScore");
       // localStorage.removeItem("quizQuestion");
