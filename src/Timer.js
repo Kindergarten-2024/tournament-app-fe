@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import './Timer.css';
+import React, { useState, useEffect } from "react";
+import "./Timer.css";
 
 const Timer = ({ timeLimit, onTimeout, resetTimer }) => {
   const [startTime] = useState(Date.now());
@@ -29,20 +29,23 @@ const Timer = ({ timeLimit, onTimeout, resetTimer }) => {
   }, [currentTime, startTime, timeLimit, onTimeout]);
 
   const elapsedMilliseconds = currentTime - startTime;
-  const timeLeft = Math.max(timeLimit - Math.floor(elapsedMilliseconds / 1000), 0);
+  const timeLeft = Math.max(
+    timeLimit - Math.floor(elapsedMilliseconds / 1000),
+    0
+  );
 
   const percentage = (timeLeft / timeLimit) * 100;
-  const isRedTimer = timeLeft <= 10;
+  const isRedTimer = timeLeft <= 5;
 
   const radius = 45;
   const circumference = 2 * Math.PI * radius;
 
   return (
-    <div className={`timer-container ${isRedTimer ? 'red-timer' : ''}`}>
+    <div className={`timer-container ${isRedTimer ? "red-timer" : ""}`}>
       <svg height="100" width="100">
         <circle
           className="timer-circle"
-          stroke={isRedTimer ? 'red' : '#3498db'}
+          stroke={isRedTimer ? "red" : "#3498db"}
           fill="transparent"
           strokeDasharray={circumference}
           strokeDashoffset={circumference - (percentage / 100) * circumference}
@@ -50,7 +53,13 @@ const Timer = ({ timeLimit, onTimeout, resetTimer }) => {
           cy="50"
           r={radius}
         />
-        <text x="50" y="50" textAnchor="middle" dy="0.3em" className={`timer-text ${isRedTimer ? 'red-text' : ''}`}>
+        <text
+          x="50"
+          y="50"
+          textAnchor="middle"
+          dy="0.3em"
+          className={`timer-text ${isRedTimer ? "red-text" : ""}`}
+        >
           {timeLeft}
         </text>
       </svg>

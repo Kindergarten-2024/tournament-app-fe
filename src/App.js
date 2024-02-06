@@ -5,31 +5,19 @@ import React, {
   useContext,
   useCallback,
 } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  BrowserRouterProvider,
-  useNavigate,
-} from "react-router-dom";
-import { createBrowserRouter } from "react-router-dom";
-import {
-  GithubLoginButton,
-  GoogleLoginButton,
-} from "react-social-login-buttons";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import InteractiveBackground from "./InteractiveBackground";
-import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
-import logo from "./images/opapLogo.png";
 import axios from "axios";
 import "./App.css";
 import Quiz from "./Quiz";
-import Leaderboard from "./Leaderboard";
 import Dashboard from "./Dashboard";
+import Login from "./Login";
 import Clicker from "./Clicker";
-import { over } from "stompjs";
-import SockJS from "sockjs-client";
 import { useWebSocketContext } from "./WebSocketContext";
 import { WebSocketProvider } from "./WebSocketContext";
+import UserLeaderboard from "./UserLeaderboard";
+import MainLeaderboard from "./Leaderboard";
+import QRcode from "./QRcode";
 
 // Ensures cookie is sent
 axios.defaults.withCredentials = true;
@@ -66,139 +54,79 @@ const AuthContextProvider = ({ children }) => {
 };
 
 const useWebSocket = () => {
-  const [timerOn, setTimerOn] = useState(true);
+  const [timerOn, setTimerOn] = useState(null); 
   const [round, setRound] = useState(1);
-  const { stompClient } = useWebSocketContext(); // Use the context
+  const [error, setError] = useState(null);
+  const { stompClient } = useWebSocketContext(); 
 
   useEffect(() => {
-    if (stompClient && stompClient.connected) {
-      const registrationSubscription = stompClient.subscribe(
-        "/registrations-time",
-        onEndingReceive
-      );
+    const fetchData = async () => {
+      try {
+        if (stompClient && stompClient.connected) {
+          const registrationSubscription = stompClient.subscribe(
+            "/registrations-time",
+            onEndingReceive
+          );
 
-      return () => {
-        registrationSubscription.unsubscribe();
-      };
-    }
+          return () => {
+            registrationSubscription.unsubscribe();
+          };
+        }
+      } catch (error) {
+        setError(error);
+      }
+    };
+
+    fetchData();
   }, [stompClient]);
 
   const onEndingReceive = (payload) => {
-    var payloadData = JSON.parse(payload.body);
-    setTimerOn(payloadData.timerOn);
-    setRound(payloadData.round);
-  };
-
-  return { timerOn, round };
-};
-
-const Login = () => {
-  const [endTime, setEndTime] = useState(new Date());
-  const [loading, setLoading] = useState(true);
-  const { timerOn, round } = useWebSocket();
-
-  const handleGithubLogin = async () => {
     try {
-      window.location.assign(`${BACKEND_URL}/oauth/login/github`);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  const handleGoogleLogin = async () => {
-    try {
-      window.location.assign(`${BACKEND_URL}/oauth/login/google`);
-    } catch (err) {
-      console.error(err);
+      var payloadData = JSON.parse(payload.body);
+      setTimerOn(payloadData.timerOn);
+      setRound(payloadData.round);
+    } catch (error) {
+      setError(error);
     }
   };
 
-  useEffect(() => {
-    const checkRegistrations = async () => {
-      try {
-        const {
-          data: {
-            registrationsOpen: registrationsOpen,
-            registrationsEndTime,
-            rounds,
-          },
-        } = await axios.get(`${BACKEND_URL}/admin/check/endtime`);
-        setEndTime(registrationsEndTime);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    checkRegistrations();
-  }, [endTime]);
-
-  return (
-    <>
-      <div className="top-container">
-        <h1 className="start2p">Welcome to Opap Tournament</h1>
-      </div>
-      <img src={logo} className="App-logo" alt="logo" />
-
-      {loading ? (
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-        </div>
-      ) : (
-        <div className="middle-container">
-          {timerOn ? (
-            <div>
-              <h1 className="start2p">Round {round} starts in</h1>
-              <FlipClockCountdown
-                to={endTime}
-                renderMap={[false, true, true, true]}
-              />
-            </div>
-          ) : (
-            <div className="middle-container">
-              <h1 className="start2p">Round {round} in progress...</h1>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="bottom-container">
-        <GithubLoginButton className="btn" onClick={handleGithubLogin} />
-        <GoogleLoginButton className="btn" onClick={handleGoogleLogin} />
-      </div>
-    </>
-  );
-};
-
-const Callback = () => {
-  const { checkLoginState, loggedIn } = useContext(AuthContext);
-  const navigate = useNavigate();
-  useEffect(() => {
-    (async () => {
-      if (loggedIn === false) {
-        try {
-          navigate("/");
-        } catch (err) {
-          console.error(err);
-          navigate("/");
-        }
-      } else if (loggedIn === true) {
-        navigate("/");
-      }
-    })();
-  }, [checkLoginState, loggedIn, navigate]);
-  return <></>;
+  return { timerOn, round, error };
 };
 
 const Home = () => {
-  const { loggedIn } = useContext(AuthContext);
+  const { loggedIn, checkLoginState } = useContext(AuthContext);
   const { timerOn, round } = useWebSocket();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await checkLoginState();
+      setIsLoading(false);
+    };
+    fetchData();
+  }, [checkLoginState]);
+
+  if (isLoading) {
+    return (
+      <div className="loading-spinner">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
 
   if (round >= 3) {
     return <p className="start2p">Quiz Finished</p>;
   } else if (loggedIn === true) {
-    if (timerOn === true) {
+    if (timerOn === null) {
+      return (
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+        </div>
+      );
+    } else if (timerOn === true) {
       return <Dashboard />;
-    } else {
-      return <Question />;
+    } else if (timerOn === false) {
+      return <Quiz />;
     }
   } else if (loggedIn === false) {
     return <Login />;
@@ -207,35 +135,7 @@ const Home = () => {
   return <></>;
 };
 
-const Question = () => {
-  const { loggedIn } = useContext(AuthContext);
-
-  if (loggedIn === true)
-    return (
-      <div>
-        <Quiz />
-      </div>
-    );
-  if (loggedIn === false) return <Login />;
-  return <></>;
-};
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Home />,
-  },
-  {
-    path: "/auth/callback", // github will redirect here
-    element: <Callback />,
-  },
-  {
-    path: "/leaderboard",
-    element: <Leaderboard />,
-  },
-]);
-
-export { AuthContext };
+export { AuthContext, useWebSocket };
 
 function App() {
   return (
@@ -248,7 +148,9 @@ function App() {
             <Router>
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route path="/qr" element={<QRcode />} />
+                <Route path="/leaderboard" element={<UserLeaderboard />} />
+                <Route path="/mainleaderboard" element={<MainLeaderboard />} />
               </Routes>
             </Router>
           </WebSocketProvider>

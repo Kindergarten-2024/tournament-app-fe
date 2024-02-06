@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
 import "./Quiz.css";
 import Timer from "./Timer";
-import { over } from "stompjs";
-import SockJS from "sockjs-client";
 import { AuthContext } from "./App";
 import { useWebSocketContext } from "./WebSocketContext";
 
@@ -17,11 +16,8 @@ const Quiz = () => {
   const [questionTimer, setQuestionTimer] = useState(Date.now());
   const [questionIndex, setQuestionIndex] = useState();
   const [quizEnded, setQuizEnded] = useState(false);
-
-  const [question, setQuestion] = useState(() => {
-    const storedQuestion = localStorage.getItem("quizQuestion");
-    return storedQuestion ? JSON.parse(storedQuestion) : null;
-  });
+  const [question, setQuestion] = useState();
+  const [loading, setLoading] = useState(true);
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -45,11 +41,11 @@ const Quiz = () => {
     return storedScore ? JSON.parse(storedScore) : null;
   });
 
-  useEffect(() => {
-    if (question) {
-      localStorage.setItem("quizQuestion", JSON.stringify(question));
-    }
-  }, [question]);
+  // useEffect(() => {
+  //   if (question) {
+  //     localStorage.setItem("quizQuestion", JSON.stringify(question));
+  //   }
+  // }, [question]);
 
   useEffect(() => {
     localStorage.setItem("answerSubmitted", JSON.stringify(answerSubmitted));
@@ -69,15 +65,31 @@ const Quiz = () => {
     localStorage.setItem("score", JSON.stringify(score));
   }, [score]);
 
+  // useEffect(() => {
+  //   if (question) {
+  //     setQuestionIndex(question.questionNumber);
+  //   } else {
+  //     setQuestionIndex(1);
+  //   }
+  // }, []);
+
   useEffect(() => {
-    if (question) {
-      setQuestionIndex(question.questionNumber);
-    } else {
-      setQuestionIndex(1);
-    }
+    const fetchCurrentQuestion = async () => {
+      try {
+        const response = await axios.get(
+          `${BACKEND_URL}/admin/questions/get-current-question`
+        );
+        setQuestion(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching current question: ", error);
+      }
+    };
+    fetchCurrentQuestion();
   }, []);
 
   const { stompClient } = useWebSocketContext();
+
   useEffect(() => {
     if (stompClient && stompClient.connected) {
       stompClient.subscribe("/questions", onPublicMessageReceived);
@@ -125,7 +137,7 @@ const Quiz = () => {
   };
 
   useEffect(() => {
-    setProgress(questionIndex * 25);
+    setProgress((questionIndex % 10) * 10);
   }, [questionIndex]);
 
   useEffect(() => {
@@ -204,10 +216,10 @@ const Quiz = () => {
     }
 
     // Show 3 Questions
-    if (questionIndex == 4) {
+    if (questionIndex == 10 || questionIndex == 20) {
       setQuizEnded(true);
       localStorage.removeItem("showScore");
-      localStorage.removeItem("quizQuestion");
+      // localStorage.removeItem("quizQuestion");
       localStorage.removeItem("answerSubmitted");
       localStorage.removeItem("position");
       localStorage.removeItem("score");
@@ -220,7 +232,7 @@ const Quiz = () => {
         <div>
           {!showScore ? (
             <div>
-              {question ? (
+              {question && !loading ? (
                 <>
                   <Timer
                     key={timerKey}
@@ -276,7 +288,9 @@ const Quiz = () => {
                   )}
                 </>
               ) : (
-                <></>
+                <div className="loading-spinner">
+                  <div className="spinner"></div>
+                </div>
               )}
             </div>
           ) : (

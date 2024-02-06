@@ -127,7 +127,6 @@
   font-weight: bold;
 }
 
-
 .leaderboard-results-2 tbody td:nth-of-type(7) {
   font-weight: bold;
 }
@@ -147,4 +146,25 @@
   padding: 0;
   font-family: 'Press Start 2P', cursive;
   font-size: 30px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20vh; 
+}
+
+.spinner {
+  border: 6px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 6px solid #610c7d; 
+  width: 70px;
+  height: 70px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

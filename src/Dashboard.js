@@ -14,6 +14,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 var stompClient = null;
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Dashboard = () => {
@@ -26,13 +27,41 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isTokenFound, setTokenFound] = useState(false);
   const [notification, setNotification] = useState({ title: "", body: "" });
+  const [position, setPosition] = useState();
+  const [score, setScore] = useState();
+
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+  // useEffect(() => {
+  //   localStorage.removeItem("showScore");
+  //   // localStorage.removeItem("quizQuestion");
+  //   localStorage.removeItem("answerSubmitted");
+  //   localStorage.removeItem("position");
+  //   localStorage.removeItem("score");
+  // }, []);
 
   useEffect(() => {
-    localStorage.removeItem("showScore");
-    localStorage.removeItem("quizQuestion");
-    localStorage.removeItem("answerSubmitted");
-    localStorage.removeItem("position");
-    localStorage.removeItem("score");
+    const fetchPlayerPosition = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/player-position`);
+        setPosition(response.data);
+      } catch (error) {
+        console.error("Error fetching player position: ", error);
+      }
+    };
+    fetchPlayerPosition();
+  }, []);
+
+  useEffect(() => {
+    const fetchPlayerScore = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/player-score`);
+        setScore(response.data);
+      } catch (error) {
+        console.error("Error fetching player score: ", error);
+      }
+    };
+    fetchPlayerScore();
   }, []);
 
   useEffect(() => {
@@ -191,6 +220,18 @@ const Dashboard = () => {
                 to={endTime}
                 renderMap={[false, true, true, true]}
               />
+            </div>
+          </div>
+
+          <div className="stats-container">
+            <div className="stat">
+              <h3 className="start2p">POS</h3>
+              <div className="space"></div>
+              <h3 className="start2p">SCORE</h3>
+            </div>
+            <div className="stat">
+              <p className="start2p">{position}</p>
+              <p className="start2p">{score}</p>
             </div>
           </div>
 
