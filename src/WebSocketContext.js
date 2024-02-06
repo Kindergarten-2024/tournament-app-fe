@@ -13,10 +13,21 @@ export const WebSocketProvider = ({ children }) => {
   const connect = () => {
     const socket = new SockJS(`${BACKEND_URL}/ws-message`);
     const client = over(socket);
+
     client.connect(
       {},
       () => {
         setStompClient(client);
+
+        setInterval(() => {
+          if (client && client.connected) {
+            client.send(
+              "/topic/ping",
+              {},
+              JSON.stringify({ ping: "keepalive" })
+            );
+          }
+        }, 10000); // 10 seconds interval
       },
       onError
     );
