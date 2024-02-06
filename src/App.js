@@ -10,7 +10,6 @@ import InteractiveBackground from "./InteractiveBackground";
 import axios from "axios";
 import "./App.css";
 import Quiz from "./Quiz";
-import Leaderboard from "./UserLeaderboard";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
 import Clicker from "./Clicker";
@@ -18,6 +17,7 @@ import { useWebSocketContext } from "./WebSocketContext";
 import { WebSocketProvider } from "./WebSocketContext";
 import UserLeaderboard from "./UserLeaderboard";
 import MainLeaderboard from "./Leaderboard";
+import QRcode from "./QRcode";
 
 // Ensures cookie is sent
 axios.defaults.withCredentials = true;
@@ -54,10 +54,10 @@ const AuthContextProvider = ({ children }) => {
 };
 
 const useWebSocket = () => {
-  const [timerOn, setTimerOn] = useState(null); // Set initial state to null
+  const [timerOn, setTimerOn] = useState(null); 
   const [round, setRound] = useState(1);
   const [error, setError] = useState(null);
-  const { stompClient } = useWebSocketContext(); // Use the context
+  const { stompClient } = useWebSocketContext(); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,8 +67,6 @@ const useWebSocket = () => {
             "/registrations-time",
             onEndingReceive
           );
-
-          // Add additional logic to fetch initial data if needed
 
           return () => {
             registrationSubscription.unsubscribe();
@@ -150,6 +148,7 @@ function App() {
             <Router>
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/qr" element={<QRcode />} />
                 <Route path="/leaderboard" element={<UserLeaderboard />} />
                 <Route path="/mainleaderboard" element={<MainLeaderboard />} />
               </Routes>
