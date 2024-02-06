@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { over } from "stompjs";
 import SockJS from "sockjs-client";
 import "./Leaderboard.css";
+import axios from "axios";
 
 var stompClient = null;
 
@@ -52,6 +53,25 @@ const Leaderboard = () => {
 
     setLoading(false);
   };
+  //leaderboard show correct score after reload
+  useEffect(() => {
+    const fetchPlayerPosition = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/leaderboard`);
+        const leaderboardArray = response.data.map((user) => ({
+          id: user.username,
+          score: user.score,
+          avatar: user.avatarUrl,
+        }));
+        console.log(leaderboardArray);
+        setLeaderboard(leaderboardArray);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching leaderboard: ", error);
+      }
+    };
+    fetchPlayerPosition();
+  }, []);
 
   const onAnswerReceived = (payload) => {
     const data = JSON.parse(payload.body);
