@@ -12,10 +12,7 @@ import SockJS from "sockjs-client";
 import { getFirebaseToken, onMessageListener } from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-var stompClient = null;
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+import { useWebSocketContext } from "./WebSocketContext";
 
 const Dashboard = () => {
   const { user, checkLoginState } = useContext(AuthContext);
@@ -31,14 +28,6 @@ const Dashboard = () => {
   const [score, setScore] = useState();
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-
-  // useEffect(() => {
-  //   localStorage.removeItem("showScore");
-  //   // localStorage.removeItem("quizQuestion");
-  //   localStorage.removeItem("answerSubmitted");
-  //   localStorage.removeItem("position");
-  //   localStorage.removeItem("score");
-  // }, []);
 
   useEffect(() => {
     const fetchPlayerPosition = async () => {
@@ -65,10 +54,6 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    connect();
-  }, []);
-
-  useEffect(() => {
     getFirebaseToken(setTokenFound);
     onMessageListener()
       .then((payload) => {
@@ -82,19 +67,38 @@ const Dashboard = () => {
       .catch((err) => console.log("failed: ", err));
   }, [notification]);
 
-  const connect = () => {
-    let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
-    stompClient = over(Sock);
-    stompClient.connect({}, onConnected, onError);
-  };
+  //SOCKET
 
-  const onConnected = () => {
-    stompClient.subscribe("/registrations-time", onEndingRecieve);
-  };
+  const { stompClient } = useWebSocketContext();
 
-  const onError = (err) => {
-    console.log(err);
-  };
+  useEffect(() => {
+    let subscription = null;
+
+    const onConnected = () => {
+      if (stompClient && stompClient.connected) {
+        subscription = stompClient.subscribe(
+          "/registrations-time",
+          onEndingRecieve
+        );
+      }
+    };
+
+    const onError = (err) => {
+      console.log(err);
+    };
+
+    if (stompClient) {
+      stompClient.connect({}, onConnected, onError);
+    }
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [stompClient]);
+
+  //END OF SOCKET
 
   const onEndingRecieve = (payload) => {
     var payloadData = JSON.parse(payload.body);

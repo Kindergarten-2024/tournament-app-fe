@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { over } from "stompjs";
-import SockJS from "sockjs-client";
+import React, { useEffect, useState } from "react";
 import "./Leaderboard.css";
 import axios from "axios";
-
-var stompClient = null;
+import { useWebSocketContext } from "./WebSocketContext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -14,27 +11,50 @@ const Leaderboard = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  //socket
+  const { stompClient } = useWebSocketContext();
+
   useEffect(() => {
-    connect();
-  }, []);
+    let leaderboardSubscription,
+      leaderboardBeforeSubscription,
+      logsSubscription,
+      lockSubscription;
 
-  const connect = () => {
-    let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
+    const subscribe = () => {
+      if (stompClient && stompClient.connected) {
+        leaderboardSubscription = stompClient.subscribe(
+          "/leaderboard",
+          onPublicMessageReceived
+        );
+        leaderboardBeforeSubscription = stompClient.subscribe(
+          "/leaderboardBefore",
+          onPublicMessageReceived
+        );
+        logsSubscription = stompClient.subscribe("/logs", onLogMessageReceived);
+        lockSubscription = stompClient.subscribe("/lock", onAnswerReceived);
+      }
+    };
 
-    stompClient = over(Sock);
-    stompClient.connect({}, onConnected, onError);
-  };
+    subscribe(); // Subscribe to the topics
 
-  const onConnected = () => {
-    stompClient.subscribe("/leaderboard", onPublicMessageReceived);
-    stompClient.subscribe("/leaderboardBefore", onPublicMessageReceived);
-    stompClient.subscribe("/logs", onLogMessageReceived);
-    stompClient.subscribe("/lock", onAnswerReceived);
-  };
+    // Clean up subscriptions when the component unmounts
+    return () => {
+      if (leaderboardSubscription) {
+        leaderboardSubscription.unsubscribe();
+      }
+      if (leaderboardBeforeSubscription) {
+        leaderboardBeforeSubscription.unsubscribe();
+      }
+      if (logsSubscription) {
+        logsSubscription.unsubscribe();
+      }
+      if (lockSubscription) {
+        lockSubscription.unsubscribe();
+      }
+    };
+  }, [stompClient]);
 
-  const onError = (err) => {
-    console.log(err);
-  };
+  //end of socket
 
   const onPublicMessageReceived = (payload) => {
     const topic = payload.headers.destination;
@@ -53,6 +73,7 @@ const Leaderboard = () => {
 
     setLoading(false);
   };
+
   //leaderboard show correct score after reload
   useEffect(() => {
     const fetchPlayerPosition = async () => {
