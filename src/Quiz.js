@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, Fragment } from "react";
 import axios from "axios";
 import "./Quiz.css";
 import Timer from "./Timer";
 import { AuthContext } from "./App";
 import { useWebSocketContext } from "./WebSocketContext";
 import CryptoJS from 'crypto-js';
-
+import "react-step-progress-bar/styles.css";
+import { ProgressBar, Step } from "react-step-progress-bar";
+import { IoIosCheckmarkCircle, IoIosCloseCircle, IoIosRemoveCircle } from "react-icons/io";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -25,15 +27,11 @@ const Quiz = () => {
   const [loading, setLoading] = useState(true);
   const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
 
+  const [stringsArray, setStringsArray] = useState([]);
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
     return storedShowScore ? JSON.parse(storedShowScore) : false;
-  });
-
-  const [answerSubmitted, setAnswerSubmitted] = useState(() => {
-    const storedAnswerSubmitted = localStorage.getItem("answerSubmitted");
-    return storedAnswerSubmitted ? JSON.parse(storedAnswerSubmitted) : null;
   });
 
   //position
@@ -47,16 +45,6 @@ const Quiz = () => {
     const storedScore = localStorage.getItem("score");
     return storedScore ? JSON.parse(storedScore) : null;
   });
-
-  // useEffect(() => {
-  //   if (question) {
-  //     localStorage.setItem("quizQuestion", JSON.stringify(question));
-  //   }
-  // }, [question]);
-
-  useEffect(() => {
-    localStorage.setItem("answerSubmitted", JSON.stringify(answerSubmitted));
-  }, [answerSubmitted]);
 
   useEffect(() => {
     localStorage.setItem("showScore", JSON.stringify(showScore));
@@ -72,13 +60,19 @@ const Quiz = () => {
     localStorage.setItem("score", JSON.stringify(score));
   }, [score]);
 
-  // useEffect(() => {
-  //   if (question) {
-  //     setQuestionIndex(question.questionNumber);
-  //   } else {
-  //     setQuestionIndex(1);
-  //   }
-  // }, []);
+  useEffect(() => {
+    // Check if array is null
+    const storedArray = JSON.parse(localStorage.getItem('stringsArray'));
+    if (storedArray === null) {
+      // If array is null, initialize with 10 "pending" strings
+      const initialArray = Array(10).fill('pending');
+      setStringsArray(initialArray);
+      localStorage.setItem('stringsArray', JSON.stringify(initialArray));
+    } else {
+      // If array is not null, load it from localStorage
+      setStringsArray(storedArray);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchCurrentQuestion = async () => {
@@ -87,6 +81,7 @@ const Quiz = () => {
           `${BACKEND_URL}/admin/questions/get-current-question`
         );
         setQuestion(response.data);
+        setQuestionIndex(response.data.questionNumber);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching current question: ", error);
@@ -134,7 +129,6 @@ const Quiz = () => {
   const onPublicMessageReceived = (payload) => {
     var payloadData = JSON.parse(payload.body); 
     setQuestion(payloadData);
-    setAnswerSubmitted(false);
     setTimerKey(Math.random());
   // Only try to decrypt if the answer is not an empty string
     if (payloadData.answer) {
@@ -192,71 +186,9 @@ const Quiz = () => {
   //   return bytes.toString(CryptoJS.enc.Utf8);
   // }
 
-
-
   const checkAnswer = () => {
+    console.log("Check answer");
     if (selectedAnswer === "") {
-      return;
-    }
-
-    
-
-    setAnswerTime(Date.now()); // Capture the time immediately when an answer is selected
-
-    const isCorrect = selectedAnswer === answerGiven;
-
-    if (isCorrect){
-
-
-    }
-
-    else {
-
-
-    }
-
-
-
-    const messageObject = {
-      time: convertToReadableTime(answerTime),
-      answer: selectedAnswer,
-      questionId: question.id,
-      message: "answered",
-    };
-    stompClient.send(
-      "/app/sendMessageAndAnswer",
-      {},
-      JSON.stringify(messageObject)
-    );
-
-    setSelectedAnswer("");
-    setAnswerSubmitted(true);
-  };
-
-  // useEffect(() => {
-  //   if (quizEnded) {
-  //     const timer = setTimeout(() => {
-  //       console.log("Clearing local storage after 10 seconds...");
-  //       localStorage.removeItem("showScore");
-  //       localStorage.removeItem("quizQuestion");
-  //       localStorage.removeItem("answerSubmitted");
-  //       localStorage.removeItem("position");
-  //       localStorage.removeItem("score");
-  //       setQuizEnded(false); // Reset for the next quiz
-  //       window.location.reload();
-  //     }, 1);
-
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [quizEnded]);
-
-  const timeUpMessage = () => {
-    // User did not answer on time
-    const messageObject = {
-      message: "questionEnded",
-    };
-    stompClient.send("/app/questionEnded", {}, JSON.stringify(messageObject)); //asks for leaderboard
-    if (!answerSubmitted) {
       const messageObject = {
         answer: "-",
         questionId: question.id,
@@ -267,18 +199,82 @@ const Quiz = () => {
         {},
         JSON.stringify(messageObject)
       );
-    }
+    } else {
+      setAnswerTime(Date.now());
 
-    // Show 3 Questions
+      const messageObject = {
+        time: convertToReadableTime(answerTime),
+        answer: selectedAnswer,
+        questionId: question.id,
+        message: "answered",
+      };
+      stompClient.send(
+        "/app/sendMessageAndAnswer",
+        {},
+        JSON.stringify(messageObject)
+      );
+      setSelectedAnswer("");
+    }
+  };
+
+  const timeUpMessage = () => {
+    const messageObject = {
+      message: "questionEnded",
+    };
+    stompClient.send("/app/questionEnded", {}, JSON.stringify(messageObject)); // Ask for Leaderboard
+
     if (questionIndex == 10 || questionIndex == 20) {
       setQuizEnded(true);
       localStorage.removeItem("showScore");
-      // localStorage.removeItem("quizQuestion");
-      localStorage.removeItem("answerSubmitted");
       localStorage.removeItem("position");
       localStorage.removeItem("score");
     }
+
+    updateString(questionIndex-1, "corrrect");
   };
+
+  // Function to update a string at a specific index
+  const updateString = (index, value) => {
+    const newArray = [...stringsArray];
+    newArray[index] = value;
+    setStringsArray(newArray);
+    localStorage.setItem('stringsArray', JSON.stringify(newArray));
+  };
+  
+  function CustomProgressBar({ numQuestions, statuses, progressPercentage }) {
+    return (
+      <ProgressBar percent={progressPercentage} filledBackground="#3498db">
+        {statuses.map((status, index) => (
+          <Step key={index} transition="scale">
+            {({ accomplished }) => (
+              <Fragment>
+                {status === 'correct' ? (
+                  <IoIosCheckmarkCircle
+                    style={{ filter: `grayscale(${accomplished ? 0 : 10}%)` }}
+                    size={30}
+                    color="green"
+                  />
+                ) : status === 'false' ? (
+                  <IoIosCloseCircle
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                    size={30}
+                    color="red"
+                  />
+                ) : (
+                  <IoIosRemoveCircle
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                    size={30}
+                    color="grey"
+                  />
+                )}
+              </Fragment>
+            )}
+          </Step>
+        ))}
+      </ProgressBar>
+    );
+  }
+
 
   return (
     <div>
@@ -288,61 +284,42 @@ const Quiz = () => {
             <div>
               {question && !loading ? (
                 <>
+                  <CustomProgressBar numQuestions={10} statuses={stringsArray} progressPercentage={(questionIndex % 11) * 10} />
+
                   <Timer
                     key={timerKey}
                     timeLimit={questionTimer}
                     onTimeout={() => {
-                      if (selectedAnswer){
-                        checkAnswer(selectedAnswer);
-                      }
+                      checkAnswer();
                       timeUpMessage();
                     }}
                   />
-
-                  {!answerSubmitted ? (
-                    <div className="question-container">
-                      <h2 className="start2p">
-                        Question {question.questionNumber}
-                      </h2>
-                      <div className="progress-bar-container">
-                        <div className="progress-bar">
-                          <div
-                            className="progress"
-                            style={{ width: `${progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      <p className="start2p">{question.question}</p>
-                      <div className="answer-buttons">
-                        {question.options.map((option, index) => (
-                          <button
-                            key={index}
-                            className={
-                              selectedAnswer === option ? "selected" : ""
-                            }
-                            onClick={() =>
-                              handleAnswer(
-                                selectedAnswer === option ? "" : option
-                              )
-                            }
-                          >
-                            <span className="option-letter">
-                              {String.fromCharCode(65 + index)}.
-                            </span>
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                      <br />
-                      <button className="submit-button" onClick={checkAnswer}>
-                        Submit
-                      </button>
+                  <div className="question-container">
+                    <h2 className="start2p">
+                      Question {question.questionNumber}
+                    </h2>
+                    <p className="start2p">{question.question}</p>
+                    <div className="answer-buttons">
+                      {question.options.map((option, index) => (
+                        <button
+                          key={index}
+                          className={
+                            selectedAnswer === option ? "selected" : ""
+                          }
+                          onClick={() =>
+                            handleAnswer(
+                              selectedAnswer === option ? "" : option
+                            )
+                          }
+                        >
+                          <span className="option-letter">
+                            {String.fromCharCode(65 + index)}.
+                          </span>
+                          {option}
+                        </button>
+                      ))}
                     </div>
-                  ) : (
-                    <div>
-                      <h1 className="start2p">Waiting for others...</h1>
-                    </div>
-                  )}
+                  </div>
                 </>
               ) : (
                 <div className="loading-spinner">

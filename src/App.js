@@ -125,6 +125,7 @@ const Home = () => {
       );
     } else if (timerOn === true) {
       return <Dashboard />;
+      // return <Quiz />;
     } else if (timerOn === false) {
       return <Quiz />;
     }
