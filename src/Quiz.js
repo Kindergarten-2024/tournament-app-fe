@@ -4,20 +4,27 @@ import "./Quiz.css";
 import Timer from "./Timer";
 import { AuthContext } from "./App";
 import { useWebSocketContext } from "./WebSocketContext";
+import CryptoJS from 'crypto-js';
+
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Quiz = () => {
+  // const CryptoJS = require("crypto-js");
+  const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
   const { user } = useContext(AuthContext);
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [timerKey, setTimerKey] = useState(0);
   const [progress, setProgress] = useState(0);
   const [answerTime, setAnswerTime] = useState(Date.now());
   const [questionTimer, setQuestionTimer] = useState(Date.now());
+  const [answerGiven, setAnswerGiven] = useState();
   const [questionIndex, setQuestionIndex] = useState();
   const [quizEnded, setQuizEnded] = useState(false);
   const [question, setQuestion] = useState();
   const [loading, setLoading] = useState(true);
+  const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
+
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -109,11 +116,33 @@ const Quiz = () => {
     console.log(err);
   };
 
+    
+  function decrypt(encryptedValue) {
+    if (encryptedValue === undefined) {
+        throw new Error('encryptedValue is undefined');
+    }
+    // Decrypt without specifying the IV since ECB mode is used
+    const decrypted = CryptoJS.AES.decrypt(encryptedValue, SECRET_KEY, {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7
+    });
+
+    return decrypted.toString(CryptoJS.enc.Utf8);
+}
+
+
   const onPublicMessageReceived = (payload) => {
-    var payloadData = JSON.parse(payload.body);
+    var payloadData = JSON.parse(payload.body); 
     setQuestion(payloadData);
     setAnswerSubmitted(false);
     setTimerKey(Math.random());
+  // Only try to decrypt if the answer is not an empty string
+    if (payloadData.answer) {
+      setAnswerGiven(decrypt(payloadData.answer));
+    } else {
+      console.warn("Received empty answer string");
+    }
+  
     setQuestionTimer();
     setQuestionIndex(payloadData.questionNumber);
     setShowScore(false);
@@ -158,11 +187,36 @@ const Quiz = () => {
     return date.toLocaleString();
   };
 
+  // function decrypt(encryptedValue){
+  //   const bytes = CryptoJS.AES.decrypt(encryptedValue, SECRET_KEY);
+  //   return bytes.toString(CryptoJS.enc.Utf8);
+  // }
+
+
+
   const checkAnswer = () => {
     if (selectedAnswer === "") {
       return;
     }
+
+    
+
     setAnswerTime(Date.now()); // Capture the time immediately when an answer is selected
+
+    const isCorrect = selectedAnswer === answerGiven;
+
+    if (isCorrect){
+
+
+    }
+
+    else {
+
+
+    }
+
+
+
     const messageObject = {
       time: convertToReadableTime(answerTime),
       answer: selectedAnswer,
@@ -238,6 +292,9 @@ const Quiz = () => {
                     key={timerKey}
                     timeLimit={questionTimer}
                     onTimeout={() => {
+                      if (selectedAnswer){
+                        checkAnswer(selectedAnswer);
+                      }
                       timeUpMessage();
                     }}
                   />
