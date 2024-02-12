@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, Fragment } from "react";
+import React, { useState, useEffect, useContext, Fragment, useRef } from "react";
 import axios from "axios";
 import "./Quiz.css";
 import Timer from "./Timer";
@@ -8,25 +8,67 @@ import CryptoJS from 'crypto-js';
 import "react-step-progress-bar/styles.css";
 import { ProgressBar, Step } from "react-step-progress-bar";
 import { IoIosCheckmarkCircle, IoIosCloseCircle, IoIosRemoveCircle } from "react-icons/io";
+import { CountdownCircleTimer } from 'react-countdown-circle-timer'
+
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
+
+const useRenderTime = ({ remainingTime }) => {
+  const currentTime = useRef(remainingTime);
+  const prevTime = useRef(null);
+  const isNewTimeFirstTick = useRef(false);
+  const [, setOneLastRerender] = useState(0);
+
+  if (currentTime.current !== remainingTime) {
+    isNewTimeFirstTick.current = true;
+    prevTime.current = currentTime.current;
+    currentTime.current = remainingTime;
+  } else {
+    isNewTimeFirstTick.current = false;
+  }
+
+  // force one last re-render when the time is over to trigger the last animation
+  if (remainingTime === 0) {
+    setTimeout(() => {
+      setOneLastRerender((val) => val + 1);
+    }, 20);
+  }
+
+  const isTimeUp = isNewTimeFirstTick.current;
+
+  return (
+    <div className="time-wrapper">
+      <div key={remainingTime} className={`time ${isTimeUp ? "up" : ""}`}>
+        {remainingTime}
+      </div>
+      {prevTime.current !== null && (
+        <div
+          key={prevTime.current}
+          className={`time ${!isTimeUp ? "down" : ""}`}
+        >
+          {prevTime.current}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Quiz = () => {
-  // const CryptoJS = require("crypto-js");
-  const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
   const { user } = useContext(AuthContext);
+  const { stompClient } = useWebSocketContext();
+  const { remainingTime } = CountdownCircleTimer;
+  const renderTimeComponent = useRenderTime({ remainingTime });
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [timerKey, setTimerKey] = useState(0);
   const [progress, setProgress] = useState(0);
   const [answerTime, setAnswerTime] = useState(Date.now());
   const [questionTimer, setQuestionTimer] = useState(Date.now());
-  const [answerGiven, setAnswerGiven] = useState();
+  const [decryptedAnswer, setDecryptedAnswer] = useState();
   const [questionIndex, setQuestionIndex] = useState();
   const [quizEnded, setQuizEnded] = useState(false);
   const [question, setQuestion] = useState();
   const [loading, setLoading] = useState(true);
-  const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
-
   const [stringsArray, setStringsArray] = useState([]);
 
   const [showScore, setShowScore] = useState(() => {
@@ -61,15 +103,12 @@ const Quiz = () => {
   }, [score]);
 
   useEffect(() => {
-    // Check if array is null
     const storedArray = JSON.parse(localStorage.getItem('stringsArray'));
     if (storedArray === null) {
-      // If array is null, initialize with 10 "pending" strings
-      const initialArray = Array(10).fill('pending');
+      const initialArray = Array(10).fill('pending'); // If array is null, initialize with 10 "pending" strings
       setStringsArray(initialArray);
       localStorage.setItem('stringsArray', JSON.stringify(initialArray));
     } else {
-      // If array is not null, load it from localStorage
       setStringsArray(storedArray);
     }
   }, []);
@@ -82,6 +121,11 @@ const Quiz = () => {
         );
         setQuestion(response.data);
         setQuestionIndex(response.data.questionNumber);
+        if (response.data.answer) {
+          setDecryptedAnswer(decrypt(response.data.answer));
+        } else {
+          console.warn("Received empty answer string");
+        }
         setLoading(false);
       } catch (error) {
         console.error("Error fetching current question: ", error);
@@ -90,14 +134,11 @@ const Quiz = () => {
     fetchCurrentQuestion();
   }, []);
 
-  const { stompClient } = useWebSocketContext();
-
   useEffect(() => {
     if (stompClient && stompClient.connected) {
       stompClient.subscribe("/questions", onPublicMessageReceived);
       stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
     }
-
     // Clean up subscriptions when the component unmounts
     return () => {
       if (stompClient) {
@@ -107,36 +148,49 @@ const Quiz = () => {
     };
   }, [stompClient]);
 
-  const onError = (err) => {
-    console.log(err);
-  };
+  useEffect(() => {
+    if (question) {
+      const question_time = new Date(question.time);
+      var timer = Math.abs(question_time - Date.now() + 15499);
+      var timer_in_sec = Math.round(timer / 1000);
+      setQuestionTimer(timer_in_sec);
+    }
+  }, [question]);
 
-    
+  useEffect(() => {
+    if ((questionIndex % 10) == 1) {
+      setProgress(0)
+    } else if ((questionIndex % 10) == 0) {
+      setProgress(100)
+    } else {
+      setProgress(((questionIndex - 1) % 10) * 100 / 9)
+    }
+  }, [questionIndex]);
+
   function decrypt(encryptedValue) {
     if (encryptedValue === undefined) {
-        throw new Error('encryptedValue is undefined');
+      throw new Error('encryptedValue is undefined');
     }
     // Decrypt without specifying the IV since ECB mode is used
     const decrypted = CryptoJS.AES.decrypt(encryptedValue, SECRET_KEY, {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7
     });
 
     return decrypted.toString(CryptoJS.enc.Utf8);
-}
-
+  }
 
   const onPublicMessageReceived = (payload) => {
-    var payloadData = JSON.parse(payload.body); 
+    var payloadData = JSON.parse(payload.body);
     setQuestion(payloadData);
     setTimerKey(Math.random());
-  // Only try to decrypt if the answer is not an empty string
+    // Only try to decrypt if the answer is not an empty string
     if (payloadData.answer) {
-      setAnswerGiven(decrypt(payloadData.answer));
+      setDecryptedAnswer(decrypt(payloadData.answer));
     } else {
       console.warn("Received empty answer string");
     }
-  
+
     setQuestionTimer();
     setQuestionIndex(payloadData.questionNumber);
     setShowScore(false);
@@ -159,19 +213,6 @@ const Quiz = () => {
     setShowScore(true);
   };
 
-  useEffect(() => {
-    setProgress((questionIndex % 10) * 10);
-  }, [questionIndex]);
-
-  useEffect(() => {
-    if (question) {
-      const question_time = new Date(question.time);
-      var timer = Math.abs(question_time - Date.now() + 15499);
-      var timer_in_sec = Math.round(timer / 1000);
-      setQuestionTimer(timer_in_sec);
-    }
-  }, [question]);
-
   const handleAnswer = (selected) => {
     setSelectedAnswer(selected);
   };
@@ -181,14 +222,9 @@ const Quiz = () => {
     return date.toLocaleString();
   };
 
-  // function decrypt(encryptedValue){
-  //   const bytes = CryptoJS.AES.decrypt(encryptedValue, SECRET_KEY);
-  //   return bytes.toString(CryptoJS.enc.Utf8);
-  // }
-
   const checkAnswer = () => {
-    console.log("Check answer");
     if (selectedAnswer === "") {
+      updateString(questionIndex - 1, "false");
       const messageObject = {
         answer: "-",
         questionId: question.id,
@@ -200,8 +236,13 @@ const Quiz = () => {
         JSON.stringify(messageObject)
       );
     } else {
+      console.log("Selected: " + selectedAnswer + " Decrypted: " + decryptedAnswer);
+      if (selectedAnswer == decryptedAnswer) {
+        updateString(questionIndex - 1, "correct");
+      } else {
+        updateString(questionIndex - 1, "false");
+      }
       setAnswerTime(Date.now());
-
       const messageObject = {
         time: convertToReadableTime(answerTime),
         answer: selectedAnswer,
@@ -228,29 +269,31 @@ const Quiz = () => {
       localStorage.removeItem("showScore");
       localStorage.removeItem("position");
       localStorage.removeItem("score");
+      localStorage.removeItem("stringsArray");
     }
-
-    updateString(questionIndex-1, "corrrect");
   };
 
   // Function to update a string at a specific index
   const updateString = (index, value) => {
     const newArray = [...stringsArray];
-    newArray[index] = value;
+    newArray[index % 10] = value;
     setStringsArray(newArray);
     localStorage.setItem('stringsArray', JSON.stringify(newArray));
   };
-  
+
   function CustomProgressBar({ numQuestions, statuses, progressPercentage }) {
     return (
-      <ProgressBar percent={progressPercentage} filledBackground="#3498db">
+      <ProgressBar
+        percent={progressPercentage}
+        fillBackground="linear-gradient(to right, #fefb72, #f0bb31)"
+      >
         {statuses.map((status, index) => (
           <Step key={index} transition="scale">
             {({ accomplished }) => (
               <Fragment>
                 {status === 'correct' ? (
                   <IoIosCheckmarkCircle
-                    style={{ filter: `grayscale(${accomplished ? 0 : 10}%)` }}
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
                     size={30}
                     color="green"
                   />
@@ -284,16 +327,33 @@ const Quiz = () => {
             <div>
               {question && !loading ? (
                 <>
-                  <CustomProgressBar numQuestions={10} statuses={stringsArray} progressPercentage={(questionIndex % 11) * 10} />
+                  <CustomProgressBar numQuestions={10} statuses={stringsArray} progressPercentage={progress} />
 
-                  <Timer
+                  {/* <Timer
                     key={timerKey}
                     timeLimit={questionTimer}
                     onTimeout={() => {
                       checkAnswer();
                       timeUpMessage();
                     }}
-                  />
+                  /> */}
+
+                  <div className="timer-wrapper">
+                    <CountdownCircleTimer
+                      isPlaying
+                      duration={100000}
+                      colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
+                      colorsTime={[10, 6, 3, 0]}
+                      onComplete={() => {
+                        checkAnswer();
+                        timeUpMessage();
+                        return { shouldRepeat: true }
+                      }}
+                    >
+                      {useRenderTime}
+                    </CountdownCircleTimer>
+                  </div>
+
                   <div className="question-container">
                     <h2 className="start2p">
                       Question {question.questionNumber}
