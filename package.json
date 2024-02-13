@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.5.1",
+    "@fortawesome/free-solid-svg-icons": "^6.5.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@g-loot/react-tournament-brackets": "^1.0.30",
     "@leenguyen/react-flip-clock-countdown": "^1.4.1",
     "@stomp/stompjs": "^7.0.0",

@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useContext, Fragment, useRef } from "react";
 import axios from "axios";
 import "./Quiz.css";
-import Timer from "./Timer";
 import { AuthContext } from "./App";
 import { useWebSocketContext } from "./WebSocketContext";
 import CryptoJS from 'crypto-js';
 import "react-step-progress-bar/styles.css";
-import { ProgressBar, Step } from "react-step-progress-bar";
+import { Step } from "react-step-progress-bar";
 import { IoIosCheckmarkCircle, IoIosCloseCircle, IoIosRemoveCircle } from "react-icons/io";
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
-
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -123,6 +121,7 @@ const Quiz = () => {
         );
         setQuestion(response.data);
         setQuestionIndex(response.data.questionNumber);
+        // updateString(questionIndex - 1, "current");
         if (response.data.answer) {
           setDecryptedAnswer(decrypt(response.data.answer));
         } else {
@@ -192,9 +191,9 @@ const Quiz = () => {
     } else {
       console.warn("Received empty answer string");
     }
-
     setQuestionTimer();
     setQuestionIndex(payloadData.questionNumber);
+    // updateString(questionIndex - 1, "current");
     setShowScore(false);
   };
 
@@ -233,8 +232,8 @@ const Quiz = () => {
     }
     return "";
   };
-  
-  
+
+
   const checkAnswer = () => {
     setLastSelectedAnswer(selectedAnswer); // Add this line before resetting selectedAnswer
     if (selectedAnswer === "") {
@@ -297,138 +296,136 @@ const Quiz = () => {
 
   function CustomProgressBar({ numQuestions, statuses, progressPercentage }) {
     return (
-      <ProgressBar
-        percent={progressPercentage}
-        fillBackground="linear-gradient(to right, #fefb72, #f0bb31)"
-      >
+      <>
         {statuses.map((status, index) => (
           <Step key={index} transition="scale">
             {({ accomplished }) => (
               <Fragment>
-                {status === 'correct' ? (
-                  <IoIosCheckmarkCircle
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    size={30}
-                    color="green"
-                  />
-                ) : status === 'false' ? (
-                  <IoIosCloseCircle
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    size={30}
-                    color="red"
-                  />
-                ) : (
-                  <IoIosRemoveCircle
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    size={30}
-                    color="grey"
-                  />
-                )}
-              </Fragment>
+              {status === 'correct' ? (
+                <IoIosCheckmarkCircle
+                  style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                  size={30}
+                  color="green"
+                />
+              ) : status === 'false' ? (
+                <IoIosCloseCircle
+                  style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                  size={30}
+                  color="red"
+                />
+              ) : status === 'current' ? (
+                <IoIosCheckmarkCircle
+                  style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                  size={30}
+                  color="yellow"
+                />
+              ) : (
+                <IoIosRemoveCircle
+                  style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                  size={30}
+                  color="grey"
+                />
+              )}
+            </Fragment>
+            
             )}
           </Step>
         ))}
-      </ProgressBar>
+      </>
     );
   }
-
 
   return (
     <div>
       {!quizEnded ? (
         <div>
-          {!showScore ? (
-            <div>
-              {question && !loading ? (
-                <>
-                  <CustomProgressBar numQuestions={10} statuses={stringsArray} progressPercentage={progress} />
+          {question && !loading ? (
+            <>
+              <div className="steps-container">
+                <CustomProgressBar numQuestions={10} statuses={stringsArray} progressPercentage={progress} />
+              </div>
 
-                  {/* <Timer
-                    key={timerKey}
-                    timeLimit={questionTimer}
-                    onTimeout={() => {
+              {!showScore ? (
+                <div className="timer-wrapper">
+                  <CountdownCircleTimer
+                    isPlaying
+                    duration={questionTimer}
+                    size={120}
+                    colors={['#0F3587', '#8C1BC5', '#BFAA30', '#D61818']}
+                    colorsTime={[15, 10, 5, 0]}
+                    onComplete={() => {
                       checkAnswer();
                       timeUpMessage();
+                      return { shouldRepeat: true }
                     }}
-                  /> */}
+                  >
+                    {useRenderTime}
+                  </CountdownCircleTimer>
+                </div>
+              ) : (
+                <section className="centered-section">
 
-                  <div className="timer-wrapper">
-                    <CountdownCircleTimer
-                      isPlaying
-                      duration={15}
-                      colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
-                      colorsTime={[10, 6, 3, 0]}
-                      onComplete={() => {
-                        checkAnswer();
-                        timeUpMessage();
-                        return { shouldRepeat: true }
-                      }}
-                    >
-                      {useRenderTime}
-                    </CountdownCircleTimer>
-                  </div>
+                  <table id="rankings" className="leaderboard-results-2" width="100">
+                    <thead>
+                      <tr>
+                        <th className="leaderboard-font-2">Rank</th>
+                        <th className="leaderboard-font-2">PTS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="leaderboard-font-2">{position}</td>
+                        <td className="leaderboard-font-2">{score}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </section>
+              )}
 
-                  <div className="question-container">
-                    <h2 className="start2p">
-                      Question {question.questionNumber}
-                    </h2>
-                    <p className="start2p">{question.question}</p>
+              <div className="question-container">
+                <h2 className="start2p">
+                  Question {question.questionNumber}
+                </h2>
+                <p className="start2p">{question.question}</p>
+                {!showScore ? (
+                  <>
                     <div className="answer-buttons">
                       {question.options.map((option, index) => (
                         <button
                           key={index}
-                          className={
-                            selectedAnswer === option ? "selected" : ""
-                          }
+                          className={selectedAnswer === option ? "selected" : ""}
                           onClick={() =>
-                            handleAnswer(
-                              selectedAnswer === option ? "" : option
-                            )
+                            handleAnswer(selectedAnswer === option ? "" : option)
                           }
                         >
-                          <span className="option-letter">
-                            {String.fromCharCode(65 + index)}.
-                          </span>
+                          <span className="option-letter">{String.fromCharCode(65 + index)}.</span>
                           {option}
                         </button>
                       ))}
                     </div>
-                  </div>
-                </>
-              ) : (
-                <div className="loading-spinner">
-                  <div className="spinner"></div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <section>
-              <table id="rankings" className="leaderboard-results-2" width="100">
-                <thead>
-                  <tr>
-                    <th className="leaderboard-font-2">Rank</th>
-                    <th className="leaderboard-font-2">PTS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="leaderboard-font-2">{position}</td>
-                    <td className="leaderboard-font-2">{score}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div className="question-review">
-                <h3>Review Question:</h3>
-                <p>{question?.question}</p>
-                <div className="options-container">
-                {question?.options.map((option, index) => (
-                  <div key={index} className={`option ${getOptionClass(option)}`}>
-                    {option}
-                  </div>
-                ))}
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="answer-buttons">
+                      {question?.options.map((option, index) => (
+                        <button
+                          key={index}
+                          className={`${getOptionClass(option)}`}
+                          disabled 
+                        >
+                          <span className="option-letter">{String.fromCharCode(65 + index)}.</span>
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
-            </section>
+            </>
+          ) : (
+            <div className="loading-spinner">
+              <div className="spinner"></div>
+            </div>
           )}
         </div>
       ) : (
