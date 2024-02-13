@@ -70,6 +70,8 @@ const Quiz = () => {
   const [question, setQuestion] = useState();
   const [loading, setLoading] = useState(true);
   const [stringsArray, setStringsArray] = useState([]);
+  const [lastSelectedAnswer, setLastSelectedAnswer] = useState("");
+
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -222,7 +224,19 @@ const Quiz = () => {
     return date.toLocaleString();
   };
 
+
+  const getOptionClass = (option) => {
+    if (option === decryptedAnswer) {
+      return "correct-answer";
+    } else if (option === lastSelectedAnswer && lastSelectedAnswer !== decryptedAnswer) {
+      return "incorrect-answer";
+    }
+    return "";
+  };
+  
+  
   const checkAnswer = () => {
+    setLastSelectedAnswer(selectedAnswer); // Add this line before resetting selectedAnswer
     if (selectedAnswer === "") {
       updateString(questionIndex - 1, "false");
       const messageObject = {
@@ -341,7 +355,7 @@ const Quiz = () => {
                   <div className="timer-wrapper">
                     <CountdownCircleTimer
                       isPlaying
-                      duration={100000}
+                      duration={15}
                       colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
                       colorsTime={[10, 6, 3, 0]}
                       onComplete={() => {
@@ -389,11 +403,7 @@ const Quiz = () => {
             </div>
           ) : (
             <section>
-              <table
-                id="rankings"
-                className="leaderboard-results-2"
-                width="100"
-              >
+              <table id="rankings" className="leaderboard-results-2" width="100">
                 <thead>
                   <tr>
                     <th className="leaderboard-font-2">Rank</th>
@@ -407,6 +417,17 @@ const Quiz = () => {
                   </tr>
                 </tbody>
               </table>
+              <div className="question-review">
+                <h3>Review Question:</h3>
+                <p>{question?.question}</p>
+                <div className="options-container">
+                {question?.options.map((option, index) => (
+                  <div key={index} className={`option ${getOptionClass(option)}`}>
+                    {option}
+                  </div>
+                ))}
+                </div>
+              </div>
             </section>
           )}
         </div>
