@@ -35,7 +35,7 @@ export const WebSocketProvider = ({ children }) => {
 
   const onError = (err) => {
     console.error("WebSocket Error:", err);
-    setTimeout(connect, 3000); // Reconnect after 3 seconds
+    setTimeout(connect, 1000); // Reconnect after 1 second
   };
 
   useEffect(() => {
