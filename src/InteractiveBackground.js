@@ -52,9 +52,9 @@ const InteractiveBackground = () => {
               <div id="retrobg-mountains-left" className="retrobg-mountain"></div>
               <div id="retrobg-mountains-right" className="retrobg-mountain"></div>
             </div>
-            <div id="retrobg-cityWrap">
-              <div id="retrobg-city">
-                <div className="retrobg-building" style={{ left: '4.0%', height: '20%', width: '3.0%' }}></div>
+            {/* <div id="retrobg-cityWrap">
+              <div id="retrobg-city"> */}
+                {/* <div className="retrobg-building" style={{ left: '4.0%', height: '20%', width: '3.0%' }}></div>
                 <div className="retrobg-building" style={{ left: '6.0%', height: '50%', width: '1.5%' }}></div>
                 <div className="retrobg-building" style={{ left: '8.0%', height: '25%', width: '4.0%' }}></div>
                 <div className="retrobg-building" style={{ left: '12.0%', height: '30%', width: '3.0%' }}></div>
@@ -88,9 +88,9 @@ const InteractiveBackground = () => {
                 <div className="retrobg-building" style={{ left: '93.0%', height: '50%', width: '3.0%' }}></div>
                 <div className="retrobg-building" style={{ left: '91.0%', height: '30%', width: '4.0%' }}></div>
                 <div className="retrobg-building" style={{ left: '94.0%', height: '20%', width: '3.0%' }}></div>
-                <div className="retrobg-building" style={{ left: '98.0%', height: '35%', width: '2.0%' }}></div>
-      </div>
-    </div>
+                <div className="retrobg-building" style={{ left: '98.0%', height: '35%', width: '2.0%' }}></div> */}
+      {/* </div>
+    </div> */}
   </div>
   <div id="retrobg-ground">
     <div id="retrobg-linesWrap">

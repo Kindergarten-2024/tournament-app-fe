@@ -24,6 +24,7 @@ const Timer = ({ timeLimit, onTimeout, resetTimer }) => {
   useEffect(() => {
     if (currentTime - startTime >= 1000 + timeLimit * 1000) {
       // The timer has expired, call the onTimeout function
+      console.log("timer up");
       onTimeout();
     }
   }, [currentTime, startTime, timeLimit, onTimeout]);
