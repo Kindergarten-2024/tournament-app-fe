@@ -82,6 +82,7 @@ const useWebSocket = () => {
 
   const onEndingReceive = (payload) => {
     try {
+      console.log("TIME NOW: " + Date.now());
       var payloadData = JSON.parse(payload.body);
       setTimerOn(payloadData.timerOn);
       setRound(payloadData.round);
