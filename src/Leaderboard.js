@@ -15,19 +15,12 @@ const Leaderboard = () => {
   const { stompClient } = useWebSocketContext();
 
   useEffect(() => {
-    let leaderboardSubscription,
-      leaderboardBeforeSubscription,
-      logsSubscription,
-      lockSubscription;
+    let leaderboardSubscription, logsSubscription, lockSubscription;
 
     const subscribe = () => {
       if (stompClient && stompClient.connected) {
         leaderboardSubscription = stompClient.subscribe(
           "/leaderboard",
-          onPublicMessageReceived
-        );
-        leaderboardBeforeSubscription = stompClient.subscribe(
-          "/leaderboardBefore",
           onPublicMessageReceived
         );
         logsSubscription = stompClient.subscribe("/logs", onLogMessageReceived);
@@ -41,9 +34,6 @@ const Leaderboard = () => {
     return () => {
       if (leaderboardSubscription) {
         leaderboardSubscription.unsubscribe();
-      }
-      if (leaderboardBeforeSubscription) {
-        leaderboardBeforeSubscription.unsubscribe();
       }
       if (logsSubscription) {
         logsSubscription.unsubscribe();
@@ -66,8 +56,6 @@ const Leaderboard = () => {
     }));
 
     if (topic === "/leaderboard") {
-      setLeaderboard(leaderboardArray);
-    } else if (topic === "/leaderboardBefore") {
       setLeaderboard(leaderboardArray);
     }
 
@@ -181,12 +169,7 @@ const Leaderboard = () => {
             >
               <tbody>
                 {leaderboard.slice(3, 10).map((user, index) => (
-                  <tr
-                    key={user.id}
-                    className={`leaderboard-row ${
-                      user.answered ? "answered" : ""
-                    }`}
-                  >
+                  <tr>
                     <td className="start2p">{index + 4}</td>
                     <td className="start2p">{user.id}</td>
                     <td className="start2p">{user.score}</td>

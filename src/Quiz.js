@@ -1,13 +1,23 @@
-import React, { useState, useEffect, useContext, Fragment, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  Fragment,
+  useRef,
+} from "react";
 import axios from "axios";
 import "./Quiz.css";
 import { AuthContext } from "./App";
 import { useWebSocketContext } from "./WebSocketContext";
-import CryptoJS from 'crypto-js';
+import CryptoJS from "crypto-js";
 import "react-step-progress-bar/styles.css";
 import { Step } from "react-step-progress-bar";
-import { IoIosCheckmarkCircle, IoIosCloseCircle, IoIosRemoveCircle } from "react-icons/io";
-import { CountdownCircleTimer } from 'react-countdown-circle-timer'
+import {
+  IoIosCheckmarkCircle,
+  IoIosCloseCircle,
+  IoIosRemoveCircle,
+} from "react-icons/io";
+import { CountdownCircleTimer } from "react-countdown-circle-timer";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -70,7 +80,6 @@ const Quiz = () => {
   const [stringsArray, setStringsArray] = useState([]);
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState("");
 
-
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
     return storedShowScore ? JSON.parse(storedShowScore) : false;
@@ -103,11 +112,11 @@ const Quiz = () => {
   }, [score]);
 
   useEffect(() => {
-    const storedArray = JSON.parse(localStorage.getItem('stringsArray'));
+    const storedArray = JSON.parse(localStorage.getItem("stringsArray"));
     if (storedArray === null) {
-      const initialArray = Array(10).fill('pending'); // If array is null, initialize with 10 "pending" strings
+      const initialArray = Array(10).fill("pending"); // If array is null, initialize with 10 "pending" strings
       setStringsArray(initialArray);
-      localStorage.setItem('stringsArray', JSON.stringify(initialArray));
+      localStorage.setItem("stringsArray", JSON.stringify(initialArray));
     } else {
       setStringsArray(storedArray);
     }
@@ -159,23 +168,23 @@ const Quiz = () => {
   }, [question]);
 
   useEffect(() => {
-    if ((questionIndex % 10) == 1) {
-      setProgress(0)
-    } else if ((questionIndex % 10) == 0) {
-      setProgress(100)
+    if (questionIndex % 10 == 1) {
+      setProgress(0);
+    } else if (questionIndex % 10 == 0) {
+      setProgress(100);
     } else {
-      setProgress(((questionIndex - 1) % 10) * 100 / 9)
+      setProgress((((questionIndex - 1) % 10) * 100) / 9);
     }
   }, [questionIndex]);
 
   function decrypt(encryptedValue) {
     if (encryptedValue === undefined) {
-      throw new Error('encryptedValue is undefined');
+      throw new Error("encryptedValue is undefined");
     }
     // Decrypt without specifying the IV since ECB mode is used
     const decrypted = CryptoJS.AES.decrypt(encryptedValue, SECRET_KEY, {
       mode: CryptoJS.mode.ECB,
-      padding: CryptoJS.pad.Pkcs7
+      padding: CryptoJS.pad.Pkcs7,
     });
 
     return decrypted.toString(CryptoJS.enc.Utf8);
@@ -223,16 +232,17 @@ const Quiz = () => {
     return date.toLocaleString();
   };
 
-
   const getOptionClass = (option) => {
     if (option === decryptedAnswer) {
       return "correct-answer";
-    } else if (option === lastSelectedAnswer && lastSelectedAnswer !== decryptedAnswer) {
+    } else if (
+      option === lastSelectedAnswer &&
+      lastSelectedAnswer !== decryptedAnswer
+    ) {
       return "incorrect-answer";
     }
     return "";
   };
-
 
   const checkAnswer = () => {
     setLastSelectedAnswer(selectedAnswer); // Add this line before resetting selectedAnswer
@@ -249,7 +259,9 @@ const Quiz = () => {
         JSON.stringify(messageObject)
       );
     } else {
-      console.log("Selected: " + selectedAnswer + " Decrypted: " + decryptedAnswer);
+      console.log(
+        "Selected: " + selectedAnswer + " Decrypted: " + decryptedAnswer
+      );
       if (selectedAnswer == decryptedAnswer) {
         updateString(questionIndex - 1, "correct");
       } else {
@@ -272,11 +284,6 @@ const Quiz = () => {
   };
 
   const timeUpMessage = () => {
-    const messageObject = {
-      message: "questionEnded",
-    };
-    stompClient.send("/app/questionEnded", {}, JSON.stringify(messageObject)); // Ask for Leaderboard
-
     if (questionIndex == 10 || questionIndex == 20) {
       setQuizEnded(true);
       localStorage.removeItem("showScore");
@@ -291,7 +298,7 @@ const Quiz = () => {
     const newArray = [...stringsArray];
     newArray[index % 10] = value;
     setStringsArray(newArray);
-    localStorage.setItem('stringsArray', JSON.stringify(newArray));
+    localStorage.setItem("stringsArray", JSON.stringify(newArray));
   };
 
   function CustomProgressBar({ numQuestions, statuses, progressPercentage }) {
@@ -301,33 +308,32 @@ const Quiz = () => {
           <Step key={index} transition="scale">
             {({ accomplished }) => (
               <Fragment>
-              {status === 'correct' ? (
-                <IoIosCheckmarkCircle
-                  style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                  size={30}
-                  color="green"
-                />
-              ) : status === 'false' ? (
-                <IoIosCloseCircle
-                  style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                  size={30}
-                  color="red"
-                />
-              ) : status === 'current' ? (
-                <IoIosCheckmarkCircle
-                  style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                  size={30}
-                  color="yellow"
-                />
-              ) : (
-                <IoIosRemoveCircle
-                  style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                  size={30}
-                  color="grey"
-                />
-              )}
-            </Fragment>
-            
+                {status === "correct" ? (
+                  <IoIosCheckmarkCircle
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                    size={30}
+                    color="green"
+                  />
+                ) : status === "false" ? (
+                  <IoIosCloseCircle
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                    size={30}
+                    color="red"
+                  />
+                ) : status === "current" ? (
+                  <IoIosCheckmarkCircle
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                    size={30}
+                    color="yellow"
+                  />
+                ) : (
+                  <IoIosRemoveCircle
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                    size={30}
+                    color="grey"
+                  />
+                )}
+              </Fragment>
             )}
           </Step>
         ))}
@@ -342,7 +348,11 @@ const Quiz = () => {
           {question && !loading ? (
             <>
               <div className="steps-container">
-                <CustomProgressBar numQuestions={10} statuses={stringsArray} progressPercentage={progress} />
+                <CustomProgressBar
+                  numQuestions={10}
+                  statuses={stringsArray}
+                  progressPercentage={progress}
+                />
               </div>
 
               {!showScore ? (
@@ -351,12 +361,12 @@ const Quiz = () => {
                     isPlaying
                     duration={questionTimer}
                     size={120}
-                    colors={['#0F3587', '#8C1BC5', '#BFAA30', '#D61818']}
+                    colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
                     colorsTime={[15, 10, 5, 0]}
                     onComplete={() => {
                       checkAnswer();
                       timeUpMessage();
-                      return { shouldRepeat: true }
+                      return { shouldRepeat: true };
                     }}
                   >
                     {useRenderTime}
@@ -364,8 +374,11 @@ const Quiz = () => {
                 </div>
               ) : (
                 <section className="centered-section">
-
-                  <table id="rankings" className="leaderboard-results-2" width="100">
+                  <table
+                    id="rankings"
+                    className="leaderboard-results-2"
+                    width="100"
+                  >
                     <thead>
                       <tr>
                         <th className="leaderboard-font-2">Rank</th>
@@ -383,9 +396,7 @@ const Quiz = () => {
               )}
 
               <div className="question-container">
-                <h2 className="start2p">
-                  Question {question.questionNumber}
-                </h2>
+                <h2 className="start2p">Question {question.questionNumber}</h2>
                 <p className="start2p">{question.question}</p>
                 {!showScore ? (
                   <>
@@ -393,12 +404,18 @@ const Quiz = () => {
                       {question.options.map((option, index) => (
                         <button
                           key={index}
-                          className={selectedAnswer === option ? "selected" : ""}
+                          className={
+                            selectedAnswer === option ? "selected" : ""
+                          }
                           onClick={() =>
-                            handleAnswer(selectedAnswer === option ? "" : option)
+                            handleAnswer(
+                              selectedAnswer === option ? "" : option
+                            )
                           }
                         >
-                          <span className="option-letter">{String.fromCharCode(65 + index)}.</span>
+                          <span className="option-letter">
+                            {String.fromCharCode(65 + index)}.
+                          </span>
                           {option}
                         </button>
                       ))}
@@ -411,9 +428,11 @@ const Quiz = () => {
                         <button
                           key={index}
                           className={`${getOptionClass(option)}`}
-                          disabled 
+                          disabled
                         >
-                          <span className="option-letter">{String.fromCharCode(65 + index)}.</span>
+                          <span className="option-letter">
+                            {String.fromCharCode(65 + index)}.
+                          </span>
                           {option}
                         </button>
                       ))}
