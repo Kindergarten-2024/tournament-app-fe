@@ -68,13 +68,12 @@ const Dashboard = () => {
   }, [notification]);
 
   //SOCKET
-
   const { stompClient } = useWebSocketContext();
 
   useEffect(() => {
-    let subscription = null;
+    let subscription;
 
-    const onConnected = () => {
+    const subscribe = () => {
       if (stompClient && stompClient.connected) {
         subscription = stompClient.subscribe(
           "/registrations-time",
@@ -83,22 +82,16 @@ const Dashboard = () => {
       }
     };
 
-    const onError = (err) => {
-      console.log(err);
-    };
+    subscribe(); // Subscribe to the topics
 
-    if (stompClient) {
-      stompClient.connect({}, onConnected, onError);
-    }
-
+    // Clean up subscriptions when the component unmounts
     return () => {
       if (subscription) {
         subscription.unsubscribe();
       }
     };
   }, [stompClient]);
-
-  //END OF SOCKET
+  ////////////////////////
 
   const onEndingRecieve = (payload) => {
     var payloadData = JSON.parse(payload.body);
