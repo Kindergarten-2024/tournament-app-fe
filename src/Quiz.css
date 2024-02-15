@@ -186,12 +186,13 @@
 }
 
 
-
-.leaderboard-font-2 {
-  margin: 0;
-  padding: 0;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 30px;
+@media (max-width: 600px) {
+  .leaderboard-font-2 {
+    margin: 0;
+    padding: 0;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 30px;
+  }
 }
 
 .loading-spinner {

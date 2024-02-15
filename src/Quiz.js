@@ -159,11 +159,24 @@ const Quiz = () => {
   }, [stompClient]);
 
   useEffect(() => {
+    const fetchServerTime = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/admin/users/time/now`);
+        return new Date(response.data).getTime(); // Convert the received time string back to a Date object and get the time in milliseconds
+      } catch (error) {
+        console.error('Error fetching server time: ', error);
+        return Date.now(); // Fallback to local time in case of an error
+      }
+    };
+
+    
     if (question) {
-      const question_time = new Date(question.time);
-      var timer = Math.abs(question_time - Date.now() + 15499);
-      var timer_in_sec = Math.round(timer / 1000);
-      setQuestionTimer(timer_in_sec);
+      fetchServerTime().then(serverNow => {
+        const question_time = new Date(question.time);
+        var timer = Math.abs(question_time - serverNow + 15499);
+        var timer_in_sec = Math.round(timer / 1000);
+        setQuestionTimer(timer_in_sec);
+      });
     }
   }, [question]);
 
