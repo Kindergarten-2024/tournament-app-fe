@@ -160,13 +160,20 @@ const Quiz = () => {
   }, [stompClient]);
 
   useEffect(() => {
+    const moment = require('moment-timezone');
+    const currentTimeUTC = moment.utc();
+    const athensTime = moment.tz('Europe/Athens').format('YYYY-MM-DD HH:mm:ss'); // Use moment.tz to directly format time in Athens timezone
+    console.log(athensTime);
+
     if (question) {
       const question_time = new Date(question.time);
-      var timer = Math.abs(question_time - Date.now() + 15499);
+      const athensTimeParsed = new Date(athensTime); // Parse athensTime into a Date object
+      var timer = Math.abs(question_time - athensTimeParsed + 15499); // Perform calculation with parsed athensTime
       var timer_in_sec = Math.round(timer / 1000);
       setQuestionTimer(timer_in_sec);
     }
   }, [question]);
+
 
   useEffect(() => {
     if (questionIndex % 10 == 1) {
@@ -358,7 +365,7 @@ const Quiz = () => {
 
               {!showScore ? (
                 <div className="timer-wrapper">
-                  {/* <CountdownCircleTimer
+                  <CountdownCircleTimer
                     isPlaying
                     duration={questionTimer}
                     size={120}
@@ -371,18 +378,7 @@ const Quiz = () => {
                     }}
                   >
                     {useRenderTime}
-                  </CountdownCircleTimer> */}
-
-                  <Timer
-                    key={timerKey}
-                    timeLimit={questionTimer}
-                    onTimeout={() => {
-                      checkAnswer();
-                      timeUpMessage();
-                    }}
-                  />
-
-
+                  </CountdownCircleTimer> 
                 </div>
               ) : (
                 <section className="centered-section">
