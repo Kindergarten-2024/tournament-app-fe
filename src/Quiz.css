@@ -149,51 +149,39 @@
 }
 
 
-@media (max-width: 600px) {
-  .leaderboard-results-2 {
-    text-align: center;
-    border-collapse: collapse;
-  }
+.leaderboard-results-2 {
+  text-align: center;
+  border-collapse: collapse;
 }
 
-@media (max-width: 600px) {
-  .leaderboard-results-2 thead th {
-    padding: 25px;
-    color: #ffffff;
-    font-size: 30px;
-    font-weight: bold;
-  }
-}  
-
-@media (max-width: 600px) {
-  .leaderboard-results-2 tbody td:nth-of-type(7) {
-    font-weight: bold;
-  }
+.leaderboard-results-2 thead th {
+  padding: 25px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: bold;
 }
 
-@media (max-width: 600px) {
-  .leaderboard-results-2 tbody tr {
-    color: #ffffff;
-  }
+.leaderboard-results-2 tbody td:nth-of-type(7) {
+  font-weight: bold;
 }
 
-@media (max-width: 600px) {
-  .leaderboard-results-2 tbody span {
-    font-weight: bold;
-    padding: 10px 15px;
-    border-radius: 50%;
-  }
+.leaderboard-results-2 tbody tr {
+  color: #ffffff;
 }
 
-
-@media (max-width: 600px) {
-  .leaderboard-font-2 {
-    margin: 0;
-    padding: 0;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 30px;
-  }
+.leaderboard-results-2 tbody span {
+  font-weight: bold;
+  padding: 10px 15px;
+  border-radius: 50%;
 }
+
+.leaderboard-font-2 {
+  margin: 0;
+  padding: 0;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
+}
+
 
 .loading-spinner {
   display: flex;
