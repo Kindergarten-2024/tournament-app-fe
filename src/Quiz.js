@@ -147,7 +147,7 @@ const Quiz = () => {
   useEffect(() => {
     if (stompClient && stompClient.connected) {
       stompClient.subscribe("/questions", onPublicMessageReceived);
-      stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+      // stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
     }
     // Clean up subscriptions when the component unmounts
     return () => {
@@ -164,14 +164,13 @@ const Quiz = () => {
         const response = await axios.get(`${BACKEND_URL}/admin/users/time/now`);
         return new Date(response.data).getTime(); // Convert the received time string back to a Date object and get the time in milliseconds
       } catch (error) {
-        console.error('Error fetching server time: ', error);
+        console.error("Error fetching server time: ", error);
         return Date.now(); // Fallback to local time in case of an error
       }
     };
 
-    
     if (question) {
-      fetchServerTime().then(serverNow => {
+      fetchServerTime().then((serverNow) => {
         const question_time = new Date(question.time);
         var timer = Math.abs(question_time - serverNow + 15499);
         var timer_in_sec = Math.round(timer / 1000);
@@ -378,6 +377,7 @@ const Quiz = () => {
                     colorsTime={[15, 10, 5, 0]}
                     onComplete={() => {
                       checkAnswer();
+                      setShowScore(true);
                       timeUpMessage();
                       return { shouldRepeat: true };
                     }}
