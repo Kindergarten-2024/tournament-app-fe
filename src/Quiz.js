@@ -18,6 +18,7 @@ import {
   IoIosRemoveCircle,
 } from "react-icons/io";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
+import Timer from "./Timer";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -147,7 +148,7 @@ const Quiz = () => {
   useEffect(() => {
     if (stompClient && stompClient.connected) {
       stompClient.subscribe("/questions", onPublicMessageReceived);
-      // stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+      stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
     }
     // Clean up subscriptions when the component unmounts
     return () => {
@@ -159,23 +160,11 @@ const Quiz = () => {
   }, [stompClient]);
 
   useEffect(() => {
-    const fetchServerTime = async () => {
-      try {
-        const response = await axios.get(`${BACKEND_URL}/admin/users/time/now`);
-        return new Date(response.data).getTime(); // Convert the received time string back to a Date object and get the time in milliseconds
-      } catch (error) {
-        console.error("Error fetching server time: ", error);
-        return Date.now(); // Fallback to local time in case of an error
-      }
-    };
-
     if (question) {
-      fetchServerTime().then((serverNow) => {
-        const question_time = new Date(question.time);
-        var timer = Math.abs(question_time - serverNow + 15499);
-        var timer_in_sec = Math.round(timer / 1000);
-        setQuestionTimer(timer_in_sec);
-      });
+      const question_time = new Date(question.time);
+      var timer = Math.abs(question_time - Date.now() + 15499);
+      var timer_in_sec = Math.round(timer / 1000);
+      setQuestionTimer(timer_in_sec);
     }
   }, [question]);
 
@@ -369,7 +358,7 @@ const Quiz = () => {
 
               {!showScore ? (
                 <div className="timer-wrapper">
-                  <CountdownCircleTimer
+                  {/* <CountdownCircleTimer
                     isPlaying
                     duration={questionTimer}
                     size={120}
@@ -377,13 +366,23 @@ const Quiz = () => {
                     colorsTime={[15, 10, 5, 0]}
                     onComplete={() => {
                       checkAnswer();
-                      setShowScore(true);
                       timeUpMessage();
                       return { shouldRepeat: true };
                     }}
                   >
                     {useRenderTime}
-                  </CountdownCircleTimer>
+                  </CountdownCircleTimer> */}
+
+                  <Timer
+                    key={timerKey}
+                    timeLimit={questionTimer}
+                    onTimeout={() => {
+                      checkAnswer();
+                      timeUpMessage();
+                    }}
+                  />
+
+
                 </div>
               ) : (
                 <section className="centered-section">
