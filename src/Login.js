@@ -78,7 +78,7 @@ const Login = () => {
 
             <div className="bottom-container">
                 <GithubLoginButton className="btn" onClick={handleGithubLogin} />
-                <GoogleLoginButton className="btn" onClick={handleGoogleLogin} />
+                {/* <GoogleLoginButton className="btn" onClick={handleGoogleLogin} /> */}
             </div>
         </>
     );

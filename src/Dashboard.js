@@ -7,8 +7,6 @@ import "@leenguyen/react-flip-clock-countdown/dist/index.css";
 import { AuthContext } from "./App";
 import "./App.css";
 import "./Dashboard.css";
-import { over } from "stompjs";
-import SockJS from "sockjs-client";
 import { getFirebaseToken, onMessageListener } from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -91,7 +89,7 @@ const Dashboard = () => {
       }
     };
   }, [stompClient]);
-  ////////////////////////
+
 
   const onEndingRecieve = (payload) => {
     var payloadData = JSON.parse(payload.body);
@@ -134,6 +132,13 @@ const Dashboard = () => {
     fetchRegisteredUsers();
   }, [rerender]);
 
+  useEffect(() => {
+      localStorage.removeItem("showScore");
+      localStorage.removeItem("position");
+      localStorage.removeItem("score");
+      localStorage.removeItem("stringsArray");
+  }, []);
+ 
   // Logout, session clear
   const handleLogout = async () => {
     try {

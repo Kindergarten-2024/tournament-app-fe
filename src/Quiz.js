@@ -18,30 +18,35 @@ import {
   IoIosRemoveCircle,
 } from "react-icons/io";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import Timer from "./Timer";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
 
 const useRenderTime = ({ remainingTime }) => {
-  const currentTime = useRef(remainingTime);
+  const currentTime = useRef(null); // Initialize to null instead of remainingTime
   const prevTime = useRef(null);
   const isNewTimeFirstTick = useRef(false);
   const [, setOneLastRerender] = useState(0);
 
-  if (currentTime.current !== remainingTime) {
-    isNewTimeFirstTick.current = true;
-    prevTime.current = currentTime.current;
-    currentTime.current = remainingTime;
-  } else {
-    isNewTimeFirstTick.current = false;
-  }
+  useEffect(() => {
+    if (currentTime.current !== null && currentTime.current !== remainingTime) {
+      isNewTimeFirstTick.current = true;
+      prevTime.current = currentTime.current;
+      currentTime.current = remainingTime;
+    } else {
+      isNewTimeFirstTick.current = false;
+    }
 
-  // force one last re-render when the time is over to trigger the last animation
-  if (remainingTime === 0) {
-    setTimeout(() => {
-      setOneLastRerender((val) => val + 1);
-    }, 20);
+    // force one last re-render when the time is over to trigger the last animation
+    if (remainingTime === 0) {
+      setTimeout(() => {
+        setOneLastRerender(val => val + 1);
+      }, 20);
+    }
+  }, [remainingTime]);
+
+  if (remainingTime === null) {
+    return null; // If remainingTime is null, don't render anything
   }
 
   const isTimeUp = isNewTimeFirstTick.current;
@@ -148,32 +153,32 @@ const Quiz = () => {
   useEffect(() => {
     if (stompClient && stompClient.connected) {
       stompClient.subscribe("/questions", onPublicMessageReceived);
-      stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+      // stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
     }
     // Clean up subscriptions when the component unmounts
     return () => {
       if (stompClient) {
         stompClient.unsubscribe("/questions");
-        stompClient.unsubscribe("/leaderboard");
+        // stompClient.unsubscribe("/leaderboard");
       }
     };
   }, [stompClient]);
 
   useEffect(() => {
-    const moment = require('moment-timezone');
-    const currentTimeUTC = moment.utc();
-    const athensTime = moment.tz('Europe/Athens').format('YYYY-MM-DD HH:mm:ss'); // Use moment.tz to directly format time in Athens timezone
-    console.log(athensTime);
-
     if (question) {
-      const question_time = new Date(question.time);
-      const athensTimeParsed = new Date(athensTime); // Parse athensTime into a Date object
-      var timer = Math.abs(question_time - athensTimeParsed + 15499); // Perform calculation with parsed athensTime
-      var timer_in_sec = Math.round(timer / 1000);
-      setQuestionTimer(timer_in_sec);
+      axios.get(`${BACKEND_URL}/admin/questions/time-now`)
+        .then(response => {
+          const question_time = new Date(question.time);
+          const currentTime = new Date(response.data);
+          const timer = Math.abs(question_time - currentTime + 15499);
+          const timer_in_sec = Math.round(timer / 1000);
+          setQuestionTimer(timer_in_sec);
+        })
+        .catch(error => {
+          console.error("Error fetching current time:", error);
+        });
     }
   }, [question]);
-
 
   useEffect(() => {
     if (questionIndex % 10 == 1) {
@@ -228,7 +233,7 @@ const Quiz = () => {
     if (player) {
       setScore(player.score);
     }
-    setShowScore(true);
+    // setShowScore(true);
   };
 
   const handleAnswer = (selected) => {
@@ -373,6 +378,7 @@ const Quiz = () => {
                     colorsTime={[15, 10, 5, 0]}
                     onComplete={() => {
                       checkAnswer();
+                      setShowScore(true);
                       timeUpMessage();
                       return { shouldRepeat: true };
                     }}
@@ -382,7 +388,7 @@ const Quiz = () => {
                 </div>
               ) : (
                 <section className="centered-section">
-                  <table
+                  {/* <table
                     id="rankings"
                     className="leaderboard-results-2"
                     width="100"
@@ -399,7 +405,7 @@ const Quiz = () => {
                         <td className="leaderboard-font-2">{score}</td>
                       </tr>
                     </tbody>
-                  </table>
+                  </table> */}
                 </section>
               )}
 
