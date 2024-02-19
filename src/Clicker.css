@@ -1,3 +1,12 @@
+.clicker-container {
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
 .ball {
   width: 60px;
   height: 60px;
