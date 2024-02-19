@@ -183,6 +183,31 @@
 }
 
 
+/* Small Devices (Mobile Phones) */
+@media only screen and (max-width: 600px) {
+  .leaderboard-results-2 thead th,
+  .leaderboard-font-2 {
+    font-size: 8px; 
+  }
+}
+
+/* Medium Devices (Tablets) */
+@media only screen and (min-width: 600px) and (max-width: 900px) {
+  .leaderboard-results-2 thead th,
+  .leaderboard-font-2 {
+    font-size: 10px; 
+  }
+}
+
+/* Large Devices (Desktops) */
+@media only screen and (min-width: 900px) {
+  .leaderboard-results-2 thead th,
+  .leaderboard-font-2 {
+    font-size: 12px; 
+  }
+}
+
+
 .loading-spinner {
   display: flex;
   justify-content: center;
