@@ -40,7 +40,7 @@ const useRenderTime = ({ remainingTime }) => {
     // force one last re-render when the time is over to trigger the last animation
     if (remainingTime === 0) {
       setTimeout(() => {
-        setOneLastRerender(val => val + 1);
+        setOneLastRerender((val) => val + 1);
       }, 20);
     }
   }, [remainingTime]);
@@ -153,28 +153,29 @@ const Quiz = () => {
   useEffect(() => {
     if (stompClient && stompClient.connected) {
       stompClient.subscribe("/questions", onPublicMessageReceived);
-      // stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+      stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
     }
     // Clean up subscriptions when the component unmounts
     return () => {
       if (stompClient) {
         stompClient.unsubscribe("/questions");
-        // stompClient.unsubscribe("/leaderboard");
+        stompClient.unsubscribe("/leaderboard");
       }
     };
   }, [stompClient]);
 
   useEffect(() => {
     if (question) {
-      axios.get(`${BACKEND_URL}/admin/questions/time-now`)
-        .then(response => {
+      axios
+        .get(`${BACKEND_URL}/admin/questions/time-now`)
+        .then((response) => {
           const question_time = new Date(question.time);
           const currentTime = new Date(response.data);
           const timer = Math.abs(question_time - currentTime + 15499);
           const timer_in_sec = Math.round(timer / 1000);
           setQuestionTimer(timer_in_sec);
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Error fetching current time:", error);
         });
     }
@@ -384,11 +385,11 @@ const Quiz = () => {
                     }}
                   >
                     {useRenderTime}
-                  </CountdownCircleTimer> 
+                  </CountdownCircleTimer>
                 </div>
               ) : (
                 <section className="centered-section">
-                  {/* <table
+                  <table
                     id="rankings"
                     className="leaderboard-results-2"
                     width="100"
@@ -405,7 +406,7 @@ const Quiz = () => {
                         <td className="leaderboard-font-2">{score}</td>
                       </tr>
                     </tbody>
-                  </table> */}
+                  </table>
                 </section>
               )}
 

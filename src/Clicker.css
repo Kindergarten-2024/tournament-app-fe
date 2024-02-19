@@ -1,5 +1,4 @@
 .clicker-container {
-  position: absolute;
   justify-content: center;
   align-items: center;
   overflow: hidden;
@@ -14,7 +13,6 @@
   border-radius: 50%;
   position: absolute;
   animation: floatAndFade 3s;
-  z-index: 0;
 }
 
 .horizontalImage {
@@ -23,7 +21,6 @@
   background-size: contain;
   position: absolute;
   animation: floatAndFade 3s;
-  z-index: 0;
 }
 
 .extraHorizontalImage {
@@ -33,7 +30,6 @@
   position: absolute;
   transform: scale(4);
   animation: floatAndFadeAndScale 3s;
-  z-index: 0;
 }
 
 .clicker-icon {
