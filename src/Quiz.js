@@ -153,13 +153,13 @@ const Quiz = () => {
   useEffect(() => {
     if (stompClient && stompClient.connected) {
       stompClient.subscribe("/questions", onPublicMessageReceived);
-      // stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+      stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
     }
     // Clean up subscriptions when the component unmounts
     return () => {
       if (stompClient) {
         stompClient.unsubscribe("/questions");
-        // stompClient.unsubscribe("/leaderboard");
+        stompClient.unsubscribe("/leaderboard");
       }
     };
   }, [stompClient]);
@@ -389,7 +389,7 @@ const Quiz = () => {
                 </div>
               ) : (
                 <section className="centered-section">
-                  {/* <table
+                  <table
                     id="rankings"
                     className="leaderboard-results-2"
                     width="100"
@@ -406,7 +406,7 @@ const Quiz = () => {
                         <td className="leaderboard-font-2">{score}</td>
                       </tr>
                     </tbody>
-                  </table> */}
+                  </table>
                 </section>
               )}
 
