@@ -80,7 +80,6 @@ const Quiz = () => {
   const [questionTimer, setQuestionTimer] = useState(Date.now());
   const [decryptedAnswer, setDecryptedAnswer] = useState();
   const [questionIndex, setQuestionIndex] = useState();
-  const [quizEnded, setQuizEnded] = useState(false);
   const [question, setQuestion] = useState();
   const [loading, setLoading] = useState(true);
   const [stringsArray, setStringsArray] = useState([]);
@@ -297,16 +296,6 @@ const Quiz = () => {
     }
   };
 
-  const timeUpMessage = () => {
-    if (questionIndex == 10 || questionIndex == 20) {
-      setQuizEnded(true);
-      localStorage.removeItem("showScore");
-      localStorage.removeItem("position");
-      localStorage.removeItem("score");
-      localStorage.removeItem("stringsArray");
-    }
-  };
-
   // Function to update a string at a specific index
   const updateString = (index, value) => {
     const newArray = [...stringsArray];
@@ -357,7 +346,6 @@ const Quiz = () => {
 
   return (
     <div>
-      {!quizEnded ? (
         <div>
           {question && !loading ? (
             <>
@@ -380,7 +368,6 @@ const Quiz = () => {
                     onComplete={() => {
                       checkAnswer();
                       setShowScore(true);
-                      timeUpMessage();
                       return { shouldRepeat: true };
                     }}
                   >
@@ -462,9 +449,6 @@ const Quiz = () => {
             </div>
           )}
         </div>
-      ) : (
-        <p className="start2p">Round Finished</p>
-      )}
     </div>
   );
 };
