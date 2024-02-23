@@ -100,3 +100,18 @@
    left: 50%;
    transform: translate(-50%, -50%);
 }
+
+
+.music-toggle {
+  position: absolute;
+  top: 15px; /* Adjust as necessary */
+  right: 80px; /* Adjust as necessary */
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.music-toggle img {
+  width: 30px; /* Adjust as necessary */
+  height: auto;
+}
