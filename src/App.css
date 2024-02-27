@@ -104,14 +104,14 @@
 
 .music-toggle {
   position: absolute;
-  top: 15px; /* Adjust as necessary */
-  right: 80px; /* Adjust as necessary */
+  top: 15px; 
+  right: 80px;
   background: none;
   border: none;
   cursor: pointer;
 }
 
 .music-toggle img {
-  width: 30px; /* Adjust as necessary */
+  width: 30px; 
   height: auto;
 }
