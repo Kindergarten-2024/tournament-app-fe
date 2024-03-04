@@ -17,6 +17,7 @@ import {
   IoIosCloseCircle,
   IoIosRemoveCircle,
 } from "react-icons/io";
+import countdownSound from "./music/countdown.mp3"; 
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -85,6 +86,9 @@ const Quiz = () => {
   const [stringsArray, setStringsArray] = useState([]);
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState("");
 
+  const countdownAudioRef = useRef(new Audio(countdownSound));
+  const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
+
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
     return storedShowScore ? JSON.parse(storedShowScore) : false;
@@ -135,6 +139,7 @@ const Quiz = () => {
         );
         setQuestion(response.data);
         setQuestionIndex(response.data.questionNumber);
+
         // updateString(questionIndex - 1, "current");
         if (response.data.answer) {
           setDecryptedAnswer(decrypt(response.data.answer));
@@ -164,6 +169,13 @@ const Quiz = () => {
   }, [stompClient]);
 
   useEffect(() => {
+    // if (soundPlayedForQuestion) {
+    //   countdownAudioRef.current.pause();
+    //   countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
+    //   setSoundPlayedForQuestion(false);
+    // } 
+    console.log(soundPlayedForQuestion)
+    console.log("find me !!!!!!!!!!!!!!!!!!!!!!!!{@{@@{@{@{@{@")
     if (question) {
       axios
         .get(`${BACKEND_URL}/admin/questions/time-now`)
@@ -217,7 +229,8 @@ const Quiz = () => {
     setQuestionIndex(payloadData.questionNumber);
     // updateString(questionIndex - 1, "current");
     setShowScore(false);
-  };
+
+   };
 
   const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
@@ -238,6 +251,7 @@ const Quiz = () => {
 
   const handleAnswer = (selected) => {
     setSelectedAnswer(selected);
+    //keep time here 
   };
 
   const convertToReadableTime = (timestamp) => {
@@ -304,6 +318,15 @@ const Quiz = () => {
     localStorage.setItem("stringsArray", JSON.stringify(newArray));
   };
 
+
+  const playCountdownSound = () => {
+    if (!soundPlayedForQuestion) {
+      countdownAudioRef.current.play().catch((error) => console.error("Error playing the sound:", error));
+      setSoundPlayedForQuestion(true);
+    }
+  };
+  
+
   function CustomProgressBar({ numQuestions, statuses, progressPercentage }) {
     return (
       <>
@@ -366,9 +389,21 @@ const Quiz = () => {
                     colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
                     colorsTime={[15, 10, 5, 0]}
                     onComplete={() => {
+
+                      //method to stop countdown
+                      if (soundPlayedForQuestion) {
+                        countdownAudioRef.current.pause();
+                        countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
+                        setSoundPlayedForQuestion(false);
+                      } 
                       checkAnswer();
                       setShowScore(true);
-                      return { shouldRepeat: true };
+                      return { shouldRepeat: true, delay: 0 };
+                    }}
+                    onUpdate={(remainingTime) =>{
+                      if (remainingTime === 5) {
+                        playCountdownSound();
+                      }
                     }}
                   >
                     {useRenderTime}
