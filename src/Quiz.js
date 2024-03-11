@@ -374,12 +374,10 @@ const Quiz = () => {
   const fetchPlayerList = async () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/leaderboard`);
-      const playerListData = response.data; // Modify this based on your actual JSON structure
-
-      // Assuming the structure is an array of players with a 'name' property
+      const playerListData = response.data;
       const updatedPlayerList = playerListData.map((player) => ({
-        id: player.id, // Adjust this based on the actual property in your JSON
-        name: player.username, // Adjust this based on the actual property in your JSON
+        id: player.id,
+        name: player.username,
       }));
 
       setPlayerList(updatedPlayerList);
@@ -402,7 +400,6 @@ const Quiz = () => {
       console.log("Applying power:", selectedPower, "to enemy:", selectedEnemy);
       sendPower(selectedPower, selectedEnemy);
 
-      // Optionally, you can reset the selected enemy and power after applying the power
       setSelectedEnemy(null);
       setSelectedPower(null);
       setShowPlayerList(false); // Hide player list after selection
