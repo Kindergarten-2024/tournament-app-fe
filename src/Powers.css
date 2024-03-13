@@ -1,12 +1,7 @@
-.use-power-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .use-power-container button {
-  padding: 10px 20px;
-  margin: 10px;
+  margin: 0 auto;
+  padding: 10px;
+  width: fit-content;
   border: none;
   border-radius: 50rem;
   background-color: rgb(0, 64, 255);
@@ -14,31 +9,46 @@
   cursor: pointer;
 }
 
-.use-power-container div {
-  margin: 10px 0;
-}
-
 .use-power-container ul {
-  list-style: none;
+  max-height: 150px;
+  overflow-y: auto;
   padding: 0;
   margin: 0;
+  list-style: none;
 }
 
 .use-power-container li {
-  padding: 10px;
-  min-width: 8rem;
-  max-width: 16rem;
-  margin: 5px;
-  background-color: #0f3587;
+  padding: 4px 0;
+  margin: 4px 0;
+  background-color: rgb(0, 64, 255);
+  color: rgb(255, 255, 255);
   border-radius: 100rem;
   cursor: pointer;
 }
 
-.use-power-container p {
-  width: 16rem;
+.use-power-container {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto fr auto;
+  grid-column-gap: 10px;
+  grid-row-gap: 10px;
+  justify-content: center;
+  }
+  
+.use-power-button { 
+  grid-row: 1/2;
+  grid-column: 1/3; 
 }
-
-.available-enemies ul {
-  max-height: 200px;
-  overflow-y: auto;
+.available-powers { 
+  grid-row: 2/3;
+  grid-column: 1/2;
 }
+.available-enemies { 
+  grid-row: 2/3;
+  grid-column: 2/3;
+}
+.apply-power-button { 
+  grid-row:3/4;
+  grid-column: 1/3;
+} 

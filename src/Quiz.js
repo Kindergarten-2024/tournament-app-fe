@@ -539,12 +539,11 @@ const Quiz = () => {
               {showUsePower && (
                 <div className="use-power-container">
                   {/* Use Power Button */}
-                  <button onClick={handleUsePower}>Use Power</button>
+                  <button className="use-power-button" onClick={handleUsePower}>Use Power</button>
                   {/* Available Powers */}
                   {showPowerList && (
                   <>
                     <div className="available-powers">
-                      <p>{selectedPower}</p>
                       <ul>
                         {loading ? (
                           <p>Loading...</p>
@@ -559,7 +558,6 @@ const Quiz = () => {
                     </div>
                     {/* Available Enemies */}
                     <div className="available-enemies">
-                        <p>{selectedEnemy}</p>
                         <ul>
                           {loading ? (
                             <p>Loading...</p>
@@ -576,7 +574,7 @@ const Quiz = () => {
                       {loading ? (
                         <p>Loading...</p>
                       ) : (
-                        <button onClick={handleApplyPower}>Apply Power</button>
+                        <button className="apply-power-button" onClick={handleApplyPower}>Apply Power</button>
                       )}
                   </>
                   )}
