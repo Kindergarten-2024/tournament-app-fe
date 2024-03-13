@@ -163,6 +163,10 @@ const Quiz = () => {
     if (stompClient && stompClient.connected) {
       stompClient.subscribe("/questions", onPublicMessageReceived);
       stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+      stompClient.subscribe(
+        `/user/${user.login}/private`,
+        onPrivateMessageReceived
+      );
     }
     // Clean up subscriptions when the component unmounts
     return () => {
@@ -234,6 +238,11 @@ const Quiz = () => {
     setQuestionIndex(payloadData.questionNumber);
     // updateString(questionIndex - 1, "current");
     setShowScore(false);
+  };
+
+  const onPrivateMessageReceived = (payload) => {
+    var payloadData = JSON.parse(payload.body);
+    console.log("Received message:", payloadData.message); //freeze message
   };
 
   const onLeaderboardMessageReceived = (payload) => {
