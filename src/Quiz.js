@@ -88,9 +88,9 @@ const Quiz = () => {
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState("");
   const countdownAudioRef = useRef(new Audio(countdownSound));
   const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
-  
+
   const [showUsePower, setShowUsePower] = useState(false);
-  const [showPowerList, setShowPowerList] = useState(false)
+  const [showPowerList, setShowPowerList] = useState(false);
 
   const [powerList, setPowerList] = useState([]);
   const [selectedPower, setSelectedPower] = useState(null);
@@ -244,8 +244,8 @@ const Quiz = () => {
   };
 
   const onPrivateMessageReceived = (payload) => {
-    var payloadData = JSON.parse(payload.body);
-    console.log("Received message:", payloadData.message); //freeze message
+    const messageBody = payload.body;
+    console.log("Received message:", messageBody); //freeze message
   };
 
   const onLeaderboardMessageReceived = (payload) => {
@@ -417,14 +417,15 @@ const Quiz = () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/leaderboard`);
       const playerListData = response.data;
-      const playerList = playerListData
-      .map((player) => ({
+      const playerList = playerListData.map((player) => ({
         id: player.id,
         name: player.username,
-        power: player.item
+        power: player.item,
       }));
 
-      const enemyList = playerList.filter(player => player.name !== user.login);
+      const enemyList = playerList.filter(
+        (player) => player.name !== user.login
+      );
       setEnemyList(enemyList);
 
       setShowPowerList(true);
@@ -432,7 +433,6 @@ const Quiz = () => {
       // setPowerList(powerList);
       // if (powerList.length > 0) setShowPowerList(true);
       // else setShowPowerList(false);
-
     } catch (error) {
       console.error("Error fetching list: ", error);
     }
@@ -543,57 +543,58 @@ const Quiz = () => {
                 </>
               )}
 
-
-
               {showUsePower && (
                 <div className="use-power-container">
                   {/* Use Power Button */}
                   <button onClick={handleUsePower}>Use Power</button>
                   {/* Available Powers */}
                   {showPowerList && (
-                  <>
-                    <div className="available-powers">
-                      <p>{selectedPower}</p>
-                      <ul>
-                        {loading ? (
-                          <p>Loading...</p>
-                        ) : (
-                          powerList.map((power) => (
-                            <li key={power} onClick={() => setSelectedPower(power)}>
-                              {power}
-                            </li>
-                          ))
-                        )}
-                      </ul>
-                    </div>
-                    {/* Available Enemies */}
-                    <div className="available-enemies">
+                    <>
+                      <div className="available-powers">
+                        <p>{selectedPower}</p>
+                        <ul>
+                          {loading ? (
+                            <p>Loading...</p>
+                          ) : (
+                            powerList.map((power) => (
+                              <li
+                                key={power}
+                                onClick={() => setSelectedPower(power)}
+                              >
+                                {power}
+                              </li>
+                            ))
+                          )}
+                        </ul>
+                      </div>
+                      {/* Available Enemies */}
+                      <div className="available-enemies">
                         <p>{selectedEnemy}</p>
                         <ul>
                           {loading ? (
                             <p>Loading...</p>
                           ) : (
                             enemyList.map((enemy) => (
-                              <li key={enemy.name} onClick={() => setSelectedEnemy(enemy.id)}>
+                              <li
+                                key={enemy.name}
+                                onClick={() => setSelectedEnemy(enemy.id)}
+                              >
                                 {enemy.name}
                               </li>
                             ))
                           )}
                         </ul>
-                    </div>
-                    {/* Apply Power Button*/}
+                      </div>
+                      {/* Apply Power Button*/}
                       {loading ? (
                         <p>Loading...</p>
                       ) : (
                         <button onClick={handleApplyPower}>Apply Power</button>
                       )}
-                  </>
+                    </>
                   )}
-              </div>
+                </div>
               )}
-
-
-
             </div>
           </>
         ) : (
