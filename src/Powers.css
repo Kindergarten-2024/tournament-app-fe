@@ -1,23 +1,44 @@
-.user-powers-container {
+.use-power-container {
   display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px; /* Adjust the margin as needed */
+  flex-direction: column;
+  align-items: center;
 }
 
-button {
-  padding: 10px;
-  margin: 5px;
-  background-color: #0f3587;
-  color: #fff;
+.use-power-container button {
+  padding: 10px 20px;
+  margin: 10px;
   border: none;
-  border-radius: 5px;
+  border-radius: 50rem;
+  background-color: rgb(0, 64, 255);
+  color: rgb(255, 255, 255);
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #1a47b9;
+.use-power-container div {
+  margin: 10px 0;
 }
-.scrollable-list {
-  max-height: 200px; /* Adjust the max height as needed */
+
+.use-power-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.use-power-container li {
+  padding: 10px;
+  min-width: 8rem;
+  max-width: 16rem;
+  margin: 5px;
+  background-color: #0f3587;
+  border-radius: 100rem;
+  cursor: pointer;
+}
+
+.use-power-container p {
+  width: 16rem;
+}
+
+.available-enemies ul {
+  max-height: 200px;
   overflow-y: auto;
 }
