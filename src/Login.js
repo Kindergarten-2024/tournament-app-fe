@@ -69,11 +69,13 @@ const Login = () => {
               ❄️ With "Freeze," choose an opponent to make them unavailable for
               the next question!
               <br />
-              💪 Answer 5 questions correctly to triple your points and unlock
-              the "Mask" power!
+              💪 Answer 5 questions correctly to triple your points and upgrade
+              to the "Mask" power!
               <br />
               🎭 With "Mask," steal 1/4 of the points from any opponent of your
-              choice! ❌ Answering wrong or getting frozen will end your streak!
+              choice!
+              <br />
+              ❌ Answering wrong or getting frozen will end your streak!
               <br />
             </p>
           </div>
@@ -83,7 +85,7 @@ const Login = () => {
         <img src={logo} className="App-logo" alt="logo" />
       )}
       <button className="info-button" onClick={toggleInstructions}>
-        Show Gameplay Instructions
+        How to play
       </button>
 
       {loading ? (

@@ -138,3 +138,17 @@
   background-color: #580c8a; /* Darker background on hover */
   color: #fff; /* White text color on hover */
 }
+
+.instructions {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+}
+
+.instruction-content {
+  padding: 20px;
+  border-radius: 5px;
+  width: 200%;
+  max-width: 600px;
+  font-size: 15px;
+}
