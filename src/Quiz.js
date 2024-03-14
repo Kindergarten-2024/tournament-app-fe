@@ -89,8 +89,8 @@ const Quiz = () => {
   const countdownAudioRef = useRef(new Audio(countdownSound));
   const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
 
-  const [showUsePower, setShowUsePower] = useState(false);
-  const [showPowerList, setShowPowerList] = useState(false);
+  const [showUsePowerButton, setShowUsePowerButton] = useState(false);
+  const [showPowers, setShowPowers] = useState(false);
 
   const [powerList, setPowerList] = useState([]);
   const [selectedPower, setSelectedPower] = useState(null);
@@ -264,13 +264,15 @@ const Quiz = () => {
     if (player) {
       setScore(player.score);
 
+      // Check if the Player has Powers
       const powerList = [player.power];
       setPowerList(powerList);
+
       if (powerList[0]) {
-        setShowUsePower(true); // Show the button if the player has a power
-      } else {
-        setShowUsePower(false); // Hide the button if the player doesn't have a power
+        setShowUsePowerButton(true)
+        setShowPowers(false);
       }
+      else setShowUsePowerButton(false)
     }
   };
 
@@ -392,6 +394,24 @@ const Quiz = () => {
     );
   }
 
+
+  const handleCancelPower = () => {
+    setShowPowers(false);
+    setShowUsePowerButton(true);
+  }
+
+  const handleApplyPower = () => {
+    if (selectedEnemy && selectedPower) {
+      console.log("Applying power:", selectedPower, "to enemy:", selectedEnemy);
+      sendPower(selectedPower, selectedEnemy);
+      setSelectedEnemy(null);
+      setSelectedPower(null);
+      setShowPowers(false);
+    } else {
+      console.log("Please select an enemy and a power.");
+    }
+  };
+
   const sendPower = (power, selectedEnemy) => {
     const messageObject = {
       message: power,
@@ -400,20 +420,13 @@ const Quiz = () => {
     stompClient.send("/app/usePower", {}, JSON.stringify(messageObject));
   };
 
-  const handleApplyPower = () => {
-    if (selectedEnemy && selectedPower) {
-      console.log("Applying power:", selectedPower, "to enemy:", selectedEnemy);
-      sendPower(selectedPower, selectedEnemy);
-
-      setSelectedEnemy(null);
-      setSelectedPower(null);
-      setShowPowerList(false);
-    } else {
-      console.log("Please select an enemy and a power.");
-    }
+  const handleUsePower = async () => {
+    fetchEnemyList();
+    setShowUsePowerButton(false)
+    setShowPowers(true)
   };
 
-  const handleUsePower = async () => {
+  const fetchEnemyList = async () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/leaderboard`);
       const playerListData = response.data;
@@ -422,21 +435,14 @@ const Quiz = () => {
         name: player.username,
         power: player.item,
       }));
-
       const enemyList = playerList.filter(
         (player) => player.name !== user.login
       );
       setEnemyList(enemyList);
-
-      setShowPowerList(true);
-      // const powerList = [playerList.filter(player => player.name === user.login)?.power];
-      // setPowerList(powerList);
-      // if (powerList.length > 0) setShowPowerList(true);
-      // else setShowPowerList(false);
     } catch (error) {
       console.error("Error fetching list: ", error);
     }
-  };
+  }
 
   return (
     <div>
@@ -543,64 +549,59 @@ const Quiz = () => {
                 </>
               )}
 
-              {showUsePower && (
-                <div className="use-power-container">
+              {showUsePowerButton && (
+                <>
                   {/* Use Power Button */}
-
                   <button className="use-power-button" onClick={handleUsePower}>
-                    ⚡️ Use Power ⚡️
+                    ⚡Power⚡
                   </button>
+                </>
+              )}
+              {showPowers && (
+                <div className="use-power-container">
+
                   {/* Available Powers */}
-                  {showPowerList && (
-                    <>
-                      <div className="available-powers">
-                        <ul>
-                          {loading ? (
-                            <p>Loading...</p>
-                          ) : (
-                            powerList.map((power) => (
-                              <li
-                                key={power}
-                                onClick={() => setSelectedPower(power)}
-                              >
-                                {power}
-                              </li>
-                            ))
-                          )}
-                        </ul>
-                      </div>
-                      {/* Available Enemies */}
-                      <div className="available-enemies">
-                        <ul>
-                          {loading ? (
-                            <p>Loading...</p>
-                          ) : (
-                            enemyList.map((enemy) => (
-                              <li
-                                key={enemy.name}
-                                onClick={() => setSelectedEnemy(enemy.id)}
-                              >
-                                {enemy.name}
-                              </li>
-                            ))
-                          )}
-                        </ul>
-                      </div>
-                      {/* Apply Power Button*/}
+                  <div className="available-powers">
+                    <ul>
                       {loading ? (
                         <p>Loading...</p>
                       ) : (
-                        <button
-                          className="apply-power-button"
-                          onClick={handleApplyPower}
-                        >
-                          Apply Power
-                        </button>
+                        powerList.map((power) => (
+                          <li key={power} onClick={() => setSelectedPower(power)}>
+                            {power}
+                          </li>
+                        ))
                       )}
-                    </>
-                  )}
-                </div>
-              )}
+                    </ul>
+                  </div>
+
+                  {/* Available Enemies */}
+                  <div className="available-enemies">
+                    <ul>
+                      {loading ? (
+                        <p>Loading...</p>
+                      ) : (
+                        enemyList.map((enemy) => (
+                          <li key={enemy.name} onClick={() => setSelectedEnemy(enemy.id)} >
+                            {enemy.name}
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
+
+                  {/* Cancel Power Button*/}
+                  <button className="cancel-power-button" onClick={handleCancelPower}>
+                      Cancel
+                  </button>
+
+                  {/* Apply Power Button*/}
+                  <button className="apply-power-button" onClick={handleApplyPower}>
+                      Apply
+                  </button>
+
+              </div>
+            )}
             </div>
           </>
         ) : (
