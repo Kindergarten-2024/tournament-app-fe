@@ -77,6 +77,7 @@ const Dashboard = () => {
           "/registrations-time",
           onEndingRecieve
         );
+        stompClient.subscribe("/totalRegister", onRegisterRecieve);
       }
     };
 
@@ -90,11 +91,16 @@ const Dashboard = () => {
     };
   }, [stompClient]);
 
-
   const onEndingRecieve = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setRegisterUp(payloadData.timerOn);
     setRounds(payloadData.round);
+  };
+
+  const onRegisterRecieve = (message) => {
+    var payloadData = JSON.parse(message.body);
+    console.log("total", payloadData);
+    setTotalRegistered(payloadData);
   };
 
   useEffect(() => {
@@ -133,12 +139,12 @@ const Dashboard = () => {
   }, [rerender]);
 
   useEffect(() => {
-      localStorage.removeItem("showScore");
-      localStorage.removeItem("position");
-      localStorage.removeItem("score");
-      localStorage.removeItem("stringsArray");
+    localStorage.removeItem("showScore");
+    localStorage.removeItem("position");
+    localStorage.removeItem("score");
+    localStorage.removeItem("stringsArray");
   }, []);
- 
+
   // Logout, session clear
   const handleLogout = async () => {
     try {
