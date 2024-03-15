@@ -230,6 +230,7 @@ const Quiz = () => {
   const onPublicMessageReceived = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setQuestion(payloadData);
+    setIsFrozen(false);
     setTimerKey(Math.random());
     // Only try to decrypt if the answer is not an empty string
     if (payloadData.answer) {
@@ -246,8 +247,15 @@ const Quiz = () => {
   const onPrivateMessageReceived = (payload) => {
     const messageBody = payload.body;
     console.log("Received message:", messageBody);
-    setReceivedMessage(messageBody);
+    if (messageBody.startsWith("freeze:")) {
+      const actualMessage = messageBody.slice("freeze:".length);
+      setReceivedMessage(actualMessage);
+      setIsFrozen(true);
+    } else {
+      setReceivedMessage(messageBody);
+    }
   };
+
   useEffect(() => {
     if (receivedMessage) {
       const timeout = setTimeout(() => {
@@ -524,10 +532,13 @@ const Quiz = () => {
                     {question.options.map((option, index) => (
                       <button
                         key={index}
-                        className={selectedAnswer === option ? "selected" : ""}
+                        className={`${
+                          selectedAnswer === option ? "selected" : ""
+                        } ${isFrozen ? "freeze-effect" : ""}`}
                         onClick={() =>
                           handleAnswer(selectedAnswer === option ? "" : option)
                         }
+                        disabled={isFrozen}
                       >
                         <span className="option-letter">
                           {String.fromCharCode(65 + index)}.

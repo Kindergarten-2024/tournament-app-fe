@@ -282,3 +282,11 @@
   justify-content: center;
   margin-bottom: 10%;
 }
+
+.answer-buttons button.freeze-effect {
+  background: #2984e5 !important;
+  color: #ffffff; /* Change to the desired text color when disabled */
+  border: 2px solid #bfe2ff;
+  box-shadow: 0 0 10px #bfe2ff;
+  transition: background-color 2s ease, border 2s ease, box-shadow 2s ease;
+}
