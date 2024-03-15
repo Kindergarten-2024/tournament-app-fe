@@ -88,10 +88,10 @@ const Quiz = () => {
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState("");
   const countdownAudioRef = useRef(new Audio(countdownSound));
   const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
-
+  const [receivedMessage, setReceivedMessage] = useState("");
+  const [isFrozen, setIsFrozen] = useState(false);
   const [showUsePowerButton, setShowUsePowerButton] = useState(false);
   const [showPowers, setShowPowers] = useState(false);
-
   const [powerList, setPowerList] = useState([]);
   const [selectedPower, setSelectedPower] = useState(null);
   const [enemyList, setEnemyList] = useState([]);
@@ -242,12 +242,22 @@ const Quiz = () => {
     // updateString(questionIndex - 1, "current");
     setShowScore(false);
   };
-
+  ////////////power message
   const onPrivateMessageReceived = (payload) => {
     const messageBody = payload.body;
-    console.log("Received message:", messageBody); //freeze message
+    console.log("Received message:", messageBody);
+    setReceivedMessage(messageBody);
   };
+  useEffect(() => {
+    if (receivedMessage) {
+      const timeout = setTimeout(() => {
+        setReceivedMessage(""); // Clear the received message after 5 seconds
+      }, 5000);
 
+      return () => clearTimeout(timeout); // Clear the timeout when component unmounts
+    }
+  }, [receivedMessage]);
+  ///////////
   const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
     const leaderboardArray = userDataArray.map((user) => ({
@@ -269,10 +279,9 @@ const Quiz = () => {
       setPowerList(powerList);
 
       if (powerList[0]) {
-        setShowUsePowerButton(true)
+        setShowUsePowerButton(true);
         setShowPowers(false);
-      }
-      else setShowUsePowerButton(false)
+      } else setShowUsePowerButton(false);
     }
   };
 
@@ -394,11 +403,10 @@ const Quiz = () => {
     );
   }
 
-
   const handleCancelPower = () => {
     setShowPowers(false);
     setShowUsePowerButton(true);
-  }
+  };
 
   const handleApplyPower = () => {
     if (selectedEnemy && selectedPower) {
@@ -422,8 +430,8 @@ const Quiz = () => {
 
   const handleUsePower = async () => {
     fetchEnemyList();
-    setShowUsePowerButton(false)
-    setShowPowers(true)
+    setShowUsePowerButton(false);
+    setShowPowers(true);
   };
 
   const fetchEnemyList = async () => {
@@ -442,7 +450,7 @@ const Quiz = () => {
     } catch (error) {
       console.error("Error fetching list: ", error);
     }
-  }
+  };
 
   return (
     <div>
@@ -456,7 +464,6 @@ const Quiz = () => {
                 progressPercentage={progress}
               />
             </div>
-
             {!showScore ? (
               <div className="timer-wrapper">
                 <CountdownCircleTimer
@@ -559,7 +566,6 @@ const Quiz = () => {
               )}
               {showPowers && (
                 <div className="use-power-container">
-
                   {/* Available Powers */}
                   <div className="available-powers">
                     <ul>
@@ -567,7 +573,13 @@ const Quiz = () => {
                         <p>Loading...</p>
                       ) : (
                         powerList.map((power) => (
-                          <li key={power} onClick={() => setSelectedPower(power)}>
+                          <li
+                            key={power}
+                            onClick={() => setSelectedPower(power)}
+                            className={
+                              selectedPower === power ? "selected" : ""
+                            }
+                          >
                             {power}
                           </li>
                         ))
@@ -582,7 +594,13 @@ const Quiz = () => {
                         <p>Loading...</p>
                       ) : (
                         enemyList.map((enemy) => (
-                          <li key={enemy.name} onClick={() => setSelectedEnemy(enemy.id)} >
+                          <li
+                            key={enemy.name}
+                            onClick={() => setSelectedEnemy(enemy.id)}
+                            className={
+                              selectedEnemy === enemy.id ? "selected" : ""
+                            }
+                          >
                             {enemy.name}
                           </li>
                         ))
@@ -591,18 +609,28 @@ const Quiz = () => {
                   </div>
 
                   {/* Cancel Power Button*/}
-                  <button className="cancel-power-button" onClick={handleCancelPower}>
-                      Cancel
+                  <button
+                    className="cancel-power-button"
+                    onClick={handleCancelPower}
+                  >
+                    Cancel
                   </button>
 
                   {/* Apply Power Button*/}
-                  <button className="apply-power-button" onClick={handleApplyPower}>
-                      Apply
+                  <button
+                    className="apply-power-button"
+                    onClick={handleApplyPower}
+                  >
+                    Apply
                   </button>
-
+                </div>
+              )}
+            </div>
+            {receivedMessage && (
+              <div className="received-message-container">
+                <p>{receivedMessage}</p>
               </div>
             )}
-            </div>
           </>
         ) : (
           <div className="loading-spinner">
