@@ -106,7 +106,7 @@
 
 .music-toggle {
   position: absolute;
-  top: 15px;
+  top: 13px;
   right: 80px;
   background: none;
   border: none;
@@ -114,8 +114,8 @@
 }
 
 .music-toggle img {
-  width: 30px;
-  height: auto;
+  width: 20px;
+  height: 25;
 }
 
 .info-button {
