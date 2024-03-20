@@ -612,7 +612,10 @@ const Quiz = () => {
                               selectedEnemy === enemy.id ? "selected" : ""
                             }
                           >
-                            {enemy.name}
+                            {enemy.name &&
+                              (enemy.name.length > 14
+                                ? enemy.name.slice(0, 14) + "..."
+                                : enemy.name)}
                           </li>
                         ))
                       )}

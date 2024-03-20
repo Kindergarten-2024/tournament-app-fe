@@ -53,6 +53,7 @@ const Leaderboard = () => {
       id: user.username,
       score: user.score,
       avatar: user.avatarUrl,
+      streak: user.correctAnswerStreak,
     }));
 
     if (topic === "/leaderboard") {
@@ -71,6 +72,7 @@ const Leaderboard = () => {
           id: user.username,
           score: user.score,
           avatar: user.avatarUrl,
+          streak: user.correctAnswerStreak,
         }));
         console.log(leaderboardArray);
         setLeaderboard(leaderboardArray);
@@ -155,8 +157,12 @@ const Leaderboard = () => {
                     <img src={user.avatar} />
                   </div>
                   <div className="player-info">
-                    <div className="start2p">{user.id}</div>
+                    <div className="start2p">
+                      {user.id &&
+                        (user.id.length > 14 ? user.id.slice(0, 14) : user.id)}
+                    </div>
                     <div className="start2p">{user.score}</div>
+                    <div className="start2p">Streak: {user.streak}</div>
                   </div>
                 </div>
               ))}
@@ -171,8 +177,13 @@ const Leaderboard = () => {
                 {leaderboard.slice(3, 20).map((user, index) => (
                   <tr>
                     <td className="start2p">{index + 4}</td>
-                    <td className="start2p">{user.id}</td>
+                    <td className="start2p">
+                      {user.id && user.id.length && user.id.length > 40
+                        ? user.id.slice(0, 40)
+                        : user.id}
+                    </td>
                     <td className="start2p">{user.score}</td>
+                    <td className="start2p">Streak: {user.streak}</td>
                   </tr>
                 ))}
               </tbody>
