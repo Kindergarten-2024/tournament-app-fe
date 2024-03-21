@@ -17,7 +17,9 @@ import {
   IoIosCloseCircle,
   IoIosRemoveCircle,
 } from "react-icons/io";
+import countdownSound from "./music/countdown.mp3";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
+import "./Powers.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -84,6 +86,16 @@ const Quiz = () => {
   const [loading, setLoading] = useState(true);
   const [stringsArray, setStringsArray] = useState([]);
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState("");
+  const countdownAudioRef = useRef(new Audio(countdownSound));
+  const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
+  const [receivedMessage, setReceivedMessage] = useState("");
+  const [isFrozen, setIsFrozen] = useState(false);
+  const [showUsePowerButton, setShowUsePowerButton] = useState(false);
+  const [showPowers, setShowPowers] = useState(false);
+  const [powerList, setPowerList] = useState([]);
+  const [selectedPower, setSelectedPower] = useState(null);
+  const [enemyList, setEnemyList] = useState([]);
+  const [selectedEnemy, setSelectedEnemy] = useState(null);
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -135,6 +147,7 @@ const Quiz = () => {
         );
         setQuestion(response.data);
         setQuestionIndex(response.data.questionNumber);
+
         // updateString(questionIndex - 1, "current");
         if (response.data.answer) {
           setDecryptedAnswer(decrypt(response.data.answer));
@@ -153,6 +166,10 @@ const Quiz = () => {
     if (stompClient && stompClient.connected) {
       stompClient.subscribe("/questions", onPublicMessageReceived);
       stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+      stompClient.subscribe(
+        `/user/${user.login}/private`,
+        onPrivateMessageReceived
+      );
     }
     // Clean up subscriptions when the component unmounts
     return () => {
@@ -164,6 +181,13 @@ const Quiz = () => {
   }, [stompClient]);
 
   useEffect(() => {
+    // if (soundPlayedForQuestion) {
+    //   countdownAudioRef.current.pause();
+    //   countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
+    //   setSoundPlayedForQuestion(false);
+    // }
+    console.log(soundPlayedForQuestion);
+    console.log("find me !!!!!!!!!!!!!!!!!!!!!!!!{@{@@{@{@{@{@");
     if (question) {
       axios
         .get(`${BACKEND_URL}/admin/questions/time-now`)
@@ -206,6 +230,7 @@ const Quiz = () => {
   const onPublicMessageReceived = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setQuestion(payloadData);
+    setIsFrozen(false);
     setTimerKey(Math.random());
     // Only try to decrypt if the answer is not an empty string
     if (payloadData.answer) {
@@ -218,26 +243,59 @@ const Quiz = () => {
     // updateString(questionIndex - 1, "current");
     setShowScore(false);
   };
+  ////////////power message
+  const onPrivateMessageReceived = (payload) => {
+    const messageBody = payload.body;
+    console.log("Received message:", messageBody);
+    if (messageBody.startsWith("freeze:")) {
+      const actualMessage = messageBody.slice("freeze:".length);
+      setReceivedMessage(actualMessage);
+      setIsFrozen(true);
+    } else {
+      setReceivedMessage(messageBody);
+    }
+  };
 
+  useEffect(() => {
+    if (receivedMessage) {
+      const timeout = setTimeout(() => {
+        setReceivedMessage(""); // Clear the received message after 5 seconds
+      }, 5000);
+
+      return () => clearTimeout(timeout); // Clear the timeout when component unmounts
+    }
+  }, [receivedMessage]);
+  ///////////
   const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
     const leaderboardArray = userDataArray.map((user) => ({
       id: user.username,
       score: user.score,
+      power: user.item,
     }));
     const playerIndex = leaderboardArray.findIndex(
       (user1) => user1.id === user.login
     );
     setPosition(playerIndex + 1);
+
     const player = leaderboardArray.find((user1) => user1.id === user.login);
     if (player) {
       setScore(player.score);
+
+      // Check if the Player has Powers
+      const powerList = [player.power];
+      setPowerList(powerList);
+
+      if (powerList[0]) {
+        setShowUsePowerButton(true);
+        setShowPowers(false);
+      } else setShowUsePowerButton(false);
     }
-    // setShowScore(true);
   };
 
   const handleAnswer = (selected) => {
     setSelectedAnswer(selected);
+    //keep time here
   };
 
   const convertToReadableTime = (timestamp) => {
@@ -304,6 +362,15 @@ const Quiz = () => {
     localStorage.setItem("stringsArray", JSON.stringify(newArray));
   };
 
+  const playCountdownSound = () => {
+    if (!soundPlayedForQuestion) {
+      countdownAudioRef.current
+        .play()
+        .catch((error) => console.error("Error playing the sound:", error));
+      setSoundPlayedForQuestion(true);
+    }
+  };
+
   function CustomProgressBar({ numQuestions, statuses, progressPercentage }) {
     return (
       <>
@@ -344,111 +411,247 @@ const Quiz = () => {
     );
   }
 
+  const handleCancelPower = () => {
+    setShowPowers(false);
+    setShowUsePowerButton(true);
+  };
+
+  const handleApplyPower = () => {
+    if (selectedEnemy && selectedPower) {
+      console.log("Applying power:", selectedPower, "to enemy:", selectedEnemy);
+      sendPower(selectedPower, selectedEnemy);
+      setSelectedEnemy(null);
+      setSelectedPower(null);
+      setShowPowers(false);
+    } else {
+      console.log("Please select an enemy and a power.");
+    }
+  };
+
+  const sendPower = (power, selectedEnemy) => {
+    const messageObject = {
+      message: power,
+      enemy: selectedEnemy,
+    };
+    stompClient.send("/app/usePower", {}, JSON.stringify(messageObject));
+  };
+
+  const handleUsePower = async () => {
+    fetchEnemyList();
+    setShowUsePowerButton(false);
+    setShowPowers(true);
+  };
+
+  const fetchEnemyList = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/leaderboard`);
+      const playerListData = response.data;
+      const playerList = playerListData.map((player) => ({
+        id: player.id,
+        name: player.username,
+        power: player.item,
+      }));
+      const enemyList = playerList.filter(
+        (player) => player.name !== user.login
+      );
+      setEnemyList(enemyList);
+    } catch (error) {
+      console.error("Error fetching list: ", error);
+    }
+  };
+
   return (
     <div>
-        <div>
-          {question && !loading ? (
-            <>
-              <div className="steps-container">
-                <CustomProgressBar
-                  numQuestions={10}
-                  statuses={stringsArray}
-                  progressPercentage={progress}
-                />
+      <div>
+        {question && !loading ? (
+          <>
+            <div className="steps-container">
+              <CustomProgressBar
+                numQuestions={10}
+                statuses={stringsArray}
+                progressPercentage={progress}
+              />
+            </div>
+            {!showScore ? (
+              <div className="timer-wrapper">
+                <CountdownCircleTimer
+                  isPlaying
+                  duration={questionTimer}
+                  size={120}
+                  colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
+                  colorsTime={[15, 10, 5, 0]}
+                  onComplete={() => {
+                    //method to stop countdown
+                    if (soundPlayedForQuestion) {
+                      countdownAudioRef.current.pause();
+                      countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
+                      setSoundPlayedForQuestion(false);
+                    }
+                    checkAnswer();
+                    setShowScore(true);
+                    return { shouldRepeat: true, delay: 0 };
+                  }}
+                  onUpdate={(remainingTime) => {
+                    if (remainingTime === 5) {
+                      playCountdownSound();
+                    }
+                  }}
+                >
+                  {useRenderTime}
+                </CountdownCircleTimer>
               </div>
+            ) : (
+              <section className="centered-section">
+                <table
+                  id="rankings"
+                  className="leaderboard-results-2"
+                  width="100"
+                >
+                  <thead>
+                    <tr>
+                      <th className="leaderboard-font-2">Rank</th>
+                      <th className="leaderboard-font-2">PTS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="leaderboard-font-2">{position}</td>
+                      <td className="leaderboard-font-2">{score}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+            )}
 
+            <div className="question-container">
+              <h2 className="start2p">Question {question.questionNumber}</h2>
+              <p className="start2p">{question.question}</p>
               {!showScore ? (
-                <div className="timer-wrapper">
-                  <CountdownCircleTimer
-                    isPlaying
-                    duration={questionTimer}
-                    size={120}
-                    colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
-                    colorsTime={[15, 10, 5, 0]}
-                    onComplete={() => {
-                      checkAnswer();
-                      setShowScore(true);
-                      return { shouldRepeat: true };
-                    }}
-                  >
-                    {useRenderTime}
-                  </CountdownCircleTimer>
-                </div>
+                <>
+                  <div className="answer-buttons">
+                    {question.options.map((option, index) => (
+                      <button
+                        key={index}
+                        className={`${
+                          selectedAnswer === option ? "selected" : ""
+                        } ${isFrozen ? "freeze-effect" : ""}`}
+                        onClick={() =>
+                          handleAnswer(selectedAnswer === option ? "" : option)
+                        }
+                        disabled={isFrozen}
+                      >
+                        <span className="option-letter">
+                          {String.fromCharCode(65 + index)}.
+                        </span>
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </>
               ) : (
-                <section className="centered-section">
-                  <table
-                    id="rankings"
-                    className="leaderboard-results-2"
-                    width="100"
-                  >
-                    <thead>
-                      <tr>
-                        <th className="leaderboard-font-2">Rank</th>
-                        <th className="leaderboard-font-2">PTS</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="leaderboard-font-2">{position}</td>
-                        <td className="leaderboard-font-2">{score}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </section>
+                <>
+                  <div className="answer-buttons">
+                    {question?.options.map((option, index) => (
+                      <button
+                        key={index}
+                        className={`${getOptionClass(option)}`}
+                        disabled
+                      >
+                        <span className="option-letter">
+                          {String.fromCharCode(65 + index)}.
+                        </span>
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
 
-              <div className="question-container">
-                <h2 className="start2p">Question {question.questionNumber}</h2>
-                <p className="start2p">{question.question}</p>
-                {!showScore ? (
-                  <>
-                    <div className="answer-buttons">
-                      {question.options.map((option, index) => (
-                        <button
-                          key={index}
-                          className={
-                            selectedAnswer === option ? "selected" : ""
-                          }
-                          onClick={() =>
-                            handleAnswer(
-                              selectedAnswer === option ? "" : option
-                            )
-                          }
-                        >
-                          <span className="option-letter">
-                            {String.fromCharCode(65 + index)}.
-                          </span>
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="answer-buttons">
-                      {question?.options.map((option, index) => (
-                        <button
-                          key={index}
-                          className={`${getOptionClass(option)}`}
-                          disabled
-                        >
-                          <span className="option-letter">
-                            {String.fromCharCode(65 + index)}.
-                          </span>
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="loading-spinner">
-              <div className="spinner"></div>
+              {showUsePowerButton && (
+                <>
+                  {/* Use Power Button */}
+                  <button className="use-power-button" onClick={handleUsePower}>
+                    ⚡Power⚡
+                  </button>
+                </>
+              )}
+              {showPowers && (
+                <div className="use-power-container">
+                  {/* Available Powers */}
+                  <div className="available-powers">
+                    <ul>
+                      {loading ? (
+                        <p>Loading...</p>
+                      ) : (
+                        powerList.map((power) => (
+                          <li
+                            key={power}
+                            onClick={() => setSelectedPower(power)}
+                            className={
+                              selectedPower === power ? "selected" : ""
+                            }
+                          >
+                            {power}
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
+
+                  {/* Available Enemies */}
+                  <div className="available-enemies">
+                    <ul>
+                      {loading ? (
+                        <p>Loading...</p>
+                      ) : (
+                        enemyList.map((enemy) => (
+                          <li
+                            key={enemy.name}
+                            onClick={() => setSelectedEnemy(enemy.id)}
+                            className={
+                              selectedEnemy === enemy.id ? "selected" : ""
+                            }
+                          >
+                            {enemy.name &&
+                              (enemy.name.length > 14
+                                ? enemy.name.slice(0, 14) + "..."
+                                : enemy.name)}
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
+
+                  {/* Cancel Power Button*/}
+                  <button
+                    className="cancel-power-button"
+                    onClick={handleCancelPower}
+                  >
+                    Cancel
+                  </button>
+
+                  {/* Apply Power Button*/}
+                  <button
+                    className="apply-power-button"
+                    onClick={handleApplyPower}
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+            {receivedMessage && (
+              <div className="received-message-container">
+                <p>{receivedMessage}</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
