@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import "./UserLeaderboard.css"
+import { AuthContext } from "./App";
+import "./UserLeaderboard.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const UserLeaderboard = () => {
+    const { user } = useContext(AuthContext);
     const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -47,11 +49,11 @@ const UserLeaderboard = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {leaderboard.map((user, index) => (
-                                    <tr key={user.id}>
+                                {leaderboard.map((user1, index) => (
+                                    <tr key={user1.id} className={user1.username === user.login ? "current" : ""}>
                                         <td className="leaderboard-font">{index + 1}</td>
-                                        <td className="leaderboard-font">{user.username}</td>
-                                        <td className="leaderboard-font">{user.score}</td>
+                                        <td className="leaderboard-font">{user1.username}</td>
+                                        <td className="leaderboard-font">{user1.score}</td>
                                     </tr>
                                 ))}
                             </tbody>

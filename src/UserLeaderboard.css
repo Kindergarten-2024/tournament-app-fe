@@ -43,17 +43,18 @@
 .leaderboard-results {
   text-align: left;
   border-collapse: collapse;
+  width: 100%; /* Ensure the table takes full width */
 }
 
 .leaderboard-results thead th {
-  padding: 5%;
-  font-size: 3vw;
+  padding: 2.5%;
+  font-size: 2vw; /* Adjust as needed */
 }
 
 .leaderboard-results tbody td {
   padding: 1.5% 2.5%;
   background: #1a1a1a;
-  font-size: 2vw;
+  font-size: 1.5vw; /* Adjust as needed */
   border-bottom: 0.5vw solid #232323;
 }
 
@@ -61,8 +62,8 @@
   font-weight: bold;
 }
 
-.leaderboard-results tbody tr.answered td {
-  background: orange !important;
+.leaderboard-results tbody tr.current td {
+  color: #888DFF;
 }
 
 .leaderboard-results tbody tr:hover td {
@@ -71,21 +72,19 @@
 
 .leaderboard-results tbody tr {
   color: #ffffff;
+  display: block; /* Ensure each row behaves like a block element */
+  margin-bottom: 10px; /* Add some space between rows */
 }
 
-.leaderboard-results tbody tr:first-child {
-  color: #686EF9;
+.leaderboard-results tbody td:before {
+  content: attr(data-label); /* Add data-label content before each cell */
+  font-weight: bold;
 }
 
 .leaderboard-results tbody span {
   font-weight: bold;
   padding: 1% 1.5%;
   border-radius: 50%;
-}
-
-.leaderboard-results tbody tr:first-child span {
-  background: #5055CB;
-  color: white;
 }
 
 .leaderboard-results tbody tr span {
@@ -97,6 +96,7 @@
   margin: 0;
   padding: 0;
   font-family: 'Press Start 2P', cursive;
+  font-size: 15px;
 }
 
 .loading-spinner {
@@ -130,29 +130,37 @@
 
 @keyframes moveUpAndFade {
   0% {
-      opacity: 1;
-      transform: translate(-50%, 0);
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
   80% {
-      opacity: 1;
-      transform: translate(-50%, -2vw);
+    opacity: 1;
+    transform: translate(-50%, -2vw);
   }
   100% {
-      opacity: 0;
-      transform: translate(-50%, -5vw);
+    opacity: 0;
+    transform: translate(-50%, -5vw);
   }
 }
 
 @keyframes spin {
   0% {
-      transform: rotate(0deg);
+    transform: rotate(0deg);
   }
   100% {
-      transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
 .scrollable-leaderboard {
-  max-height: 50vh; /* Adjust as needed */
+  max-height: 70vh; /* Adjust as needed */
   overflow-y: auto;
+}
+
+/* Media query for smaller screens */
+@media only screen and (max-width: 600px) {
+  .leaderboard-results thead th,
+  .leaderboard-results tbody td {
+    font-size: 14px; /* Adjust font size for smaller screens */
+  }
 }
