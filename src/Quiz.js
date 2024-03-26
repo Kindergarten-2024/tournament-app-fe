@@ -99,7 +99,6 @@ const Quiz = () => {
   const [showPowerButton, setShowPowerButton] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
-  
   const [enemies, setEnemies] = useState([]);
   const [showEnemies, setShowEnemies] = useState(false);
   const [selectedEnemy, setSelectedEnemy] = useState(null);
