@@ -6,7 +6,6 @@ import { useWebSocketContext } from "./WebSocketContext";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Leaderboard = () => {
-  const [leaderboardBefore, setLeaderboardBefore] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -103,11 +102,20 @@ const Leaderboard = () => {
     const randomX = Math.random() * window.innerWidth;
     const randomY = Math.random() * window.innerHeight;
 
+    // Determine if the message indicates registration or unregistration
+    const isRegister = message.includes("unregister");
+
+    // Set the class name based on registration status
+    const className = !isRegister
+      ? "log-message-register"
+      : "log-message-unregister";
+
     const newLog = {
       id: Date.now() + Math.random(), // Ensures unique ID even if messages are received at the same time
       text: message,
       x: randomX,
       y: randomY,
+      className: className, // Add className to the new log entry
     };
 
     setLogs((currentLogs) => [...currentLogs, newLog]);
@@ -125,7 +133,7 @@ const Leaderboard = () => {
       {logs.map((log) => (
         <div
           key={log.id}
-          className="log-message"
+          className={log.className}
           style={{
             left: `${log.x}px`,
             top: `${log.y}px`,
@@ -134,6 +142,7 @@ const Leaderboard = () => {
           {log.text}
         </div>
       ))}
+
       <section id="leaderboard">
         <nav className="ladder-nav">
           <div className="ladder-title">

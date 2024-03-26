@@ -25,19 +25,19 @@
 }
 
 .ladder-search input::-webkit-input-placeholder {
-  color: #888DFF;
+  color: #888dff;
 }
 
 .ladder-search input::-moz-placeholder {
-  color: #888DFF;
+  color: #888dff;
 }
 
 .ladder-search input:-ms-input-placeholder {
-  color: #888DFF;
+  color: #888dff;
 }
 
 .ladder-search input:-moz-placeholder {
-  color: #888DFF;
+  color: #888dff;
 }
 
 .leaderboard-results {
@@ -63,7 +63,7 @@
 }
 
 .leaderboard-results tbody tr.current td {
-  color: #888DFF;
+  color: #888dff;
 }
 
 .leaderboard-results tbody tr:hover td {
@@ -72,7 +72,6 @@
 
 .leaderboard-results tbody tr {
   color: #ffffff;
-  display: block; /* Ensure each row behaves like a block element */
   margin-bottom: 10px; /* Add some space between rows */
 }
 
@@ -95,7 +94,7 @@
 .leaderboard-font {
   margin: 0;
   padding: 0;
-  font-family: 'Press Start 2P', cursive;
+  font-family: "Press Start 2P", cursive;
   font-size: 15px;
 }
 
@@ -115,17 +114,28 @@
   animation: spin 1s linear infinite;
 }
 
-.log-message {
+.log-message-unregister {
   position: absolute;
   color: #c50000;
-  padding: 1% 2%;
+  padding: 10px 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   animation: moveUpAndFade 3s ease-out forwards;
   backface-visibility: hidden;
-  border: 0.1vw solid #c50000;
-  text-shadow: 0.1vw 0.1vw 0.2vw rgba(0, 0, 0, 0.1);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.log-message-register {
+  position: absolute;
+  color: #43c80e;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: moveUpAndFade 3s ease-out forwards;
+  backface-visibility: hidden;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes moveUpAndFade {
