@@ -19,7 +19,9 @@ import {
 } from "react-icons/io";
 import countdownSound from "./music/countdown.mp3";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import "./Powers.css";
+
+import "./Modal.css";
+import { Modal } from "./Modal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -90,11 +92,15 @@ const Quiz = () => {
   const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
   const [receivedMessage, setReceivedMessage] = useState("");
   const [isFrozen, setIsFrozen] = useState(false);
-  const [showUsePowerButton, setShowUsePowerButton] = useState(false);
-  const [showPowers, setShowPowers] = useState(false);
-  const [powerList, setPowerList] = useState([]);
+
+  
+  const [power, setPower] = useState(" ");
   const [selectedPower, setSelectedPower] = useState(null);
-  const [enemyList, setEnemyList] = useState([]);
+  const [showPowerButton, setShowPowerButton] = useState(false);
+
+  const [showModal, setShowModal] = useState(false);
+  const [enemies, setEnemies] = useState([]);
+  const [showEnemies, setShowEnemies] = useState(false);
   const [selectedEnemy, setSelectedEnemy] = useState(null);
 
   const [showScore, setShowScore] = useState(() => {
@@ -271,7 +277,7 @@ const Quiz = () => {
     const leaderboardArray = userDataArray.map((user) => ({
       id: user.username,
       score: user.score,
-      power: user.item,
+      item: user.item,
     }));
     const playerIndex = leaderboardArray.findIndex(
       (user1) => user1.id === user.login
@@ -281,15 +287,10 @@ const Quiz = () => {
     const player = leaderboardArray.find((user1) => user1.id === user.login);
     if (player) {
       setScore(player.score);
+      setPower(player.item)
 
-      // Check if the Player has Powers
-      const powerList = [player.power];
-      setPowerList(powerList);
-
-      if (powerList[0]) {
-        setShowUsePowerButton(true);
-        setShowPowers(false);
-      } else setShowUsePowerButton(false);
+      console.log("POWER IS " + power);
+      setShowPowerButton(true);
     }
   };
 
@@ -411,18 +412,46 @@ const Quiz = () => {
     );
   }
 
-  const handleCancelPower = () => {
-    setShowPowers(false);
-    setShowUsePowerButton(true);
+  const handleSelectPower = () => {
+    setSelectedPower(power);
+    if (power == "50-50") { 
+      return
+    } else {
+      fetchEnemies();
+      setShowEnemies(true);
+    }
+  }
+
+  const fetchEnemies = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/leaderboard`);
+      const playerListData = response.data;
+      const playerList = playerListData.map((player) => ({
+        id: player.id,
+        name: player.username,
+      }));
+      const enemyList = playerList.filter(
+        (player) => player.name !== user.login
+      );
+      setEnemies(enemyList);
+    } catch (error) {
+      console.error("Error fetching list: ", error);
+    }
   };
+
+  const handeCancelPower = () => {
+    setShowEnemies(false);
+    setShowModal(false);
+    setShowPowerButton(true);
+  }
 
   const handleApplyPower = () => {
     if (selectedEnemy && selectedPower) {
       console.log("Applying power:", selectedPower, "to enemy:", selectedEnemy);
       sendPower(selectedPower, selectedEnemy);
-      setSelectedEnemy(null);
-      setSelectedPower(null);
-      setShowPowers(false);
+      setShowEnemies(false);
+      setShowModal(false);
+      setShowPowerButton(false);
     } else {
       console.log("Please select an enemy and a power.");
     }
@@ -434,30 +463,6 @@ const Quiz = () => {
       enemy: selectedEnemy,
     };
     stompClient.send("/app/usePower", {}, JSON.stringify(messageObject));
-  };
-
-  const handleUsePower = async () => {
-    fetchEnemyList();
-    setShowUsePowerButton(false);
-    setShowPowers(true);
-  };
-
-  const fetchEnemyList = async () => {
-    try {
-      const response = await axios.get(`${BACKEND_URL}/leaderboard`);
-      const playerListData = response.data;
-      const playerList = playerListData.map((player) => ({
-        id: player.id,
-        name: player.username,
-        power: player.item,
-      }));
-      const enemyList = playerList.filter(
-        (player) => player.name !== user.login
-      );
-      setEnemyList(enemyList);
-    } catch (error) {
-      console.error("Error fetching list: ", error);
-    }
   };
 
   return (
@@ -549,8 +554,8 @@ const Quiz = () => {
                   </div>
                 </>
               ) : (
-                <>
-                  <div className="answer-buttons">
+              <>
+                <div className="answer-buttons">
                     {question?.options.map((option, index) => (
                       <button
                         key={index}
@@ -564,79 +569,49 @@ const Quiz = () => {
                       </button>
                     ))}
                   </div>
-                </>
-              )}
 
-              {showUsePowerButton && (
-                <>
-                  {/* Use Power Button */}
-                  <button className="use-power-button" onClick={handleUsePower}>
+                {showPowerButton && (
+                  <button className="use-power-button" onClick={() => setShowModal(true)}>
                     ⚡Power⚡
                   </button>
-                </>
-              )}
-              {showPowers && (
-                <div className="use-power-container">
-                  {/* Available Powers */}
-                  <div className="available-powers">
-                    <ul>
-                      {loading ? (
-                        <p>Loading...</p>
-                      ) : (
-                        powerList.map((power) => (
-                          <li
-                            key={power}
-                            onClick={() => setSelectedPower(power)}
-                            className={
-                              selectedPower === power ? "selected" : ""
-                            }
-                          >
-                            {power}
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  </div>
-
-                  {/* Available Enemies */}
-                  <div className="available-enemies">
-                    <ul>
-                      {loading ? (
-                        <p>Loading...</p>
-                      ) : (
-                        enemyList.map((enemy) => (
-                          <li
-                            key={enemy.name}
-                            onClick={() => setSelectedEnemy(enemy.id)}
-                            className={
-                              selectedEnemy === enemy.id ? "selected" : ""
-                            }
-                          >
-                            {enemy.name}
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  </div>
-
-                  {/* Cancel Power Button*/}
-                  <button
-                    className="cancel-power-button"
-                    onClick={handleCancelPower}
-                  >
-                    Cancel
-                  </button>
-
-                  {/* Apply Power Button*/}
-                  <button
-                    className="apply-power-button"
-                    onClick={handleApplyPower}
-                  >
-                    Apply
-                  </button>
-                </div>
+                )}
+              </>
               )}
             </div>
+
+            {showModal && (
+              <Modal onCancel={handeCancelPower} onApply={handleApplyPower} onClose={handeCancelPower}>
+                  <div className="powers-container">
+                    <p>Select Power</p>
+                    <button className="select-power-button" onClick={handleSelectPower}>{power}</button>
+                  </div>
+                  {showEnemies && (
+                    <div className="enemies-container">
+                      <p>Select Player</p>
+                      <ul>
+                        {loading ? (
+                          <p>Loading...</p>
+                        ) : (
+                          enemies.map((enemy) => (
+                            <li
+                              key={enemy.name}
+                              onClick={() => setSelectedEnemy(enemy.id)}
+                              className={ selectedEnemy === enemy.id ? "selected" : ""}
+                            >
+                              {enemy.name &&
+                                (enemy.name.length > 20
+                                  ? enemy.name.slice(0, 20) + "..."
+                                  : enemy.name)}
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                  </div>
+                  )}
+
+              </Modal>
+            )}
+
             {receivedMessage && (
               <div className="received-message-container">
                 <p>{receivedMessage}</p>

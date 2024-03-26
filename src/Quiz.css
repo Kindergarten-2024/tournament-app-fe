@@ -290,3 +290,82 @@
   box-shadow: 0 0 10px #bfe2ff;
   transition: background-color 2s ease, border 2s ease, box-shadow 2s ease;
 }
+
+.use-power-button {
+  margin: 1rem auto;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 100rem;
+  color: white;
+  font-family: "Press Start 2P", cursive;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0px 5px 5px black;
+  transition: all 0.3s ease;
+  background-image: linear-gradient(45deg, rgb(0, 0, 255), rgb(255, 0, 0));
+  background-size: 200% 200%;
+  animation: gradientShift 2s ease infinite;
+}
+
+.power-button button:active {
+  animation: pulsate 0.2s ease;
+}
+
+.powers-container p, .enemies-container p {
+  margin: 0;
+  padding: 0;
+}
+
+.enemies-container ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.select-power-button, .enemies-container ul li {
+  width: 16rem;
+  margin: 1rem auto;
+  border-radius: 5px;
+  color: white;
+  font-size: 1rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0px 5px 5px black;
+}
+
+.select-power-button {
+  padding: 0.5rem;
+  border: none;
+  font-family: "Press Start 2P", cursive;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  background-image: linear-gradient(45deg, rgb(0, 0, 255), rgb(255, 0, 0));
+  background-size: 200% 200%;
+  animation: gradientShift 2s ease infinite;
+}
+
+
+.enemies-container ul li {
+  padding: 0;
+  border: 1px solid white;
+  transition: transform 0.2s, background-color 0.2s, color 0.2s;
+  background-color: #333; /* Dark background */
+}
+
+.available-enemies li:active {
+  animation: pulsate 0.2s ease; /* Pulsating effect on click */
+}
+/* Animation for a pulsating effect */
+@keyframes pulsate {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
