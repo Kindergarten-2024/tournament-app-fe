@@ -657,6 +657,16 @@ const Quiz = () => {
                 )}
               </Modal>
             )}
+            {receivedMessage && (
+              <div className="received-message-container">
+                {currentPowerIcon && (
+                  <div className="icon-container">
+                    <img src={currentPowerIcon} alt="Power Icon" />
+                  </div>
+                )}
+                <p className="message-text">{receivedMessage}</p>
+              </div>
+            )}
           </>
         ) : (
           <div className="loading-spinner">
