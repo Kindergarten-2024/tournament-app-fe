@@ -313,7 +313,8 @@
   animation: pulsate 0.2s ease;
 }
 
-.powers-container p, .enemies-container p {
+.powers-container p,
+.enemies-container p {
   margin: 0;
   padding: 0;
 }
@@ -324,7 +325,8 @@
   list-style: none;
 }
 
-.select-power-button, .enemies-container ul li {
+.select-power-button,
+.enemies-container ul li {
   width: 16rem;
   margin: 1rem auto;
   border-radius: 5px;
@@ -345,7 +347,6 @@
   background-size: 200% 200%;
   animation: gradientShift 2s ease infinite;
 }
-
 
 .enemies-container ul li {
   padding: 0;
@@ -368,4 +369,24 @@
   100% {
     transform: scale(1);
   }
+}
+
+.received-message-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-container {
+  margin-bottom: 10px;
+}
+
+.icon-container img {
+  width: 200px;
+  height: 100px;
+}
+
+.message-text {
+  text-align: center;
 }
