@@ -19,7 +19,10 @@ import {
 } from "react-icons/io";
 import countdownSound from "./music/countdown.mp3";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import "./Powers.css";
+import FreezeIcon from "./images/freeze.png";
+import MaskIcon from "./images/mask.png";
+import "./Modal.css";
+import { Modal } from "./Modal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -90,11 +93,14 @@ const Quiz = () => {
   const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
   const [receivedMessage, setReceivedMessage] = useState("");
   const [isFrozen, setIsFrozen] = useState(false);
-  const [showUsePowerButton, setShowUsePowerButton] = useState(false);
-  const [showPowers, setShowPowers] = useState(false);
-  const [powerList, setPowerList] = useState([]);
+  const [isSelected, setIsSelected] = useState(false);
+  const [power, setPower] = useState(" ");
   const [selectedPower, setSelectedPower] = useState(null);
-  const [enemyList, setEnemyList] = useState([]);
+  const [showPowerButton, setShowPowerButton] = useState(false);
+  const [currentPowerIcon, setCurrentPowerIcon] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [enemies, setEnemies] = useState([]);
+  const [showEnemies, setShowEnemies] = useState(false);
   const [selectedEnemy, setSelectedEnemy] = useState(null);
 
   const [showScore, setShowScore] = useState(() => {
@@ -251,8 +257,12 @@ const Quiz = () => {
       const actualMessage = messageBody.slice("freeze:".length);
       setReceivedMessage(actualMessage);
       setIsFrozen(true);
+      setCurrentPowerIcon(FreezeIcon);
     } else {
+      //change this else if 50-50 added
       setReceivedMessage(messageBody);
+      setCurrentPowerIcon(MaskIcon);
+
     }
   };
 
@@ -261,17 +271,16 @@ const Quiz = () => {
       const timeout = setTimeout(() => {
         setReceivedMessage(""); // Clear the received message after 5 seconds
       }, 5000);
-
       return () => clearTimeout(timeout); // Clear the timeout when component unmounts
     }
   }, [receivedMessage]);
-  ///////////
+  
   const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
     const leaderboardArray = userDataArray.map((user) => ({
       id: user.username,
       score: user.score,
-      power: user.item,
+      item: user.item,
     }));
     const playerIndex = leaderboardArray.findIndex(
       (user1) => user1.id === user.login
@@ -281,17 +290,23 @@ const Quiz = () => {
     const player = leaderboardArray.find((user1) => user1.id === user.login);
     if (player) {
       setScore(player.score);
-
-      // Check if the Player has Powers
-      const powerList = [player.power];
-      setPowerList(powerList);
-
-      if (powerList[0]) {
-        setShowUsePowerButton(true);
-        setShowPowers(false);
-      } else setShowUsePowerButton(false);
+      setPower(player.item);
     }
   };
+
+  useEffect(() => {
+    const fetchPlayerItem = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/player-item`);
+        setPower(response.data);
+        if (power == null || power == "") setShowPowerButton(false);
+        else setShowPowerButton(true);
+      } catch (error) {
+        console.error("Error fetching player score: ", error);
+      }
+    };
+    fetchPlayerItem();
+  }, [power]);
 
   const handleAnswer = (selected) => {
     setSelectedAnswer(selected);
@@ -411,18 +426,54 @@ const Quiz = () => {
     );
   }
 
-  const handleCancelPower = () => {
-    setShowPowers(false);
-    setShowUsePowerButton(true);
+  const handleSelectPower = () => {
+    setSelectedPower(power);
+    if (power == "50-50") {
+      return;
+    } else {
+      fetchEnemies();
+      setShowEnemies(true);
+      setIsSelected(!isSelected);
+    }
+  };
+
+  let powerDescription;
+  if (power === "freeze") {
+    powerDescription =
+      "Freeze your enemies! Shatter them into a thousand pieces!";
+  } else if (power === "mask") {
+    powerDescription =
+      "Steal from your enemies! Embrace the Mask, where deception becomes your masterpiece..";
+  }
+
+  const fetchEnemies = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/leaderboard`);
+      const playerListData = response.data;
+      const playerList = playerListData.map((player) => ({
+        id: player.id,
+        name: player.username,
+      }));
+      const enemyList = playerList.filter(
+        (player) => player.name !== user.login
+      );
+      setEnemies(enemyList);
+    } catch (error) {
+      console.error("Error fetching list: ", error);
+    }
+  };
+
+  const handeCancelPower = () => {
+    setShowModal(false);
+    setShowPowerButton(true);
   };
 
   const handleApplyPower = () => {
     if (selectedEnemy && selectedPower) {
       console.log("Applying power:", selectedPower, "to enemy:", selectedEnemy);
       sendPower(selectedPower, selectedEnemy);
-      setSelectedEnemy(null);
-      setSelectedPower(null);
-      setShowPowers(false);
+      setShowModal(false);
+      setShowPowerButton(false);
     } else {
       console.log("Please select an enemy and a power.");
     }
@@ -434,30 +485,6 @@ const Quiz = () => {
       enemy: selectedEnemy,
     };
     stompClient.send("/app/usePower", {}, JSON.stringify(messageObject));
-  };
-
-  const handleUsePower = async () => {
-    fetchEnemyList();
-    setShowUsePowerButton(false);
-    setShowPowers(true);
-  };
-
-  const fetchEnemyList = async () => {
-    try {
-      const response = await axios.get(`${BACKEND_URL}/leaderboard`);
-      const playerListData = response.data;
-      const playerList = playerListData.map((player) => ({
-        id: player.id,
-        name: player.username,
-        power: player.item,
-      }));
-      const enemyList = playerList.filter(
-        (player) => player.name !== user.login
-      );
-      setEnemyList(enemyList);
-    } catch (error) {
-      console.error("Error fetching list: ", error);
-    }
   };
 
   return (
@@ -547,6 +574,15 @@ const Quiz = () => {
                       </button>
                     ))}
                   </div>
+                  {showPowerButton && (
+                    <button
+                      className="use-power-button"
+                      onClick={() => setShowModal(true)}
+                    >
+                      ⚡ Power ⚡
+                    </button>
+                  )}
+
                 </>
               ) : (
                 <>
@@ -566,45 +602,35 @@ const Quiz = () => {
                   </div>
                 </>
               )}
+            </div>
 
-              {showUsePowerButton && (
-                <>
-                  {/* Use Power Button */}
-                  <button className="use-power-button" onClick={handleUsePower}>
-                    ⚡Power⚡
+
+            {showModal && (
+              <Modal
+                onCancel={handeCancelPower}
+                onApply={handleApplyPower}
+                onClose={handeCancelPower}
+              >
+                <div className="powers-container">
+                  <p>Select Power</p>
+                  <button
+                    className={`select-power-button ${
+                      isSelected ? "selected" : ""
+                    }`}
+                    onClick={handleSelectPower}
+                  >
+                    {power}
                   </button>
-                </>
-              )}
-              {showPowers && (
-                <div className="use-power-container">
-                  {/* Available Powers */}
-                  <div className="available-powers">
+                  <p>{powerDescription}</p>
+                </div>
+                {showEnemies && (
+                  <div className="enemies-container">
+                    <p>Select Player</p>
                     <ul>
                       {loading ? (
                         <p>Loading...</p>
                       ) : (
-                        powerList.map((power) => (
-                          <li
-                            key={power}
-                            onClick={() => setSelectedPower(power)}
-                            className={
-                              selectedPower === power ? "selected" : ""
-                            }
-                          >
-                            {power}
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  </div>
-
-                  {/* Available Enemies */}
-                  <div className="available-enemies">
-                    <ul>
-                      {loading ? (
-                        <p>Loading...</p>
-                      ) : (
-                        enemyList.map((enemy) => (
+                        enemies.map((enemy) => (
                           <li
                             key={enemy.name}
                             onClick={() => setSelectedEnemy(enemy.id)}
@@ -613,36 +639,25 @@ const Quiz = () => {
                             }
                           >
                             {enemy.name &&
-                              (enemy.name.length > 14
-                                ? enemy.name.slice(0, 14) + "..."
+                              (enemy.name.length > 20
+                                ? enemy.name.slice(0, 20) + "..."
                                 : enemy.name)}
                           </li>
                         ))
                       )}
                     </ul>
                   </div>
-
-                  {/* Cancel Power Button*/}
-                  <button
-                    className="cancel-power-button"
-                    onClick={handleCancelPower}
-                  >
-                    Cancel
-                  </button>
-
-                  {/* Apply Power Button*/}
-                  <button
-                    className="apply-power-button"
-                    onClick={handleApplyPower}
-                  >
-                    Apply
-                  </button>
-                </div>
-              )}
-            </div>
+                )}
+              </Modal>
+            )}
             {receivedMessage && (
               <div className="received-message-container">
-                <p>{receivedMessage}</p>
+                {currentPowerIcon && (
+                  <div className="icon-container">
+                    <img src={currentPowerIcon} alt="Power Icon" />
+                  </div>
+                )}
+                <p className="message-text">{receivedMessage}</p>
               </div>
             )}
           </>

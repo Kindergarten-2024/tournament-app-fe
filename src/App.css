@@ -152,3 +152,38 @@
   max-width: 600px;
   font-size: 15px;
 }
+
+.info-button {
+  position: fixed; /* Fixed positioning */
+  bottom: 5vh; /* Adjust the distance from the bottom as needed */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center horizontally */
+  z-index: 1; /* Ensure the button stays above other elements */
+  background-color: #333; /* Dark background */
+  color: #f0f0f0; /* Light text color */
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: bottom 0.3s, background-color 0.3s, color 0.3s;
+}
+
+.info-button:hover {
+  background-color: #580c8a; /* Darker background on hover */
+  color: #fff; /* White text color on hover */
+}
+
+.instructions {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+}
+
+.instruction-content {
+  padding: 20px;
+  border-radius: 5px;
+  width: 200%;
+  max-width: 600px;
+  font-size: 15px;
+}
