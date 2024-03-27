@@ -11,16 +11,15 @@ import InteractiveBackground from "./InteractiveBackground";
 import axios from "axios";
 import "./App.css";
 import backgroundMusic from "./music/Retro 80s.mp3"
-import musicNoteIcon from "./images/music1.png"
 import Quiz from "./Quiz";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
 import Clicker from "./Clicker";
 import { useWebSocketContext } from "./WebSocketContext";
 import { WebSocketProvider } from "./WebSocketContext";
-import UserLeaderboard from "./UserLeaderboard";
 import MainLeaderboard from "./Leaderboard";
 import QRcode from "./QRcode";
+import { MdMusicNote, MdMusicOff } from "react-icons/md";
 
 
 // Ensures cookie is sent
@@ -58,10 +57,10 @@ const AuthContextProvider = ({ children }) => {
 };
 
 const useWebSocket = () => {
-  const [timerOn, setTimerOn] = useState(null); 
+  const [timerOn, setTimerOn] = useState(null);
   const [round, setRound] = useState(1);
   const [error, setError] = useState(null);
-  const { stompClient } = useWebSocketContext(); 
+  const { stompClient } = useWebSocketContext();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,7 +128,6 @@ const Home = () => {
       );
     } else if (timerOn === true) {
       return <Dashboard />;
-      // return <Quiz />;
     } else if (timerOn === false) {
       return <Quiz />;
     }
@@ -164,75 +162,24 @@ function App() {
   };
 
 
-
-  // useEffect(() => {
-  //   // Function to start playing music
-  //   const playMusic = async () => {
-  //     if (audioRef.current) {
-  //       try {
-  //         await audioRef.current.play();
-  //         setIsPlaying(true); // Set the state to true when the music starts playing
-  //       } catch (error) {
-  //         console.log("Playback was prevented. Error:", error);
-  //       }
-  //     }
-  //   };
-
-  //   // Function to pause the music
-  //   const pauseMusic = () => {
-  //     if (audioRef.current) {
-  //       audioRef.current.pause();
-  //       setIsPlaying(false); // Set the state to false when the music is paused
-  //     }
-  //   };
-
-  //   // Toggle play/pause based on isPlaying state
-  //   if (isPlaying) {
-  //     playMusic();
-  //   } else {
-  //     pauseMusic();
-  //   }
-
-  // }, [isPlaying]); // This effect depends on the isPlaying state
-
-  // // Handler to toggle the music state
-  // const toggleMusic = () => {
-  //   setIsPlaying(!isPlaying);
-  // };
-  // useEffect(() => {
-  //   // Check if the audioRef is current and has the play method
-  //   if (audioRef.current && typeof audioRef.current.play === 'function') {
-  //     // Play the music as soon as the component mounts
-  //     audioRef.current.play().catch(error => console.log("Play was prevented by the browser:", error));
-  //   }
-  // }, []);
-
   return (
     <div className="App">
-      {/* Toggle button */}
-      {/* <button onClick={toggleMusic}>
-        {isPlaying ? 'Stop Music' : 'Play Music'}
-      </button> */}
-
-      {/* Audio element */}
-      {/* <audio ref={audioRef} src={backgroundMusic} loop />      */}
-
-
-
       <Clicker />
       <InteractiveBackground />
       <header className="App-header">
         <AuthContextProvider>
           <WebSocketProvider>
             <Router>
-              {/* Music toggle button */}
-              <button onClick={toggleMusic} className="music-toggle">
-                <img src={musicNoteIcon} alt="Toggle Music" />
-              </button>
+              <div className="music-toggle">
+                {isPlaying ? (
+                  <MdMusicNote onClick={toggleMusic} />
+                ) : (
+                  <MdMusicOff onClick={toggleMusic} />
+                )}
+              </div>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/qr" element={<QRcode />} />
-                <Route path="/leaderboard" element={<UserLeaderboard />} />
                 <Route path="/mainleaderboard" element={<MainLeaderboard />} />
               </Routes>
             </Router>
