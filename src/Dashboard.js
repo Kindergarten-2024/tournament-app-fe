@@ -168,12 +168,17 @@ const Dashboard = () => {
     }
   };
 
+  const handleNotificationPermission = () => {
+    getFirebaseToken(setTokenFound);
+  };
+
   return (
     <>
       <div>
         <div className="notification-status">
-          {isTokenFound ? <IoNotifications /> : <IoNotificationsOff />}
+          {isTokenFound ? <IoNotifications /> : <IoNotificationsOff onClick={handleNotificationPermission}/>}
         </div>
+      
         <ToastContainer
           position="top-center"
           autoClose={5000}

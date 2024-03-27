@@ -6,7 +6,6 @@ import { useWebSocketContext } from "./WebSocketContext";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Leaderboard = () => {
-  const [leaderboardBefore, setLeaderboardBefore] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,6 +52,7 @@ const Leaderboard = () => {
       id: user.username,
       score: user.score,
       avatar: user.avatarUrl,
+      streak: user.correctAnswerStreak,
     }));
 
     if (topic === "/leaderboard") {
@@ -71,6 +71,7 @@ const Leaderboard = () => {
           id: user.username,
           score: user.score,
           avatar: user.avatarUrl,
+          streak: user.correctAnswerStreak,
         }));
         console.log(leaderboardArray);
         setLeaderboard(leaderboardArray);
@@ -101,11 +102,20 @@ const Leaderboard = () => {
     const randomX = Math.random() * window.innerWidth;
     const randomY = Math.random() * window.innerHeight;
 
+    // Determine if the message indicates registration or unregistration
+    const isRegister = message.includes("unregister");
+
+    // Set the class name based on registration status
+    const className = !isRegister
+      ? "log-message-register"
+      : "log-message-unregister";
+
     const newLog = {
       id: Date.now() + Math.random(), // Ensures unique ID even if messages are received at the same time
       text: message,
       x: randomX,
       y: randomY,
+      className: className, // Add className to the new log entry
     };
 
     setLogs((currentLogs) => [...currentLogs, newLog]);
@@ -123,7 +133,7 @@ const Leaderboard = () => {
       {logs.map((log) => (
         <div
           key={log.id}
-          className="log-message"
+          className={log.className}
           style={{
             left: `${log.x}px`,
             top: `${log.y}px`,
@@ -132,6 +142,7 @@ const Leaderboard = () => {
           {log.text}
         </div>
       ))}
+
       <section id="leaderboard">
         <nav className="ladder-nav">
           <div className="ladder-title">
@@ -155,8 +166,12 @@ const Leaderboard = () => {
                     <img src={user.avatar} />
                   </div>
                   <div className="player-info">
-                    <div className="start2p">{user.id}</div>
+                    <div className="start2p">
+                      {user.id &&
+                        (user.id.length > 14 ? user.id.slice(0, 14) : user.id)}
+                    </div>
                     <div className="start2p">{user.score}</div>
+                    <div className="start2p">Streak: {user.streak}</div>
                   </div>
                 </div>
               ))}
@@ -171,8 +186,13 @@ const Leaderboard = () => {
                 {leaderboard.slice(3, 20).map((user, index) => (
                   <tr>
                     <td className="start2p">{index + 4}</td>
-                    <td className="start2p">{user.id}</td>
+                    <td className="start2p">
+                      {user.id && user.id.length && user.id.length > 40
+                        ? user.id.slice(0, 40)
+                        : user.id}
+                    </td>
                     <td className="start2p">{user.score}</td>
+                    <td className="start2p">Streak: {user.streak}</td>
                   </tr>
                 ))}
               </tbody>

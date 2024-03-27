@@ -262,6 +262,7 @@ const Quiz = () => {
       //change this else if 50-50 added
       setReceivedMessage(messageBody);
       setCurrentPowerIcon(MaskIcon);
+
     }
   };
 
@@ -270,11 +271,10 @@ const Quiz = () => {
       const timeout = setTimeout(() => {
         setReceivedMessage(""); // Clear the received message after 5 seconds
       }, 5000);
-
       return () => clearTimeout(timeout); // Clear the timeout when component unmounts
     }
   }, [receivedMessage]);
-
+  
   const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
     const leaderboardArray = userDataArray.map((user) => ({
@@ -582,6 +582,7 @@ const Quiz = () => {
                       ⚡ Power ⚡
                     </button>
                   )}
+
                 </>
               ) : (
                 <>
@@ -599,18 +600,10 @@ const Quiz = () => {
                       </button>
                     ))}
                   </div>
-
-                  {showPowerButton && (
-                    <button
-                      className="use-power-button"
-                      onClick={() => setShowModal(true)}
-                    >
-                      ⚡Power⚡
-                    </button>
-                  )}
                 </>
               )}
             </div>
+
 
             {showModal && (
               <Modal

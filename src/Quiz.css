@@ -389,4 +389,9 @@
 
 .message-text {
   text-align: center;
+  background: #89b0da !important;
+  color: #ffffff; /* Change to the desired text color when disabled */
+  border: 2px solid #bfe2ff;
+  box-shadow: 0 0 10px #bfe2ff;
+  transition: background-color 1.5s ease, border 1.5s ease, box-shadow 1.5s ease;
 }

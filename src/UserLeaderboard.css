@@ -25,35 +25,36 @@
 }
 
 .ladder-search input::-webkit-input-placeholder {
-  color: #888DFF;
+  color: #888dff;
 }
 
 .ladder-search input::-moz-placeholder {
-  color: #888DFF;
+  color: #888dff;
 }
 
 .ladder-search input:-ms-input-placeholder {
-  color: #888DFF;
+  color: #888dff;
 }
 
 .ladder-search input:-moz-placeholder {
-  color: #888DFF;
+  color: #888dff;
 }
 
 .leaderboard-results {
   text-align: left;
   border-collapse: collapse;
+  width: 100%; /* Ensure the table takes full width */
 }
 
 .leaderboard-results thead th {
-  padding: 5%;
-  font-size: 3vw;
+  padding: 2.5%;
+  font-size: 2vw; /* Adjust as needed */
 }
 
 .leaderboard-results tbody td {
   padding: 1.5% 2.5%;
   background: #1a1a1a;
-  font-size: 2vw;
+  font-size: 1.5vw; /* Adjust as needed */
   border-bottom: 0.5vw solid #232323;
 }
 
@@ -61,8 +62,8 @@
   font-weight: bold;
 }
 
-.leaderboard-results tbody tr.answered td {
-  background: orange !important;
+.leaderboard-results tbody tr.current td {
+  color: #888dff;
 }
 
 .leaderboard-results tbody tr:hover td {
@@ -71,21 +72,18 @@
 
 .leaderboard-results tbody tr {
   color: #ffffff;
+  margin-bottom: 10px; /* Add some space between rows */
 }
 
-.leaderboard-results tbody tr:first-child {
-  color: #686EF9;
+.leaderboard-results tbody td:before {
+  content: attr(data-label); /* Add data-label content before each cell */
+  font-weight: bold;
 }
 
 .leaderboard-results tbody span {
   font-weight: bold;
   padding: 1% 1.5%;
   border-radius: 50%;
-}
-
-.leaderboard-results tbody tr:first-child span {
-  background: #5055CB;
-  color: white;
 }
 
 .leaderboard-results tbody tr span {
@@ -96,7 +94,8 @@
 .leaderboard-font {
   margin: 0;
   padding: 0;
-  font-family: 'Press Start 2P', cursive;
+  font-family: "Press Start 2P", cursive;
+  font-size: 15px;
 }
 
 .loading-spinner {
@@ -115,44 +114,63 @@
   animation: spin 1s linear infinite;
 }
 
-.log-message {
+.log-message-unregister {
   position: absolute;
   color: #c50000;
-  padding: 1% 2%;
+  padding: 10px 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   animation: moveUpAndFade 3s ease-out forwards;
   backface-visibility: hidden;
-  border: 0.1vw solid #c50000;
-  text-shadow: 0.1vw 0.1vw 0.2vw rgba(0, 0, 0, 0.1);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.log-message-register {
+  position: absolute;
+  color: #43c80e;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: moveUpAndFade 3s ease-out forwards;
+  backface-visibility: hidden;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes moveUpAndFade {
   0% {
-      opacity: 1;
-      transform: translate(-50%, 0);
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
   80% {
-      opacity: 1;
-      transform: translate(-50%, -2vw);
+    opacity: 1;
+    transform: translate(-50%, -2vw);
   }
   100% {
-      opacity: 0;
-      transform: translate(-50%, -5vw);
+    opacity: 0;
+    transform: translate(-50%, -5vw);
   }
 }
 
 @keyframes spin {
   0% {
-      transform: rotate(0deg);
+    transform: rotate(0deg);
   }
   100% {
-      transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
 .scrollable-leaderboard {
-  max-height: 50vh; /* Adjust as needed */
+  max-height: 70vh; /* Adjust as needed */
   overflow-y: auto;
+}
+
+/* Media query for smaller screens */
+@media only screen and (max-width: 600px) {
+  .leaderboard-results thead th,
+  .leaderboard-results tbody td {
+    font-size: 14px; /* Adjust font size for smaller screens */
+  }
 }
