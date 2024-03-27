@@ -158,16 +158,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleLeaderboard = async () => {
-    try {
-      window.location.assign(
-        `https://tournament-app-fe-zigpprg2xq-og.a.run.app/leaderboard`
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleNotificationPermission = () => {
     getFirebaseToken(setTokenFound);
   };
@@ -176,9 +166,9 @@ const Dashboard = () => {
     <>
       <div>
         <div className="notification-status">
-          {isTokenFound ? <IoNotifications /> : <IoNotificationsOff onClick={handleNotificationPermission}/>}
+          {isTokenFound ? <IoNotifications /> : <IoNotificationsOff onClick={handleNotificationPermission} />}
         </div>
-      
+
         <ToastContainer
           position="top-center"
           autoClose={5000}
@@ -253,10 +243,6 @@ const Dashboard = () => {
               <h3 className="start2p"> Total Registered</h3>
               <p className="start2p flash">{totalRegistered}</p>
             </div>
-
-            <button className="leaderboard-button" onClick={handleLeaderboard}>
-              Leaderboard
-            </button>
           </div>
         </>
       ) : (
