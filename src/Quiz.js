@@ -470,7 +470,7 @@ const Quiz = () => {
       switch (power) {
         case "freeze":
           enemyList = playerList.filter(
-            (player) => player.name !== user.login && !player.freeze_debuff
+            (player) => player.name !== user.login && player.freeze_debuff < 2
           );
           break;
         case "mask":
