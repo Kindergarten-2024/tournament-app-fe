@@ -54,9 +54,14 @@ const useRenderTime = ({ remainingTime }) => {
     return null; // If remainingTime is null, don't render anything
   }
 
-  if (typeof remainingTime !== 'number' || isNaN(remainingTime) || remainingTime < 0 || remainingTime > 15) {
+  if (
+    typeof remainingTime !== "number" ||
+    isNaN(remainingTime) ||
+    remainingTime < 0 ||
+    remainingTime > 15
+  ) {
     return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
-}
+  }
 
   const isTimeUp = isNewTimeFirstTick.current;
 
@@ -266,7 +271,6 @@ const Quiz = () => {
       //change this else if 50-50 added
       setReceivedMessage(messageBody);
       setCurrentPowerIcon(MaskIcon);
-
     }
   };
 
@@ -278,7 +282,7 @@ const Quiz = () => {
       return () => clearTimeout(timeout); // Clear the timeout when component unmounts
     }
   }, [receivedMessage]);
-  
+
   const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
     const leaderboardArray = userDataArray.map((user) => ({
@@ -457,10 +461,27 @@ const Quiz = () => {
       const playerList = playerListData.map((player) => ({
         id: player.id,
         name: player.username,
+        freeze_debuff: player.freeze_debuff,
+        mask_debuff: player.mask_debuff,
       }));
-      const enemyList = playerList.filter(
-        (player) => player.name !== user.login
-      );
+
+      let enemyList;
+
+      switch (power) {
+        case "freeze":
+          enemyList = playerList.filter(
+            (player) => player.name !== user.login && !player.freeze_debuff
+          );
+          break;
+        case "mask":
+          enemyList = playerList.filter(
+            (player) => player.name !== user.login && !player.mask_debuff
+          );
+          break;
+        default:
+          enemyList = playerList.filter((player) => player.name !== user.login);
+      }
+
       setEnemies(enemyList);
     } catch (error) {
       console.error("Error fetching list: ", error);
@@ -586,7 +607,6 @@ const Quiz = () => {
                       ⚡ Power ⚡
                     </button>
                   )}
-
                 </>
               ) : (
                 <>
@@ -607,7 +627,6 @@ const Quiz = () => {
                 </>
               )}
             </div>
-
 
             {showModal && (
               <Modal
