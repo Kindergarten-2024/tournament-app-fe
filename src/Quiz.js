@@ -10,8 +10,10 @@ import "./Quiz.css";
 import { AuthContext } from "./App";
 import { useWebSocketContext } from "./WebSocketContext";
 import CryptoJS from "crypto-js";
+import Snowstorm from "react-snowstorm";
 import "react-step-progress-bar/styles.css";
 import { Step } from "react-step-progress-bar";
+import gifImage from "./images/wolf.gif";
 import {
   IoIosCheckmarkCircle,
   IoIosCloseCircle,
@@ -19,8 +21,6 @@ import {
 } from "react-icons/io";
 import countdownSound from "./music/countdown.mp3";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import FreezeIcon from "./images/freeze.png";
-import MaskIcon from "./images/mask.png";
 import "./Modal.css";
 import { Modal } from "./Modal";
 
@@ -102,6 +102,7 @@ const Quiz = () => {
   const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
   const [receivedMessage, setReceivedMessage] = useState("");
   const [isFrozen, setIsFrozen] = useState(false);
+  const [isMask, setIsMask] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
   const [power, setPower] = useState(" ");
   const [selectedPower, setSelectedPower] = useState(null);
@@ -246,6 +247,7 @@ const Quiz = () => {
     var payloadData = JSON.parse(payload.body);
     setQuestion(payloadData);
     setIsFrozen(false);
+    setIsMask(false);
     setTimerKey(Math.random());
     // Only try to decrypt if the answer is not an empty string
     if (payloadData.answer) {
@@ -266,11 +268,10 @@ const Quiz = () => {
       const actualMessage = messageBody.slice("freeze:".length);
       setReceivedMessage(actualMessage);
       setIsFrozen(true);
-      setCurrentPowerIcon(FreezeIcon);
     } else {
       //change this else if 50-50 added
       setReceivedMessage(messageBody);
-      setCurrentPowerIcon(MaskIcon);
+      setIsMask(true);
     }
   };
 
@@ -515,6 +516,7 @@ const Quiz = () => {
 
   return (
     <div>
+      {isFrozen && <Snowstorm />}
       <div>
         {question && !loading ? (
           <>
@@ -672,13 +674,19 @@ const Quiz = () => {
                 )}
               </Modal>
             )}
+            {isMask && (
+              <div className="gif-image-container">
+                {isMask && (
+                  <img
+                    src={gifImage}
+                    alt="GIF"
+                    className="gif-image moving-from-left"
+                  />
+                )}
+              </div>
+            )}
             {receivedMessage && (
               <div className="received-message-container">
-                {currentPowerIcon && (
-                  <div className="icon-container">
-                    <img src={currentPowerIcon} alt="Power Icon" />
-                  </div>
-                )}
                 <p className="message-text">{receivedMessage}</p>
               </div>
             )}
