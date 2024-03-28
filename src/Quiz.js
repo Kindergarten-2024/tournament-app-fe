@@ -448,10 +448,10 @@ const Quiz = () => {
   let powerDescription;
   if (power === "freeze") {
     powerDescription =
-      "Freeze your enemies! Shatter them into a thousand pieces!";
+      "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
   } else if (power === "mask") {
     powerDescription =
-      "Steal from your enemies! Embrace the Mask, where deception becomes your masterpiece..";
+    "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
   }
 
   const fetchEnemies = async () => {
@@ -463,6 +463,7 @@ const Quiz = () => {
         name: player.username,
         freeze_debuff: player.freeze_debuff,
         mask_debuff: player.mask_debuff,
+        score: player.score,
       }));
 
       let enemyList;
@@ -635,11 +636,8 @@ const Quiz = () => {
                 onClose={handeCancelPower}
               >
                 <div className="powers-container">
-                  <p>Select Power</p>
                   <button
-                    className={`select-power-button ${
-                      isSelected ? "selected" : ""
-                    }`}
+                    className="select-power-button"
                     onClick={handleSelectPower}
                   >
                     {power}
@@ -648,7 +646,6 @@ const Quiz = () => {
                 </div>
                 {showEnemies && (
                   <div className="enemies-container">
-                    <p>Select Player</p>
                     <ul>
                       {loading ? (
                         <p>Loading...</p>
@@ -661,10 +658,12 @@ const Quiz = () => {
                               selectedEnemy === enemy.id ? "selected" : ""
                             }
                           >
-                            {enemy.name &&
-                              (enemy.name.length > 20
-                                ? enemy.name.slice(0, 20) + "..."
-                                : enemy.name)}
+                            <span>
+                              {enemy.name.length > 20
+                                ? enemy.name.slice(0, 17) + "..."
+                                : enemy.name}
+                            </span>
+                            <span>{enemy.score}</span>
                           </li>
                         ))
                       )}
