@@ -402,3 +402,29 @@
   transition: background-color 1.5s ease, border 1.5s ease, box-shadow 1.5s ease;
   font-size: 14px;
 }
+
+.gif-image-container {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.gif-image {
+  position: relative;
+  left: -100%;
+}
+
+.moving-from-left {
+  animation-name: moveRight;
+  animation-duration: 7s;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes moveRight {
+  from {
+    left: -100%;
+  }
+  to {
+    left: calc(100% - 100px);
+  }
+}
