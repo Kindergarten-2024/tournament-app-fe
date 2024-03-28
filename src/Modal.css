@@ -6,7 +6,6 @@
   width: 80%;
   height: auto;
   max-height: 70%;
-  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,7 +38,7 @@
 .modal-footer {
   height: 10%;
   width: 100%;
-  padding: 0.5rem 1rem 1rem 1rem;
+  padding: 1rem;
   box-sizing: border-box;
   display: flex;
   justify-content: space-evenly;
