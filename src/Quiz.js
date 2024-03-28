@@ -103,11 +103,10 @@ const Quiz = () => {
   const [receivedMessage, setReceivedMessage] = useState("");
   const [isFrozen, setIsFrozen] = useState(false);
   const [isMask, setIsMask] = useState(false);
-  const [isSelected, setIsSelected] = useState(false);
+  const [is5050, setIs5050] = useState(false);
   const [power, setPower] = useState(" ");
-  const [selectedPower, setSelectedPower] = useState(null);
+  const [powerDescription, setPowerDescription] = useState(" ");
   const [showPowerButton, setShowPowerButton] = useState(false);
-  const [currentPowerIcon, setCurrentPowerIcon] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [enemies, setEnemies] = useState([]);
   const [showEnemies, setShowEnemies] = useState(false);
@@ -300,6 +299,21 @@ const Quiz = () => {
     if (player) {
       setScore(player.score);
       setPower(player.item);
+      let powerDesc;
+      switch (power) {
+        case "50-50":
+          powerDesc = "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.";
+          break;
+        case "freeze":
+          powerDesc = "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
+          break;
+        case "mask":
+          powerDesc = "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
+          break;
+        default:
+          powerDesc = " ";
+      }
+      setPowerDescription(powerDesc);
     }
   };
 
@@ -308,6 +322,21 @@ const Quiz = () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/player-item`);
         setPower(response.data);
+        let powerDesc;
+        switch (power) {
+          case "50-50":
+            powerDesc = "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.";
+            break;
+          case "freeze":
+            powerDesc = "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
+            break;
+          case "mask":
+            powerDesc = "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
+            break;
+          default:
+            powerDesc = " ";
+        }
+        setPowerDescription(powerDesc);
         if (power == null || power == "") setShowPowerButton(false);
         else setShowPowerButton(true);
       } catch (error) {
@@ -315,7 +344,7 @@ const Quiz = () => {
       }
     };
     fetchPlayerItem();
-  }, [power]);
+  }, [power, powerDescription]);
 
   const handleAnswer = (selected) => {
     setSelectedAnswer(selected);
@@ -435,24 +464,12 @@ const Quiz = () => {
     );
   }
 
-  const handleSelectPower = () => {
-    setSelectedPower(power);
-    if (power == "50-50") {
-      return;
-    } else {
+  const handleUsePower = () => {
+    if (power !== "50-50") {
       fetchEnemies();
       setShowEnemies(true);
-      setIsSelected(!isSelected);
-    }
-  };
-
-  let powerDescription;
-  if (power === "freeze") {
-    powerDescription =
-      "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
-  } else if (power === "mask") {
-    powerDescription =
-    "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
+    } else setShowEnemies(false);
+    setShowModal(true);
   }
 
   const fetchEnemies = async () => {
@@ -468,7 +485,6 @@ const Quiz = () => {
       }));
 
       let enemyList;
-
       switch (power) {
         case "freeze":
           enemyList = playerList.filter(
@@ -483,7 +499,6 @@ const Quiz = () => {
         default:
           enemyList = playerList.filter((player) => player.name !== user.login);
       }
-
       setEnemies(enemyList);
     } catch (error) {
       console.error("Error fetching list: ", error);
@@ -491,19 +506,19 @@ const Quiz = () => {
   };
 
   const handeCancelPower = () => {
+    setSelectedEnemy(null);
     setShowModal(false);
     setShowPowerButton(true);
   };
 
   const handleApplyPower = () => {
-    if (selectedEnemy && selectedPower) {
-      console.log("Applying power:", selectedPower, "to enemy:", selectedEnemy);
-      sendPower(selectedPower, selectedEnemy);
-      setShowModal(false);
-      setShowPowerButton(false);
-    } else {
-      console.log("Please select an enemy and a power.");
-    }
+    if (power !== "50-50" && !selectedEnemy) return;
+    else if (power !== "50-50" && selectedEnemy) sendPower(power, selectedEnemy);
+    else sendPower(power, null);
+    console.log("Applying power:", power, "to enemy:", selectedEnemy);
+    setSelectedEnemy(null);
+    setShowModal(false);
+    setShowPowerButton(false);
   };
 
   const sendPower = (power, selectedEnemy) => {
@@ -587,9 +602,10 @@ const Quiz = () => {
                     {question.options.map((option, index) => (
                       <button
                         key={index}
-                        className={`${
-                          selectedAnswer === option ? "selected" : ""
-                        } ${isFrozen ? "freeze-effect" : ""}`}
+                        className={`
+                        ${selectedAnswer === option ? "selected" : ""}
+                        ${isFrozen ? "freeze-effect" : ""}
+                        `}
                         onClick={() =>
                           handleAnswer(selectedAnswer === option ? "" : option)
                         }
@@ -605,7 +621,7 @@ const Quiz = () => {
                   {showPowerButton && (
                     <button
                       className="use-power-button"
-                      onClick={() => setShowModal(true)}
+                      onClick={handleUsePower}
                     >
                       ⚡ Power ⚡
                     </button>
@@ -638,10 +654,7 @@ const Quiz = () => {
                 onClose={handeCancelPower}
               >
                 <div className="powers-container">
-                  <button
-                    className="select-power-button"
-                    onClick={handleSelectPower}
-                  >
+                  <button className="select-power-button">
                     {power}
                   </button>
                   <p>{powerDescription}</p>
