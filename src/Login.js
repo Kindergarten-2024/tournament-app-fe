@@ -65,7 +65,8 @@ const Login = () => {
         localStorage.setItem('token',response.data.token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
         console.log("before getting sent to dashboard");
-        return <Dashboard />;
+        window.location.assign('/');
+
         // navigate('/dashboard');
 
 
