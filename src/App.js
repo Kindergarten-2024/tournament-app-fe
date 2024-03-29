@@ -29,6 +29,10 @@ axios.defaults.withCredentials = true;
 const AuthContext = createContext();
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const token = localStorage.getItem('token');
+if (token) {
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
 
 const AuthContextProvider = ({ children }) => {
   const [loggedIn, setLoggedIn] = useState(null);
