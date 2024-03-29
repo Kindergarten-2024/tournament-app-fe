@@ -39,7 +39,11 @@
 
 .selected {
   /*background: linear-gradient(170deg, #bfae4d, #afc313) !important;*/
-  background-image: linear-gradient(45deg, rgb(155, 0, 255), rgb(255, 0, 0)) !important;
+  background-image: linear-gradient(
+    45deg,
+    rgb(155, 0, 255),
+    rgb(255, 0, 0)
+  ) !important;
   background-size: 200% 200%;
   animation: gradientShift 2s ease infinite;
   color: white;
@@ -450,4 +454,32 @@
   to {
     left: calc(100% - 100px);
   }
+}
+
+.top-left-container {
+  position: absolute;
+  top: 13px;
+  left: 60px;
+}
+
+.streak-gif {
+  width: 40px;
+  height: auto;
+}
+
+.streak-fire-text {
+  position: absolute;
+  top: 44px;
+  left: 10px;
+  transform: translate(10%, -10%);
+  color: rgb(0, 0, 0);
+  font-size: 18px;
+}
+.streak-text {
+  position: absolute;
+  top: 42px;
+  left: -56px;
+  transform: translate(10%, -10%);
+  color: rgb(255, 255, 255);
+  font-size: 18px;
 }

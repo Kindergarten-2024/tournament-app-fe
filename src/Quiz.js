@@ -14,6 +14,8 @@ import Snowstorm from "react-snowstorm";
 import "react-step-progress-bar/styles.css";
 import { Step } from "react-step-progress-bar";
 import gifImage from "./images/wolf.gif";
+import blueFire from "./images/bluefire.gif";
+import redFire from "./images/redfire.gif";
 import {
   IoIosCheckmarkCircle,
   IoIosCloseCircle,
@@ -89,6 +91,7 @@ const Quiz = () => {
   const renderTimeComponent = useRenderTime({ remainingTime });
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [timerKey, setTimerKey] = useState(0);
+  const [streakMessage, setstreakMessage] = useState("");
   const [progress, setProgress] = useState(0);
   const [answerTime, setAnswerTime] = useState(Date.now());
   const [questionTimer, setQuestionTimer] = useState(Date.now());
@@ -185,6 +188,10 @@ const Quiz = () => {
         `/user/${user.login}/private`,
         onPrivateMessageReceived
       );
+      stompClient.subscribe(
+        `/user/${user.login}/privateStreak`,
+        onPrivateStreakMessageReceived
+      );
     }
     // Clean up subscriptions when the component unmounts
     return () => {
@@ -274,6 +281,11 @@ const Quiz = () => {
     }
   };
 
+  const onPrivateStreakMessageReceived = (payload) => {
+    const messageBody = payload.body;
+    setstreakMessage(messageBody);
+  };
+
   useEffect(() => {
     if (receivedMessage) {
       const timeout = setTimeout(() => {
@@ -302,13 +314,16 @@ const Quiz = () => {
       let powerDesc;
       switch (power) {
         case "50-50":
-          powerDesc = "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.";
+          powerDesc =
+            "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.";
           break;
         case "freeze":
-          powerDesc = "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
+          powerDesc =
+            "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
           break;
         case "mask":
-          powerDesc = "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
+          powerDesc =
+            "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
           break;
         default:
           powerDesc = " ";
@@ -325,13 +340,16 @@ const Quiz = () => {
         let powerDesc;
         switch (power) {
           case "50-50":
-            powerDesc = "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.";
+            powerDesc =
+              "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.";
             break;
           case "freeze":
-            powerDesc = "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
+            powerDesc =
+              "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
             break;
           case "mask":
-            powerDesc = "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
+            powerDesc =
+              "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
             break;
           default:
             powerDesc = " ";
@@ -470,7 +488,7 @@ const Quiz = () => {
       setShowEnemies(true);
     } else setShowEnemies(false);
     setShowModal(true);
-  }
+  };
 
   const fetchEnemies = async () => {
     try {
@@ -513,7 +531,8 @@ const Quiz = () => {
 
   const handleApplyPower = () => {
     if (power !== "50-50" && !selectedEnemy) return;
-    else if (power !== "50-50" && selectedEnemy) sendPower(power, selectedEnemy);
+    else if (power !== "50-50" && selectedEnemy)
+      sendPower(power, selectedEnemy);
     else sendPower(power, null);
     console.log("Applying power:", power, "to enemy:", selectedEnemy);
     setSelectedEnemy(null);
@@ -529,10 +548,32 @@ const Quiz = () => {
     stompClient.send("/app/usePower", {}, JSON.stringify(messageObject));
   };
 
+  let streakGif;
+  switch (streakMessage) {
+    case "X1":
+      streakGif = redFire;
+      break;
+    case "X2":
+    case "X3":
+      streakGif = blueFire;
+      break;
+  }
+
   return (
     <div>
       {isFrozen && <Snowstorm />}
       <div>
+        <div className="top-left-container">
+          {streakGif && (
+            <img src={streakGif} alt="Streak GIF" className="streak-gif" />
+          )}
+          {streakMessage && (
+            <div>
+              <div className="streak-fire-text">{streakMessage}</div>
+              <div className="streak-text">streak: </div>
+            </div>
+          )}
+        </div>
         {question && !loading ? (
           <>
             <div className="steps-container">
@@ -654,9 +695,7 @@ const Quiz = () => {
                 onClose={handeCancelPower}
               >
                 <div className="powers-container">
-                  <button className="select-power-button">
-                    {power}
-                  </button>
+                  <button className="select-power-button">{power}</button>
                   <p>{powerDescription}</p>
                 </div>
                 {showEnemies && (
