@@ -56,10 +56,10 @@ const Dashboard = () => {
     onMessageListener()
       .then((payload) => {
         setNotification({
-          title: payload.notification.title,
-          body: payload.notification.body,
+          title: payload.data.title,
+          body: payload.data.body,
         });
-        toast.info(`${payload.notification.body}`);
+        toast.info(`${payload.data.body}`);
         console.log(payload);
       })
       .catch((err) => console.log("failed: ", err));
