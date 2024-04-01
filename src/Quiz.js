@@ -188,10 +188,6 @@ const Quiz = () => {
         `/user/${user.login}/private`,
         onPrivateMessageReceived
       );
-      stompClient.subscribe(
-        `/user/${user.login}/privateStreak`,
-        onPrivateStreakMessageReceived
-      );
     }
     // Clean up subscriptions when the component unmounts
     return () => {
@@ -281,10 +277,10 @@ const Quiz = () => {
     }
   };
 
-  const onPrivateStreakMessageReceived = (payload) => {
-    const messageBody = payload.body;
-    setstreakMessage(messageBody);
-  };
+  // const onPrivateStreakMessageReceived = (payload) => {
+  //   const messageBody = payload.body;
+  //   setstreakMessage(messageBody);
+  // };
 
   useEffect(() => {
     if (receivedMessage) {
@@ -329,21 +325,45 @@ const Quiz = () => {
     fetchPlayerItem();
   }, [power, showScore]);
 
+  useEffect(() => {
+    const fetchPlayerStreak = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/player-streak`);
+        if (response.data >= 5) {
+          setstreakMessage("X3");
+        } else if (response.data >= 3) {
+          setstreakMessage("X2");
+        } else {
+          setstreakMessage("X1");
+        }
+      } catch (error) {
+        console.error("Error fetching player streak: ", error);
+      }
+    };
+    fetchPlayerStreak();
+  }, [showScore]);
+
   const switchSetPowerDescription = (power) => {
     switch (power) {
       case "50-50":
-        setPowerDescription("Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.");
+        setPowerDescription(
+          "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory."
+        );
         break;
       case "freeze":
-        setPowerDescription("Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.");
+        setPowerDescription(
+          "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question."
+        );
         break;
       case "mask":
-        setPowerDescription("Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.");
+        setPowerDescription(
+          "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake."
+        );
         break;
       default:
         setPowerDescription(" ");
     }
-  }
+  };
 
   const handleAnswer = (selected) => {
     setSelectedAnswer(selected);
@@ -472,16 +492,16 @@ const Quiz = () => {
   };
 
   const fetchEnemies = async () => {
-  try {
-    const response = await axios.get(`${BACKEND_URL}/leaderboard`);
-    const playerListData = response.data;
-    const playerList = playerListData.map((player) => ({
-      id: player.id,
-      name: player.username,
-      freeze_debuff: player.freeze_debuff,
-      mask_debuff: player.mask_debuff,
-      score: player.score,
-  }));
+    try {
+      const response = await axios.get(`${BACKEND_URL}/leaderboard`);
+      const playerListData = response.data;
+      const playerList = playerListData.map((player) => ({
+        id: player.id,
+        name: player.username,
+        freeze_debuff: player.freeze_debuff,
+        mask_debuff: player.mask_debuff,
+        score: player.score,
+      }));
 
       let enemyList;
       switch (power) {
