@@ -14,13 +14,12 @@ import backgroundMusic from "./music/Retro 80s.mp3"
 import Quiz from "./Quiz";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
-import Clicker from "./Clicker";
 import { useWebSocketContext } from "./WebSocketContext";
 import { WebSocketProvider } from "./WebSocketContext";
 import MainLeaderboard from "./Leaderboard";
 import QRcode from "./QRcode";
 import { MdMusicNote, MdMusicOff } from "react-icons/md";
-
+import opap_logo from "./images/opap_logo.png";
 
 // Ensures cookie is sent
 axios.defaults.withCredentials = true;
@@ -164,9 +163,9 @@ function App() {
 
   return (
     <div className="App">
-      <Clicker />
       <InteractiveBackground />
       <header className="App-header">
+        <img src={opap_logo} className="opap-logo" alt="opap logo"></img>
         <AuthContextProvider>
           <WebSocketProvider>
             <Router>
