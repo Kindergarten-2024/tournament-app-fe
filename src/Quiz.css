@@ -473,7 +473,8 @@
   left: 10px;
   transform: translate(10%, -10%);
   color: rgb(0, 0, 0);
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: bold;
 }
 .streak-text {
   position: absolute;
@@ -482,4 +483,5 @@
   transform: translate(10%, -10%);
   color: rgb(255, 255, 255);
   font-size: 18px;
+  font-weight: bold;
 }
