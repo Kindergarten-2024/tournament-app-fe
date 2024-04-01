@@ -311,24 +311,6 @@ const Quiz = () => {
     if (player) {
       setScore(player.score);
       setPower(player.item);
-      let powerDesc;
-      switch (power) {
-        case "50-50":
-          powerDesc =
-            "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.";
-          break;
-        case "freeze":
-          powerDesc =
-            "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
-          break;
-        case "mask":
-          powerDesc =
-            "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
-          break;
-        default:
-          powerDesc = " ";
-      }
-      setPowerDescription(powerDesc);
     }
   };
 
@@ -337,32 +319,31 @@ const Quiz = () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/player-item`);
         setPower(response.data);
-        let powerDesc;
-        switch (power) {
-          case "50-50":
-            powerDesc =
-              "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.";
-            break;
-          case "freeze":
-            powerDesc =
-              "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.";
-            break;
-          case "mask":
-            powerDesc =
-              "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.";
-            break;
-          default:
-            powerDesc = " ";
-        }
-        setPowerDescription(powerDesc);
-        if (power == null || power == "") setShowPowerButton(false);
-        else setShowPowerButton(true);
+        switchSetPowerDescription(response.data);
+        setShowPowerButton(response.data !== null && response.data !== "");
+        if (showScore) setShowModal(false);
       } catch (error) {
         console.error("Error fetching player score: ", error);
       }
     };
     fetchPlayerItem();
-  }, [power, powerDescription]);
+  }, [power, showScore]);
+
+  const switchSetPowerDescription = (power) => {
+    switch (power) {
+      case "50-50":
+        setPowerDescription("Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory.");
+        break;
+      case "freeze":
+        setPowerDescription("Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question.");
+        break;
+      case "mask":
+        setPowerDescription("Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake.");
+        break;
+      default:
+        setPowerDescription(" ");
+    }
+  }
 
   const handleAnswer = (selected) => {
     setSelectedAnswer(selected);
@@ -491,16 +472,16 @@ const Quiz = () => {
   };
 
   const fetchEnemies = async () => {
-    try {
-      const response = await axios.get(`${BACKEND_URL}/leaderboard`);
-      const playerListData = response.data;
-      const playerList = playerListData.map((player) => ({
-        id: player.id,
-        name: player.username,
-        freeze_debuff: player.freeze_debuff,
-        mask_debuff: player.mask_debuff,
-        score: player.score,
-      }));
+  try {
+    const response = await axios.get(`${BACKEND_URL}/leaderboard`);
+    const playerListData = response.data;
+    const playerList = playerListData.map((player) => ({
+      id: player.id,
+      name: player.username,
+      freeze_debuff: player.freeze_debuff,
+      mask_debuff: player.mask_debuff,
+      score: player.score,
+  }));
 
       let enemyList;
       switch (power) {
@@ -669,22 +650,20 @@ const Quiz = () => {
                   )}
                 </>
               ) : (
-                <>
-                  <div className="answer-buttons">
-                    {question?.options.map((option, index) => (
-                      <button
-                        key={index}
-                        className={`${getOptionClass(option)}`}
-                        disabled
-                      >
-                        <span className="option-letter">
-                          {String.fromCharCode(65 + index)}.
-                        </span>
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </>
+                <div className="answer-buttons">
+                  {question?.options.map((option, index) => (
+                    <button
+                      key={index}
+                      className={`${getOptionClass(option)}`}
+                      disabled
+                    >
+                      <span className="option-letter">
+                        {String.fromCharCode(65 + index)}.
+                      </span>
+                      {option}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -726,6 +705,7 @@ const Quiz = () => {
                 )}
               </Modal>
             )}
+
             {isMask && (
               <div className="gif-image-container">
                 {isMask && (
@@ -737,6 +717,7 @@ const Quiz = () => {
                 )}
               </div>
             )}
+
             {receivedMessage && (
               <div className="received-message-container">
                 <p className="message-text">{receivedMessage}</p>
