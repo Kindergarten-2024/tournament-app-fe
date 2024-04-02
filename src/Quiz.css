@@ -463,13 +463,15 @@
 }
 
 .streak-gif {
+  position: absolute;
+  top: -30px;
   width: 40px;
   height: auto;
 }
 
 .streak-fire-text {
   position: absolute;
-  top: 44px;
+  top: 10px;
   left: 10px;
   transform: translate(10%, -10%);
   color: rgb(0, 0, 0);
@@ -478,7 +480,7 @@
 }
 .streak-text {
   position: absolute;
-  top: 42px;
+  top: 10px;
   left: -56px;
   transform: translate(10%, -10%);
   color: rgb(255, 255, 255);
