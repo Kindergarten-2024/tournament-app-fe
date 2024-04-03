@@ -18,8 +18,11 @@ import { useWebSocketContext } from "./WebSocketContext";
 import { WebSocketProvider } from "./WebSocketContext";
 import MainLeaderboard from "./Leaderboard";
 import QRcode from "./QRcode";
-import { MdMusicNote, MdMusicOff } from "react-icons/md";
 import opap_logo from "./images/opap_logo.png";
+import { IoMdHelpCircleOutline } from "react-icons/io";
+import { MdMusicNote, MdMusicOff } from "react-icons/md";
+import { Modal } from "./Instructions";
+import "./Instructions.css";
 
 // Ensures cookie is sent
 axios.defaults.withCredentials = true;
@@ -143,6 +146,7 @@ function App() {
 
   const audioRef = useRef();
   const [isPlaying, setIsPlaying] = useState(false); // state to track if the music is playing
+  const [showInstructions, setShowInstructions] = useState(false); // state to show game instructions
 
   useEffect(() => {
     // Function to play or pause music based on `isPlaying` state
@@ -160,27 +164,37 @@ function App() {
     setIsPlaying(!isPlaying);
   };
 
-
   return (
     <div className="App">
       <InteractiveBackground />
       <header className="App-header">
-        <img src={opap_logo} className="opap-logo" alt="opap logo"></img>
         <AuthContextProvider>
           <WebSocketProvider>
             <Router>
-              <div className="music-toggle">
-                {isPlaying ? (
-                  <MdMusicNote onClick={toggleMusic} />
-                ) : (
-                  <MdMusicOff onClick={toggleMusic} />
-                )}
-              </div>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/qr" element={<QRcode />} />
-                <Route path="/mainleaderboard" element={<MainLeaderboard />} />
-              </Routes>
+            <img src={opap_logo} className="opap-logo" alt="opap logo"></img>
+            <div className="instructions-toggle">
+              <IoMdHelpCircleOutline onClick={() => setShowInstructions(!showInstructions)}/>
+            </div>
+            <div className="music-toggle">
+              {isPlaying ? (
+                <MdMusicNote onClick={toggleMusic} />
+              ) : (
+                <MdMusicOff onClick={toggleMusic} />
+              )}
+            </div>
+
+            {showInstructions && (
+              <Modal
+                onApply={() => setShowInstructions(false)}
+                onClose={() => setShowInstructions(false)}>
+              </Modal>
+            )}
+
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/qr" element={<QRcode />} />
+              <Route path="/mainleaderboard" element={<MainLeaderboard />} />
+            </Routes>
             </Router>
           </WebSocketProvider>
         </AuthContextProvider>

@@ -57,13 +57,15 @@
 .logout-icon {
     position: fixed;
     top: 13px;
-    right: 16px;
+    right: 15px;
+    font-size: 20px;
 }
 
 .notification-status {
     position: fixed;
     top: 12px;
-    right: 51px;
+    right: 50px;
+    font-size: 20px;
 }
 
 .user-info-container {

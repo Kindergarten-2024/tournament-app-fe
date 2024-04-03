@@ -24,7 +24,6 @@ const InteractiveBackground = () => {
           <div id="retrobg-sky">
             <div id="retrobg-stars">
               <div className="retrobg-star" style={{ left: '5%', top: '55%', transform: 'scale(2)' }}></div>
-              <div className="retrobg-star" style={{ left: '9%', top: '5%', transform: 'scale(2)' }}></div>
               <div className="retrobg-star" style={{ left: '10%', top: '45%', transform: 'scale(1)' }}></div>
               <div className="retrobg-star" style={{ left: '12%', top: '35%', transform: 'scale(1)' }}></div>
               <div className="retrobg-star" style={{ left: '15%', top: '39%', transform: 'scale(1)' }}></div>
@@ -41,7 +40,6 @@ const InteractiveBackground = () => {
               <div className="retrobg-star" style={{ left: '80%', top: '25%', transform: 'scale(1)' }}></div>
               <div className="retrobg-star" style={{ left: '83%', top: '57%', transform: 'scale(1)' }}></div>
               <div className="retrobg-star" style={{ left: '90%', top: '29%', transform: 'scale(2)' }}></div>
-              <div className="retrobg-star" style={{ left: '95%', top: '5%', transform: 'scale(1)' }}></div>
               <div className="retrobg-star" style={{ left: '96%', top: '72%', transform: 'scale(1)' }}></div>
               <div className="retrobg-star" style={{ left: '98%', top: '70%', transform: 'scale(3)' }}></div>
             </div>

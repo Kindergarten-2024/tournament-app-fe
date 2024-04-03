@@ -456,34 +456,29 @@
   }
 }
 
-.top-left-container {
-  position: absolute;
-  top: 13px;
-  left: 60px;
+.streak-container {
+  position: fixed;
+  top: -15px;
+  right: 10px;
+  width: 75px;
+  height: 100px;
 }
 
-.streak-gif {
+.streak-image {
   position: absolute;
-  top: -30px;
-  width: 40px;
-  height: auto;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.streak-fire-text {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  transform: translate(10%, -10%);
-  color: rgb(0, 0, 0);
-  font-size: 16px;
-  font-weight: bold;
-}
 .streak-text {
   position: absolute;
-  top: 10px;
-  left: -56px;
-  transform: translate(10%, -10%);
-  color: rgb(255, 255, 255);
-  font-size: 18px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: black;
   font-weight: bold;
+  width: 100%;
 }
