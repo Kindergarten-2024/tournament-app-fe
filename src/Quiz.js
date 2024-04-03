@@ -8,7 +8,6 @@ import React, {
 import axios from "axios";
 import "./Quiz.css";
 import {AuthContext} from "./App";
-import {useWebSocketContext} from "./WebSocketContext";
 import CryptoJS from "crypto-js";
 import Snowstorm from "react-snowstorm";
 import "react-step-progress-bar/styles.css";
@@ -22,12 +21,15 @@ import {
     IoIosRemoveCircle,
 } from "react-icons/io";
 import countdownSound from "./music/countdown.mp3";
+import SockJS from "sockjs-client";
+import {over} from 'stompjs';
 import {CountdownCircleTimer} from "react-countdown-circle-timer";
 import {Modal} from "./Powers";
 import "./Powers.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
+var stompClient = null;
 
 const useRenderTime = ({remainingTime}) => {
     const currentTime = useRef(null); // Initialize to null instead of remainingTime
@@ -86,7 +88,6 @@ const useRenderTime = ({remainingTime}) => {
 
 const Quiz = () => {
     const {user} = useContext(AuthContext);
-    const {stompClient} = useWebSocketContext();
     const {remainingTime} = CountdownCircleTimer;
     const renderTimeComponent = useRenderTime({remainingTime});
     const [selectedAnswer, setSelectedAnswer] = useState("");
@@ -123,8 +124,8 @@ const Quiz = () => {
 
     //position
     const [position, setPosition] = useState(() => {
-        const storedPuestion = localStorage.getItem("position");
-        return storedPuestion ? JSON.parse(storedPuestion) : null;
+        const storedPosition = localStorage.getItem("position");
+        return storedPosition ? JSON.parse(storedPosition) : null;
     });
 
     //score
@@ -146,6 +147,30 @@ const Quiz = () => {
     useEffect(() => {
         localStorage.setItem("score", JSON.stringify(score));
     }, [score]);
+
+    useEffect(() => {
+        connect();
+    }, []);
+
+    const connect = () => {
+        let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
+        stompClient = over(Sock);
+        stompClient.connect({}, onConnected, onError);
+    }
+
+    const onConnected = () => {
+        stompClient.subscribe("/questions", onPublicMessageReceived);
+        stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+        stompClient.subscribe(`/user/${user.login}/private`, onPrivateMessageReceived);
+    }
+
+    const onError = (error) => {
+        console.error('WebSocket error: ', error);
+        setTimeout(() => {
+            console.log('Attempting to reconnect to WebSocket...');
+            connect();
+        }, 1000);
+    }
 
     useEffect(() => {
         const storedArray = JSON.parse(localStorage.getItem("stringsArray"));
@@ -181,32 +206,25 @@ const Quiz = () => {
         fetchCurrentQuestion();
     }, []);
 
-    useEffect(() => {
-        if (stompClient && stompClient.connected) {
-            stompClient.subscribe("/questions", onPublicMessageReceived);
-            stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
-            stompClient.subscribe(
-                `/user/${user.login}/private`,
-                onPrivateMessageReceived
-            );
-        }
-        // Clean up subscriptions when the component unmounts
-        return () => {
-            if (stompClient) {
-                stompClient.unsubscribe("/questions");
-                stompClient.unsubscribe("/leaderboard");
-            }
-        };
-    }, [stompClient]);
+    // useEffect(() => {
+    //   if (stompClient && stompClient.connected) {
+    //     stompClient.subscribe("/questions", onPublicMessageReceived);
+    //     stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+    //     stompClient.subscribe(
+    //       `/user/${user.login}/private`,
+    //       onPrivateMessageReceived
+    //     );
+    //   }
+    //   // Clean up subscriptions when the component unmounts
+    //   return () => {
+    //     if (stompClient) {
+    //       stompClient.unsubscribe("/questions");
+    //       stompClient.unsubscribe("/leaderboard");
+    //     }
+    //   };
+    // }, [stompClient]);
 
     useEffect(() => {
-        // if (soundPlayedForQuestion) {
-        //   countdownAudioRef.current.pause();
-        //   countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
-        //   setSoundPlayedForQuestion(false);
-        // }
-        console.log(soundPlayedForQuestion);
-        console.log("find me !!!!!!!!!!!!!!!!!!!!!!!!{@{@@{@{@{@{@");
         if (question) {
             axios
                 .get(`${BACKEND_URL}/admin/questions/time-now`)
@@ -223,21 +241,20 @@ const Quiz = () => {
         }
     }, [question]);
 
-    useEffect(() => {
-        if (questionIndex % 10 == 1) {
-            setProgress(0);
-        } else if (questionIndex % 10 == 0) {
-            setProgress(100);
-        } else {
-            setProgress((((questionIndex - 1) % 10) * 100) / 9);
-        }
-    }, [questionIndex]);
+    // useEffect(() => {
+    //   if (questionIndex % 10 == 1) {
+    //     setProgress(0);
+    //   } else if (questionIndex % 10 == 0) {
+    //     setProgress(100);
+    //   } else {
+    //     setProgress((((questionIndex - 1) % 10) * 100) / 9);
+    //   }
+    // }, [questionIndex]);
 
     function decrypt(encryptedValue) {
         if (encryptedValue === undefined) {
             throw new Error("encryptedValue is undefined");
         }
-        // Decrypt without specifying the IV since ECB mode is used
         const decrypted = CryptoJS.AES.decrypt(encryptedValue, SECRET_KEY, {
             mode: CryptoJS.mode.ECB,
             padding: CryptoJS.pad.Pkcs7,
@@ -263,7 +280,6 @@ const Quiz = () => {
         // updateString(questionIndex - 1, "current");
         setShowScore(false);
     };
-    ////////////power message
     const onPrivateMessageReceived = (payload) => {
         const messageBody = payload.body;
         console.log("Received message:", messageBody);
@@ -277,11 +293,6 @@ const Quiz = () => {
             setIsMask(true);
         }
     };
-
-    // const onPrivateStreakMessageReceived = (payload) => {
-    //   const messageBody = payload.body;
-    //   setstreakMessage(messageBody);
-    // };
 
     useEffect(() => {
         if (receivedMessage) {
