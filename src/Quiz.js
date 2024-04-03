@@ -23,8 +23,8 @@ import {
 } from "react-icons/io";
 import countdownSound from "./music/countdown.mp3";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import "./Modal.css";
-import { Modal } from "./Modal";
+import { Modal } from "./Powers";
+import "./Powers.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -91,7 +91,8 @@ const Quiz = () => {
   const renderTimeComponent = useRenderTime({ remainingTime });
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [timerKey, setTimerKey] = useState(0);
-  const [streakMessage, setstreakMessage] = useState("");
+  const [streakGif, setStreakGif] = useState(redFire);
+  const [streakText, setstreakText] = useState("x1");
   const [progress, setProgress] = useState(0);
   const [answerTime, setAnswerTime] = useState(Date.now());
   const [questionTimer, setQuestionTimer] = useState(Date.now());
@@ -329,12 +330,17 @@ const Quiz = () => {
     const fetchPlayerStreak = async () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/player-streak`);
-        if (response.data >= 5) {
-          setstreakMessage("X3");
-        } else if (response.data >= 3) {
-          setstreakMessage("X2");
-        } else {
-          setstreakMessage("X1");
+        if (response.data < 3) {
+          setstreakText("x1");
+          setStreakGif(redFire);
+        }
+        else if (response.data < 5) {
+          setstreakText("x2");
+          setStreakGif(blueFire);
+        }
+        else {
+          setstreakText("x3");
+          setStreakGif(blueFire);
         }
       } catch (error) {
         console.error("Error fetching player streak: ", error);
@@ -549,32 +555,14 @@ const Quiz = () => {
     stompClient.send("/app/usePower", {}, JSON.stringify(messageObject));
   };
 
-  let streakGif;
-  switch (streakMessage) {
-    case "X1":
-      streakGif = redFire;
-      break;
-    case "X2":
-    case "X3":
-      streakGif = blueFire;
-      break;
-  }
-
   return (
     <div>
       {isFrozen && <Snowstorm />}
+      <div className="streak-container">
+        <img src={streakGif} alt="Streak GIF" className="streak-image" />
+        <p className="streak-text">{streakText}</p>
+      </div>
       <div>
-        <div className="top-left-container">
-          {streakGif && (
-            <img src={streakGif} alt="Streak GIF" className="streak-gif" />
-          )}
-          {streakMessage && (
-            <div>
-              <div className="streak-fire-text">{streakMessage}</div>
-              <div className="streak-text">streak: </div>
-            </div>
-          )}
-        </div>
         {question && !loading ? (
           <>
             <div className="steps-container">
