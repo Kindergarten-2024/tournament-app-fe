@@ -10,7 +10,10 @@ import "./Dashboard.css";
 import { getFirebaseToken, onMessageListener } from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useWebSocketContext } from "./WebSocketContext";
+import SockJS from "sockjs-client";
+import {over} from 'stompjs';
+
+var stompClient = null;
 
 const Dashboard = () => {
   const { user, checkLoginState } = useContext(AuthContext);
@@ -26,6 +29,29 @@ const Dashboard = () => {
   const [score, setScore] = useState();
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+  useEffect(() => {
+    connect();
+  }, []);
+
+  const connect = () => {
+    let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
+    stompClient = over(Sock);
+    stompClient.connect({}, onConnected, onError);
+  }
+
+  const onConnected = () => {
+    stompClient.subscribe("/registrations-time", onEndingReceive);
+    stompClient.subscribe("/totalRegister", onRegisterReceive);
+  }
+
+  const onError = (error) => {
+    console.error('WebSocket error: ', error);
+    setTimeout(() => {
+      console.log('Attempting to reconnect to WebSocket...');
+      connect();
+    }, 1000);
+  }
 
   useEffect(() => {
     const fetchPlayerPosition = async () => {
@@ -63,43 +89,16 @@ const Dashboard = () => {
         console.log(payload);
       })
       .catch((err) => console.log("failed: ", err));
-  }, [notification]);
+  }, [notification])
 
-  //SOCKET
-  const { stompClient } = useWebSocketContext();
-
-  useEffect(() => {
-    let subscription;
-
-    const subscribe = () => {
-      if (stompClient && stompClient.connected) {
-        subscription = stompClient.subscribe(
-          "/registrations-time",
-          onEndingRecieve
-        );
-        stompClient.subscribe("/totalRegister", onRegisterRecieve);
-      }
-    };
-
-    subscribe(); // Subscribe to the topics
-
-    // Clean up subscriptions when the component unmounts
-    return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
-  }, [stompClient]);
-
-  const onEndingRecieve = (payload) => {
+  const onEndingReceive = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setRegisterUp(payloadData.timerOn);
     setRounds(payloadData.round);
   };
 
-  const onRegisterRecieve = (message) => {
+  const onRegisterReceive = (message) => {
     var payloadData = JSON.parse(message.body);
-    console.log("total", payloadData);
     setTotalRegistered(payloadData);
   };
 

@@ -14,8 +14,6 @@ import backgroundMusic from "./music/Retro 80s.mp3"
 import Quiz from "./Quiz";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
-import {useWebSocketContext} from "./WebSocketContext";
-import {WebSocketProvider} from "./WebSocketContext";
 import MainLeaderboard from "./Leaderboard";
 import QRcode from "./QRcode";
 import opap_logo from "./images/opap_logo.png";
@@ -23,12 +21,13 @@ import {IoMdHelpCircleOutline} from "react-icons/io";
 import {MdMusicNote, MdMusicOff} from "react-icons/md";
 import {Modal} from "./Instructions";
 import "./Instructions.css";
+import SockJS from "sockjs-client";
+import {over} from 'stompjs';
 
+var stompClient = null;
 // Ensures cookie is sent
 axios.defaults.withCredentials = true;
-
 const AuthContext = createContext();
-
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const AuthContextProvider = ({children}) => {
@@ -58,50 +57,39 @@ const AuthContextProvider = ({children}) => {
     );
 };
 
-const useWebSocket = () => {
-    const [timerOn, setTimerOn] = useState(null);
-    const [round, setRound] = useState(1);
-    const [error, setError] = useState(null);
-    const {stompClient} = useWebSocketContext();
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                if (stompClient && stompClient.connected) {
-                    const registrationSubscription = stompClient.subscribe(
-                        "/registrations-time",
-                        onEndingReceive
-                    );
-
-                    return () => {
-                        registrationSubscription.unsubscribe();
-                    };
-                }
-            } catch (error) {
-                setError(error);
-            }
-        };
-
-        fetchData();
-    }, [stompClient]);
-
-    const onEndingReceive = (payload) => {
-        try {
-            var payloadData = JSON.parse(payload.body);
-            setTimerOn(payloadData.timerOn);
-            setRound(payloadData.round);
-        } catch (error) {
-            setError(error);
-        }
-    };
-
-    return {timerOn, round, error};
-};
-
 const Home = () => {
     const {loggedIn, checkLoginState} = useContext(AuthContext);
-    const {timerOn, round} = useWebSocket();
     const [isLoading, setIsLoading] = useState(true);
+    const [timerOn, setTimerOn] = useState(null);
+    const [round, setRound] = useState(1);
+
+    useEffect(() => {
+        connect();
+    }, []);
+
+    const connect = () => {
+        let Sock = new SockJS(`${BACKEND_URL}/ws-message/public`);
+        stompClient = over(Sock);
+        stompClient.connect({}, onConnected, onError);
+    }
+
+    const onConnected = () => {
+        stompClient.subscribe("/registrations-time", onEndingReceive);
+    }
+
+    const onError = (error) => {
+        console.error('WebSocket error: ', error);
+        setTimeout(() => {
+            console.log('Attempting to reconnect to WebSocket...');
+            connect();
+        }, 1000);
+    }
+
+    const onEndingReceive = (payload) => {
+        var payloadData = JSON.parse(payload.body);
+        setTimerOn(payloadData.timerOn);
+        setRound(payloadData.round);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -110,6 +98,25 @@ const Home = () => {
         };
         fetchData();
     }, [checkLoginState]);
+
+    useEffect(() => {
+        const checkRegistrations = async () => {
+            try {
+                const {
+                    data: {
+                        registrationsOpen: registrationsOpen,
+                        rounds: rounds,
+                    },
+                } = await axios.get(`${BACKEND_URL}/admin/check/endtime`);
+                setTimerOn(registrationsOpen);
+                setRound(rounds);
+                setIsLoading(false);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        checkRegistrations();
+    }, [timerOn]);
 
     if (isLoading) {
         return (
@@ -140,7 +147,7 @@ const Home = () => {
     return <></>;
 };
 
-export {AuthContext, useWebSocket};
+export {AuthContext};
 
 function App() {
 
@@ -169,34 +176,32 @@ function App() {
             <InteractiveBackground/>
             <header className="App-header">
                 <AuthContextProvider>
-                    <WebSocketProvider>
-                        <Router>
-                            <img src={opap_logo} className="opap-logo" alt="opap logo"></img>
-                            <div className="instructions-toggle">
-                                <IoMdHelpCircleOutline onClick={() => setShowInstructions(!showInstructions)}/>
-                            </div>
-                            <div className="music-toggle">
-                                {isPlaying ? (
-                                    <MdMusicNote onClick={toggleMusic}/>
-                                ) : (
-                                    <MdMusicOff onClick={toggleMusic}/>
-                                )}
-                            </div>
-
-                            {showInstructions && (
-                                <Modal
-                                    onApply={() => setShowInstructions(false)}
-                                    onClose={() => setShowInstructions(false)}>
-                                </Modal>
+                    <Router>
+                        <img src={opap_logo} className="opap-logo" alt="opap logo"></img>
+                        <div className="instructions-toggle">
+                            <IoMdHelpCircleOutline onClick={() => setShowInstructions(!showInstructions)}/>
+                        </div>
+                        <div className="music-toggle">
+                            {isPlaying ? (
+                                <MdMusicNote onClick={toggleMusic}/>
+                            ) : (
+                                <MdMusicOff onClick={toggleMusic}/>
                             )}
+                        </div>
 
-                            <Routes>
-                                <Route path="/" element={<Home/>}/>
-                                <Route path="/qr" element={<QRcode/>}/>
-                                <Route path="/mainleaderboard" element={<MainLeaderboard/>}/>
-                            </Routes>
-                        </Router>
-                    </WebSocketProvider>
+                        {showInstructions && (
+                            <Modal
+                                onApply={() => setShowInstructions(false)}
+                                onClose={() => setShowInstructions(false)}>
+                            </Modal>
+                        )}
+
+                        <Routes>
+                            <Route path="/" element={<Home/>}/>
+                            <Route path="/qr" element={<QRcode/>}/>
+                            <Route path="/mainleaderboard" element={<MainLeaderboard/>}/>
+                        </Routes>
+                    </Router>
                 </AuthContextProvider>
             </header>
             <audio ref={audioRef} src={backgroundMusic} loop/>

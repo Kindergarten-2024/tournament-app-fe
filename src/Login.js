@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import {
   GithubLoginButton,
-  GoogleLoginButton,
+  LinkedInLoginButton,
 } from "react-social-login-buttons";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import logo from "./images/opapLogo.png";
 import axios from "axios";
 import "./App.css";
-import { useWebSocket } from "./App";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Login = () => {
   const [endTime, setEndTime] = useState(new Date());
+  const [timerOn, setTimerOn] = useState(null);
+  const [round, setRound] = useState(1);
   const [loading, setLoading] = useState(true);
-  const { timerOn, round } = useWebSocket();
 
   const handleGithubLogin = async () => {
     try {
@@ -23,9 +23,9 @@ const Login = () => {
       console.error(err);
     }
   };
-  const handleGoogleLogin = async () => {
+  const handleLinkedinLogin = async () => {
     try {
-      window.location.assign(`${BACKEND_URL}/oauth/login/google`);
+      window.location.assign(`${BACKEND_URL}/oauth/login/linkedin`);
     } catch (err) {
       console.error(err);
     }
@@ -41,7 +41,9 @@ const Login = () => {
             rounds,
           },
         } = await axios.get(`${BACKEND_URL}/admin/check/endtime`);
+        setTimerOn(registrationsOpen);
         setEndTime(registrationsEndTime);
+        setRound(rounds);
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -80,7 +82,7 @@ const Login = () => {
 
       <div className="bottom-container">
         <GithubLoginButton className="btn" onClick={handleGithubLogin} />
-        {/* <GoogleLoginButton className="btn" onClick={handleGoogleLogin} /> */}
+        <LinkedInLoginButton className="btn" onClick={handleLinkedinLogin} />
       </div>
     </>
   );
