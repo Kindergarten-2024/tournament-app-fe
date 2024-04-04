@@ -16,6 +16,8 @@ const Login = () => {
   const [endTime, setEndTime] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
+  const [timerOn, setTimerOn] = useState(null);
+  const [round, setRound] = useState(1);
   const [password, setPassword] = useState("");
   // const [username, setUsername] = useState("");
   // const navigate = useNavigate();
