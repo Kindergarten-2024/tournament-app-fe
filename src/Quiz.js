@@ -71,6 +71,7 @@ const useRenderTime = ({ remainingTime }) => {
   //     return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
   // }
 
+
   const isTimeUp = isNewTimeFirstTick.current;
 
   return (
@@ -352,6 +353,7 @@ const Quiz = () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/player-streak`);
         setStreak(response.data);
+
         if (response.data < 3) {
           setstreakText("x1");
           setStreakGif(redFire);
@@ -386,6 +388,7 @@ const Quiz = () => {
           "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake."
         );
         break;
+
       default:
         setPowerDescription(" ");
     }
@@ -632,6 +635,7 @@ const Quiz = () => {
                   )}
                 </Step>
               </ProgressBar>
+
             </div>
             {!showScore ? (
               <div className="timer-wrapper">
@@ -702,6 +706,7 @@ const Quiz = () => {
                               : ""
                           }
                           `}
+
                         onClick={() =>
                           handleAnswer(selectedAnswer === option ? "" : option)
                         }
