@@ -1,5 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import axios from "axios";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const firebaseConfig = {
   apiKey: "AIzaSyCEJ0a-ZiE_rOd84eCbdvMVoDuzjru5kXA",
@@ -17,8 +20,9 @@ const messaging = getMessaging(firebaseApp);
 initializeApp(firebaseConfig);
 
 export const getFirebaseToken = (setTokenFound) => {
-  return getToken(messaging, {vapidKey: 'BNAu2gEHYKsq2_fINmVIwu1s5ZBPgvklzdS8czdz-kTG-i3KC1V5PdFyAbvWIivsUMTQ-cb36wBPFcjK0XzEAMQ'}).then((currentToken) => {
+  return getToken(messaging, {vapidKey: 'BN3NkGNbmGzZLcfz8J1lTQb07d5je6gTm0DBLctlsGS__2nyjz_ALlqAG6PV2ZOelS1S_fDvkr3fchx6_KncV3c'}).then((currentToken) => {
     if (currentToken) {
+      sendTokenToBackend(currentToken);
       console.log('Current FCM token for client: ', currentToken);
       setTokenFound(true);
     } else {
@@ -30,9 +34,20 @@ export const getFirebaseToken = (setTokenFound) => {
   });
 }
 
-export const onMessageListener = () =>
-  new Promise((resolve) => {
-    onMessage(messaging, (payload) => {
-      resolve(payload);
+const sendTokenToBackend = async (token) => {
+  try {
+    const response = await axios.post(`${BACKEND_URL}/admin/notifications/fcm-token/receive`, {
+      body: token
     });
-});
+    console.log('Data sent successfully:', response.data);
+  } catch (error) {
+    console.error('Error sending data:', error);
+  }
+};
+
+export const onMessageListener = () =>
+    new Promise((resolve) => {
+      onMessage(messaging, (payload) => {
+        resolve(payload);
+      });
+    });

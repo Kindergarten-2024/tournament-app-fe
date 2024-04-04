@@ -8,20 +8,28 @@ import React, {
 import axios from "axios";
 import "./Quiz.css";
 import { AuthContext } from "./App";
-import { useWebSocketContext } from "./WebSocketContext";
 import CryptoJS from "crypto-js";
+import Snowstorm from "react-snowstorm";
 import "react-step-progress-bar/styles.css";
 import { Step } from "react-step-progress-bar";
+import gifImage from "./images/wolf.gif";
+import blueFire from "./images/bluefire.gif";
+import redFire from "./images/redfire.gif";
 import {
   IoIosCheckmarkCircle,
   IoIosCloseCircle,
   IoIosRemoveCircle,
 } from "react-icons/io";
-import countdownSound from "./music/countdown.mp3"; 
+import countdownSound from "./music/countdown.mp3";
+import SockJS from "sockjs-client";
+import { over } from "stompjs";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
+import { Modal } from "./Powers";
+import "./Powers.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
+var stompClient = null;
 
 const useRenderTime = ({ remainingTime }) => {
   const currentTime = useRef(null); // Initialize to null instead of remainingTime
@@ -50,6 +58,15 @@ const useRenderTime = ({ remainingTime }) => {
     return null; // If remainingTime is null, don't render anything
   }
 
+  if (
+    typeof remainingTime !== "number" ||
+    isNaN(remainingTime) ||
+    remainingTime < 0 ||
+    remainingTime > 15
+  ) {
+    return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
+  }
+
   const isTimeUp = isNewTimeFirstTick.current;
 
   return (
@@ -71,11 +88,12 @@ const useRenderTime = ({ remainingTime }) => {
 
 const Quiz = () => {
   const { user } = useContext(AuthContext);
-  const { stompClient } = useWebSocketContext();
   const { remainingTime } = CountdownCircleTimer;
   const renderTimeComponent = useRenderTime({ remainingTime });
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [timerKey, setTimerKey] = useState(0);
+  const [streakGif, setStreakGif] = useState(redFire);
+  const [streakText, setstreakText] = useState("x1");
   const [progress, setProgress] = useState(0);
   const [answerTime, setAnswerTime] = useState(Date.now());
   const [questionTimer, setQuestionTimer] = useState(Date.now());
@@ -85,9 +103,20 @@ const Quiz = () => {
   const [loading, setLoading] = useState(true);
   const [stringsArray, setStringsArray] = useState([]);
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState("");
-
   const countdownAudioRef = useRef(new Audio(countdownSound));
   const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
+  const [receivedMessage, setReceivedMessage] = useState("");
+  const [isFrozen, setIsFrozen] = useState(false);
+  const [isMask, setIsMask] = useState(false);
+  const [is5050, setIs5050] = useState(false);
+  const [power, setPower] = useState(" ");
+  const [powerDescription, setPowerDescription] = useState(" ");
+  const [showPowerButton, setShowPowerButton] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [enemies, setEnemies] = useState([]);
+  const [showEnemies, setShowEnemies] = useState(false);
+  const [selectedEnemy, setSelectedEnemy] = useState(null);
+  const [selectedIndexes, setSelectedIndexes] = useState([]);
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -96,8 +125,8 @@ const Quiz = () => {
 
   //position
   const [position, setPosition] = useState(() => {
-    const storedPuestion = localStorage.getItem("position");
-    return storedPuestion ? JSON.parse(storedPuestion) : null;
+    const storedPosition = localStorage.getItem("position");
+    return storedPosition ? JSON.parse(storedPosition) : null;
   });
 
   //score
@@ -119,6 +148,33 @@ const Quiz = () => {
   useEffect(() => {
     localStorage.setItem("score", JSON.stringify(score));
   }, [score]);
+
+  useEffect(() => {
+    connect();
+  }, []);
+
+  const connect = () => {
+    let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
+    stompClient = over(Sock);
+    stompClient.connect({}, onConnected, onError);
+  };
+
+  const onConnected = () => {
+    stompClient.subscribe("/questions", onPublicMessageReceived);
+    stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+    stompClient.subscribe(
+      `/user/${user.login}/private`,
+      onPrivateMessageReceived
+    );
+  };
+
+  const onError = (error) => {
+    console.error("WebSocket error: ", error);
+    setTimeout(() => {
+      console.log("Attempting to reconnect to WebSocket...");
+      connect();
+    }, 1000);
+  };
 
   useEffect(() => {
     const storedArray = JSON.parse(localStorage.getItem("stringsArray"));
@@ -154,19 +210,23 @@ const Quiz = () => {
     fetchCurrentQuestion();
   }, []);
 
-  useEffect(() => {
-    if (stompClient && stompClient.connected) {
-      stompClient.subscribe("/questions", onPublicMessageReceived);
-      stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
-    }
-    // Clean up subscriptions when the component unmounts
-    return () => {
-      if (stompClient) {
-        stompClient.unsubscribe("/questions");
-        stompClient.unsubscribe("/leaderboard");
-      }
-    };
-  }, [stompClient]);
+  // useEffect(() => {
+  //   if (stompClient && stompClient.connected) {
+  //     stompClient.subscribe("/questions", onPublicMessageReceived);
+  //     stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+  //     stompClient.subscribe(
+  //       `/user/${user.login}/private`,
+  //       onPrivateMessageReceived
+  //     );
+  //   }
+  //   // Clean up subscriptions when the component unmounts
+  //   return () => {
+  //     if (stompClient) {
+  //       stompClient.unsubscribe("/questions");
+  //       stompClient.unsubscribe("/leaderboard");
+  //     }
+  //   };
+  // }, [stompClient]);
 
   useEffect(() => {
     // if (soundPlayedForQuestion) {
@@ -191,21 +251,20 @@ const Quiz = () => {
     }
   }, [question]);
 
-  useEffect(() => {
-    if (questionIndex % 10 == 1) {
-      setProgress(0);
-    } else if (questionIndex % 10 == 0) {
-      setProgress(100);
-    } else {
-      setProgress((((questionIndex - 1) % 10) * 100) / 9);
-    }
-  }, [questionIndex]);
+  // useEffect(() => {
+  //   if (questionIndex % 10 == 1) {
+  //     setProgress(0);
+  //   } else if (questionIndex % 10 == 0) {
+  //     setProgress(100);
+  //   } else {
+  //     setProgress((((questionIndex - 1) % 10) * 100) / 9);
+  //   }
+  // }, [questionIndex]);
 
   function decrypt(encryptedValue) {
     if (encryptedValue === undefined) {
       throw new Error("encryptedValue is undefined");
     }
-    // Decrypt without specifying the IV since ECB mode is used
     const decrypted = CryptoJS.AES.decrypt(encryptedValue, SECRET_KEY, {
       mode: CryptoJS.mode.ECB,
       padding: CryptoJS.pad.Pkcs7,
@@ -217,6 +276,9 @@ const Quiz = () => {
   const onPublicMessageReceived = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setQuestion(payloadData);
+    setIsFrozen(false);
+    setIsMask(false);
+    setIs5050(false);
     setTimerKey(Math.random());
     // Only try to decrypt if the answer is not an empty string
     if (payloadData.answer) {
@@ -228,8 +290,29 @@ const Quiz = () => {
     setQuestionIndex(payloadData.questionNumber);
     // updateString(questionIndex - 1, "current");
     setShowScore(false);
+  };
+  const onPrivateMessageReceived = (payload) => {
+    const messageBody = payload.body;
+    console.log("Received message:", messageBody);
+    if (messageBody.startsWith("freeze:")) {
+      const actualMessage = messageBody.slice("freeze:".length);
+      setReceivedMessage(actualMessage);
+      setIsFrozen(true);
+    } else {
+      //change this else if 50-50 added
+      setReceivedMessage(messageBody);
+      setIsMask(true);
+    }
+  };
 
-   };
+  useEffect(() => {
+    if (receivedMessage) {
+      const timeout = setTimeout(() => {
+        setReceivedMessage(""); // Clear the received message after 5 seconds
+      }, 5000);
+      return () => clearTimeout(timeout); // Clear the timeout when component unmounts
+    }
+  }, [receivedMessage]);
 
   const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
@@ -237,6 +320,7 @@ const Quiz = () => {
       id: user.username,
       email: user.email,
       score: user.score,
+      item: user.item,
     }));
     if ( user.login != null){
       const playerIndex = leaderboardArray.findIndex(
@@ -256,20 +340,71 @@ const Quiz = () => {
       setPosition(playerIndex + 1);
       const player = leaderboardArray.find((user1) => user1.email === user.email);
       setScore(player.score);
-
+      setPower(player.item);
     }
+  };
 
+  useEffect(() => {
+    const fetchPlayerItem = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/player-item`);
+        setPower(response.data);
+        switchSetPowerDescription(response.data);
+        setShowPowerButton(response.data !== null && response.data !== "");
+        if (showScore) setShowModal(false);
+      } catch (error) {
+        console.error("Error fetching player score: ", error);
+      }
+    };
+    fetchPlayerItem();
+  }, [power, showScore]);
 
-  
-    //  const player = leaderboardArray.find((user1) => user1.id === user.login);
-    // if (player) {
-    // }
-    // // setShowScore(true);
+  useEffect(() => {
+    const fetchPlayerStreak = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/player-streak`);
+        if (response.data < 3) {
+          setstreakText("x1");
+          setStreakGif(redFire);
+        } else if (response.data < 5) {
+          setstreakText("x2");
+          setStreakGif(blueFire);
+        } else {
+          setstreakText("x3");
+          setStreakGif(blueFire);
+        }
+      } catch (error) {
+        console.error("Error fetching player streak: ", error);
+      }
+    };
+    fetchPlayerStreak();
+  }, [showScore]);
+
+  const switchSetPowerDescription = (power) => {
+    switch (power) {
+      case "50-50":
+        setPowerDescription(
+          "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory."
+        );
+        break;
+      case "freeze":
+        setPowerDescription(
+          "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question."
+        );
+        break;
+      case "mask":
+        setPowerDescription(
+          "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake."
+        );
+        break;
+      default:
+        setPowerDescription(" ");
+    }
   };
 
   const handleAnswer = (selected) => {
     setSelectedAnswer(selected);
-    //keep time here 
+    //keep time here
   };
 
   const convertToReadableTime = (timestamp) => {
@@ -337,6 +472,9 @@ const Quiz = () => {
   };
 
 
+  
+
+
   const playCountdownSound = () => {
     if (!soundPlayedForQuestion) {
       countdownAudioRef.current.play().catch((error) => console.error("Error playing the sound:", error));
@@ -385,123 +523,277 @@ const Quiz = () => {
     );
   }
 
+  const handleUsePower = () => {
+    if (power !== "50-50") {
+      fetchEnemies();
+      setShowEnemies(true);
+    } else setShowEnemies(false);
+    setShowModal(true);
+  };
+
+  const fetchEnemies = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/leaderboard`);
+      const playerListData = response.data;
+      const playerList = playerListData.map((player) => ({
+        id: player.id,
+        name: player.username,
+        freeze_debuff: player.freeze_debuff,
+        mask_debuff: player.mask_debuff,
+        score: player.score,
+      }));
+
+      let enemyList;
+      switch (power) {
+        case "freeze":
+          enemyList = playerList.filter(
+            (player) => player.name !== user.login && player.freeze_debuff < 2
+          );
+          break;
+        case "mask":
+          enemyList = playerList.filter(
+            (player) => player.name !== user.login && !player.mask_debuff
+          );
+          break;
+        default:
+          enemyList = playerList.filter((player) => player.name !== user.login);
+      }
+      setEnemies(enemyList);
+    } catch (error) {
+      console.error("Error fetching list: ", error);
+    }
+  };
+
+  const handeCancelPower = () => {
+    setSelectedEnemy(null);
+    setShowModal(false);
+    setShowPowerButton(true);
+  };
+
+  const handleApplyPower = () => {
+    if (power !== "50-50" && !selectedEnemy) return;
+    else if (power !== "50-50" && selectedEnemy)
+      sendPower(power, selectedEnemy);
+    else {
+      sendPower(power, null);
+      setIs5050(true);
+      const indexesToChange = [];
+      while (indexesToChange.length < 2) {
+        const randomIndex = Math.floor(Math.random() * 3); // 3 incorrect options
+        if (
+          !indexesToChange.includes(randomIndex) &&
+          question.options[randomIndex] !== decryptedAnswer
+        ) {
+          indexesToChange.push(randomIndex);
+        }
+      }
+      setSelectedIndexes(indexesToChange);
+    }
+    console.log("Applying power:", power, "to enemy:", selectedEnemy);
+    setSelectedEnemy(null);
+    setShowModal(false);
+    setShowPowerButton(false);
+  };
+
+  const sendPower = (power, selectedEnemy) => {
+    const messageObject = {
+      message: power,
+      enemy: selectedEnemy,
+    };
+    stompClient.send("/app/usePower", {}, JSON.stringify(messageObject));
+  };
+
   return (
     <div>
-        <div>
-          {question && !loading ? (
-            <>
-              <div className="steps-container">
-                <CustomProgressBar
-                  numQuestions={10}
-                  statuses={stringsArray}
-                  progressPercentage={progress}
-                />
+      {isFrozen && <Snowstorm />}
+      <div className="streak-container">
+        <img src={streakGif} alt="Streak GIF" className="streak-image" />
+        <p className="streak-text">{streakText}</p>
+      </div>
+      <div>
+        {question && !loading ? (
+          <>
+            <div className="steps-container">
+              <CustomProgressBar
+                numQuestions={10}
+                statuses={stringsArray}
+                progressPercentage={progress}
+              />
+            </div>
+            {!showScore ? (
+              <div className="timer-wrapper">
+                <CountdownCircleTimer
+                  isPlaying
+                  duration={questionTimer}
+                  size={120}
+                  colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
+                  colorsTime={[15, 10, 5, 0]}
+                  onComplete={() => {
+                    //method to stop countdown
+                    if (soundPlayedForQuestion) {
+                      countdownAudioRef.current.pause();
+                      countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
+                      setSoundPlayedForQuestion(false);
+                    }
+                    checkAnswer();
+                    setShowScore(true);
+                    return { shouldRepeat: true, delay: 0 };
+                  }}
+                  onUpdate={(remainingTime) => {
+                    if (remainingTime === 5) {
+                      playCountdownSound();
+                    }
+                  }}
+                >
+                  {useRenderTime}
+                </CountdownCircleTimer>
               </div>
+            ) : (
+              <section className="centered-section">
+                <table
+                  id="rankings"
+                  className="leaderboard-results-2"
+                  width="100"
+                >
+                  <thead>
+                    <tr>
+                      <th className="leaderboard-font-2">Rank</th>
+                      <th className="leaderboard-font-2">PTS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="leaderboard-font-2">{position}</td>
+                      <td className="leaderboard-font-2">{score}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+            )}
 
+            <div className="question-container">
+              <h2 className="start2p">Question {question.questionNumber}</h2>
+              <p className="start2p">{question.question}</p>
               {!showScore ? (
-                <div className="timer-wrapper">
-                  <CountdownCircleTimer
-                    isPlaying
-                    duration={questionTimer}
-                    size={120}
-                    colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
-                    colorsTime={[15, 10, 5, 0]}
-                    onComplete={() => {
-
-                      //method to stop countdown
-                      if (soundPlayedForQuestion) {
-                        countdownAudioRef.current.pause();
-                        countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
-                        setSoundPlayedForQuestion(false);
-                      } 
-                      checkAnswer();
-                      setShowScore(true);
-                      return { shouldRepeat: true, delay: 0 };
-                    }}
-                    onUpdate={(remainingTime) =>{
-                      if (remainingTime === 5) {
-                        playCountdownSound();
-                      }
-                    }}
-                  >
-                    {useRenderTime}
-                  </CountdownCircleTimer>
-                </div>
+                <>
+                  <div className="answer-buttons">
+                    {question.options.map((option, index) => (
+                      <button
+                        key={index}
+                        className={`
+                        ${selectedAnswer === option ? "selected" : ""}
+                        ${isFrozen ? "freeze-effect" : ""}
+                        ${
+                          is5050 && selectedIndexes.includes(index)
+                            ? "incorrect-answer disabled"
+                            : ""
+                        }
+                        `}
+                        onClick={() =>
+                          handleAnswer(selectedAnswer === option ? "" : option)
+                        }
+                        disabled={
+                          isFrozen ||
+                          (is5050 && selectedIndexes.includes(index))
+                        }
+                      >
+                        <span className="option-letter">
+                          {String.fromCharCode(65 + index)}.
+                        </span>
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                  {showPowerButton && (
+                    <button
+                      className="use-power-button"
+                      onClick={handleUsePower}
+                    >
+                      ⚡ Power ⚡
+                    </button>
+                  )}
+                </>
               ) : (
-                <section className="centered-section">
-                  <table
-                    id="rankings"
-                    className="leaderboard-results-2"
-                    width="100"
-                  >
-                    <thead>
-                      <tr>
-                        <th className="leaderboard-font-2">Rank</th>
-                        <th className="leaderboard-font-2">PTS</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="leaderboard-font-2">{position}</td>
-                        <td className="leaderboard-font-2">{score}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </section>
+                <div className="answer-buttons">
+                  {question?.options.map((option, index) => (
+                    <button
+                      key={index}
+                      className={`${getOptionClass(option)}`}
+                      disabled
+                    >
+                      <span className="option-letter">
+                        {String.fromCharCode(65 + index)}.
+                      </span>
+                      {option}
+                    </button>
+                  ))}
+                </div>
               )}
+            </div>
 
-              <div className="question-container">
-                <h2 className="start2p">Question {question.questionNumber}</h2>
-                <p className="start2p">{question.question}</p>
-                {!showScore ? (
-                  <>
-                    <div className="answer-buttons">
-                      {question.options.map((option, index) => (
-                        <button
-                          key={index}
-                          className={
-                            selectedAnswer === option ? "selected" : ""
-                          }
-                          onClick={() =>
-                            handleAnswer(
-                              selectedAnswer === option ? "" : option
-                            )
-                          }
-                        >
-                          <span className="option-letter">
-                            {String.fromCharCode(65 + index)}.
-                          </span>
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="answer-buttons">
-                      {question?.options.map((option, index) => (
-                        <button
-                          key={index}
-                          className={`${getOptionClass(option)}`}
-                          disabled
-                        >
-                          <span className="option-letter">
-                            {String.fromCharCode(65 + index)}.
-                          </span>
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </>
+            {showModal && (
+              <Modal
+                onCancel={handeCancelPower}
+                onApply={handleApplyPower}
+                onClose={handeCancelPower}
+              >
+                <div className="powers-container">
+                  <button className="select-power-button">{power}</button>
+                  <p>{powerDescription}</p>
+                </div>
+                {showEnemies && (
+                  <div className="enemies-container">
+                    <ul>
+                      {loading ? (
+                        <p>Loading...</p>
+                      ) : (
+                        enemies.map((enemy) => (
+                          <li
+                            key={enemy.name}
+                            onClick={() => setSelectedEnemy(enemy.id)}
+                            className={
+                              selectedEnemy === enemy.id ? "selected" : ""
+                            }
+                          >
+                            <span>
+                              {enemy.name.length > 20
+                                ? enemy.name.slice(0, 17) + "..."
+                                : enemy.name}
+                            </span>
+                            <span>{enemy.score}</span>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </Modal>
+            )}
+
+            {isMask && (
+              <div className="gif-image-container">
+                {isMask && (
+                  <img
+                    src={gifImage}
+                    alt="GIF"
+                    className="gif-image moving-from-left"
+                  />
                 )}
               </div>
-            </>
-          ) : (
-            <div className="loading-spinner">
-              <div className="spinner"></div>
-            </div>
-          )}
-        </div>
+            )}
+
+            {receivedMessage && (
+              <div className="received-message-container">
+                <p className="message-text">{receivedMessage}</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { GithubLoginButton } from "react-social-login-buttons"; // If you're using GoogleLoginButton, add it back here
+import React, { useEffect, useState } from "react";
+import {
+  GithubLoginButton,
+  LinkedInLoginButton,
+} from "react-social-login-buttons";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import logo from "./images/opapLogo.png";
 import axios from "axios";
 import "./App.css";
 import Dashboard from "./Dashboard";
-import { useWebSocket } from "./App";
 // import { useNavigate } from "react-router-dom";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -16,13 +18,24 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   // const [username, setUsername] = useState("");
-  const { timerOn, round } = useWebSocket();
   // const navigate = useNavigate();
   
 
   const handleGithubLogin = async () => {
-    window.location.assign(`${BACKEND_URL}/oauth/login/github`);
+    try {
+      window.location.assign(`${BACKEND_URL}/oauth/login/github`);
+    } catch (err) {
+      console.error(err);
+    }
   };
+  const handleLinkedinLogin = async () => {
+    try {
+      window.location.assign(`${BACKEND_URL}/oauth/login/linkedin`);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
 
   useEffect(() => {
@@ -88,9 +101,15 @@ const Login = () => {
     const checkRegistrations = async () => {
       try {
         const {
-          data: { registrationsEndTime, rounds },
+          data: {
+            registrationsOpen: registrationsOpen,
+            registrationsEndTime,
+            rounds,
+          },
         } = await axios.get(`${BACKEND_URL}/admin/check/endtime`);
+        setTimerOn(registrationsOpen);
         setEndTime(registrationsEndTime);
+        setRound(rounds);
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -98,7 +117,6 @@ const Login = () => {
     };
     checkRegistrations();
   }, [endTime]);
-
   return (
     <>
       <div className="top-container">

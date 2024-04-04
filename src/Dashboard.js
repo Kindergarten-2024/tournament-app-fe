@@ -10,7 +10,10 @@ import "./Dashboard.css";
 import { getFirebaseToken, onMessageListener } from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useWebSocketContext } from "./WebSocketContext";
+import SockJS from "sockjs-client";
+import {over} from 'stompjs';
+
+var stompClient = null;
 
 const Dashboard = () => {
   const { user, checkLoginState } = useContext(AuthContext);
@@ -26,6 +29,29 @@ const Dashboard = () => {
   const [score, setScore] = useState();
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+  useEffect(() => {
+    connect();
+  }, []);
+
+  const connect = () => {
+    let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
+    stompClient = over(Sock);
+    stompClient.connect({}, onConnected, onError);
+  }
+
+  const onConnected = () => {
+    stompClient.subscribe("/registrations-time", onEndingReceive);
+    stompClient.subscribe("/totalRegister", onRegisterReceive);
+  }
+
+  const onError = (error) => {
+    console.error('WebSocket error: ', error);
+    setTimeout(() => {
+      console.log('Attempting to reconnect to WebSocket...');
+      connect();
+    }, 1000);
+  }
 
   useEffect(() => {
     const fetchPlayerPosition = async () => {
@@ -56,45 +82,24 @@ const Dashboard = () => {
     onMessageListener()
       .then((payload) => {
         setNotification({
-          title: payload.notification.title,
-          body: payload.notification.body,
+          title: payload.data.title,
+          body: payload.data.body,
         });
-        toast.info(`${payload.notification.body}`);
+        toast.info(`${payload.data.body}`);
         console.log(payload);
       })
       .catch((err) => console.log("failed: ", err));
-  }, [notification]);
+  }, [notification])
 
-  //SOCKET
-  const { stompClient } = useWebSocketContext();
-
-  useEffect(() => {
-    let subscription;
-
-    const subscribe = () => {
-      if (stompClient && stompClient.connected) {
-        subscription = stompClient.subscribe(
-          "/registrations-time",
-          onEndingRecieve
-        );
-      }
-    };
-
-    subscribe(); // Subscribe to the topics
-
-    // Clean up subscriptions when the component unmounts
-    return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
-  }, [stompClient]);
-
-
-  const onEndingRecieve = (payload) => {
+  const onEndingReceive = (payload) => {
     var payloadData = JSON.parse(payload.body);
     setRegisterUp(payloadData.timerOn);
     setRounds(payloadData.round);
+  };
+
+  const onRegisterReceive = (message) => {
+    var payloadData = JSON.parse(message.body);
+    setTotalRegistered(payloadData);
   };
 
   useEffect(() => {
@@ -133,12 +138,12 @@ const Dashboard = () => {
   }, [rerender]);
 
   useEffect(() => {
-      localStorage.removeItem("showScore");
-      localStorage.removeItem("position");
-      localStorage.removeItem("score");
-      localStorage.removeItem("stringsArray");
+    localStorage.removeItem("showScore");
+    localStorage.removeItem("position");
+    localStorage.removeItem("score");
+    localStorage.removeItem("stringsArray");
   }, []);
- 
+
   // Logout, session clear
   const handleLogout = async () => {
     try {
@@ -162,22 +167,17 @@ const Dashboard = () => {
     }
   };
 
-  const handleLeaderboard = async () => {
-    try {
-      window.location.assign(
-        `https://tournament-app-fe-zigpprg2xq-og.a.run.app/leaderboard`
-      );
-    } catch (err) {
-      console.error(err);
-    }
+  const handleNotificationPermission = () => {
+    getFirebaseToken(setTokenFound);
   };
 
   return (
     <>
       <div>
         <div className="notification-status">
-          {isTokenFound ? <IoNotifications /> : <IoNotificationsOff />}
+          {isTokenFound ? <IoNotifications /> : <IoNotificationsOff onClick={handleNotificationPermission} />}
         </div>
+
         <ToastContainer
           position="top-center"
           autoClose={5000}
@@ -252,10 +252,6 @@ const Dashboard = () => {
               <h3 className="start2p"> Total Registered</h3>
               <p className="start2p flash">{totalRegistered}</p>
             </div>
-
-            <button className="leaderboard-button" onClick={handleLeaderboard}>
-              Leaderboard
-            </button>
           </div>
         </>
       ) : (
