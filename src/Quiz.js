@@ -11,10 +11,14 @@ import { AuthContext } from "./App";
 import CryptoJS from "crypto-js";
 import Snowstorm from "react-snowstorm";
 import "react-step-progress-bar/styles.css";
-import { Step } from "react-step-progress-bar";
+import { ProgressBar, Step } from "react-step-progress-bar";
 import gifImage from "./images/wolf.gif";
 import blueFire from "./images/bluefire.gif";
 import redFire from "./images/redfire.gif";
+import fiftyimg from "./images/fiftyfifty.png";
+import iceimg from "./images/ice.png";
+import maskimg from "./images/mask.png";
+import stepimg from "./images/step.png";
 import {
   IoIosCheckmarkCircle,
   IoIosCloseCircle,
@@ -58,14 +62,15 @@ const useRenderTime = ({ remainingTime }) => {
     return null; // If remainingTime is null, don't render anything
   }
 
-  if (
-    typeof remainingTime !== "number" ||
-    isNaN(remainingTime) ||
-    remainingTime < 0 ||
-    remainingTime > 15
-  ) {
-    return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
-  }
+  // if (
+  //     typeof remainingTime !== "number" ||
+  //     isNaN(remainingTime) ||
+  //     remainingTime < 0 ||
+  //     remainingTime > 15
+  // ) {
+  //     return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
+  // }
+
 
   const isTimeUp = isNewTimeFirstTick.current;
 
@@ -94,6 +99,7 @@ const Quiz = () => {
   const [timerKey, setTimerKey] = useState(0);
   const [streakGif, setStreakGif] = useState(redFire);
   const [streakText, setstreakText] = useState("x1");
+  const [streak, setStreak] = useState(0);
   const [progress, setProgress] = useState(0);
   const [answerTime, setAnswerTime] = useState(Date.now());
   const [questionTimer, setQuestionTimer] = useState(Date.now());
@@ -363,6 +369,8 @@ const Quiz = () => {
     const fetchPlayerStreak = async () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/player-streak`);
+        setStreak(response.data);
+
         if (response.data < 3) {
           setstreakText("x1");
           setStreakGif(redFire);
@@ -397,6 +405,7 @@ const Quiz = () => {
           "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake."
         );
         break;
+
       default:
         setPowerDescription(" ");
     }
@@ -482,46 +491,6 @@ const Quiz = () => {
     }
   };
   
-
-  function CustomProgressBar({ numQuestions, statuses, progressPercentage }) {
-    return (
-      <>
-        {statuses.map((status, index) => (
-          <Step key={index} transition="scale">
-            {({ accomplished }) => (
-              <Fragment>
-                {status === "correct" ? (
-                  <IoIosCheckmarkCircle
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    size={30}
-                    color="green"
-                  />
-                ) : status === "false" ? (
-                  <IoIosCloseCircle
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    size={30}
-                    color="red"
-                  />
-                ) : status === "current" ? (
-                  <IoIosCheckmarkCircle
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    size={30}
-                    color="yellow"
-                  />
-                ) : (
-                  <IoIosRemoveCircle
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    size={30}
-                    color="grey"
-                  />
-                )}
-              </Fragment>
-            )}
-          </Step>
-        ))}
-      </>
-    );
-  }
 
   const handleUsePower = () => {
     if (power !== "50-50") {
@@ -613,12 +582,80 @@ const Quiz = () => {
       <div>
         {question && !loading ? (
           <>
-            <div className="steps-container">
-              <CustomProgressBar
-                numQuestions={10}
-                statuses={stringsArray}
-                progressPercentage={progress}
-              />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                position: "relative",
+              }}
+            >
+              <ProgressBar
+                percent={streak * 20}
+                filledBackground="linear-gradient(to right, #0f3587, #8c1bc5)"
+                width={300}
+              >
+                <Step transition="scale">
+                  {({ accomplished }) => (
+                    <img
+                      style={{
+                        filter: `grayscale(${accomplished ? 50 : 80}%)`,
+                      }}
+                      width="15"
+                      src={stepimg}
+                    />
+                  )}
+                </Step>
+                <Step transition="scale">
+                  {({ accomplished }) => (
+                    <img
+                      style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                      width="50"
+                      src={fiftyimg}
+                    />
+                  )}
+                </Step>
+                <Step transition="scale">
+                  {({ accomplished }) => (
+                    <img
+                      style={{
+                        filter: `grayscale(${accomplished ? 50 : 80}%)`,
+                      }}
+                      width="15"
+                      src={stepimg}
+                    />
+                  )}
+                </Step>
+                <Step transition="scale">
+                  {({ accomplished }) => (
+                    <img
+                      style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                      width="50"
+                      src={iceimg}
+                    />
+                  )}
+                </Step>
+                <Step transition="scale">
+                  {({ accomplished }) => (
+                    <img
+                      style={{
+                        filter: `grayscale(${accomplished ? 50 : 80}%)`,
+                      }}
+                      width="15"
+                      src={stepimg}
+                    />
+                  )}
+                </Step>
+                <Step transition="scale">
+                  {({ accomplished }) => (
+                    <img
+                      style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                      width="50"
+                      src={maskimg}
+                    />
+                  )}
+                </Step>
+              </ProgressBar>
+
             </div>
             {!showScore ? (
               <div className="timer-wrapper">
@@ -681,14 +718,15 @@ const Quiz = () => {
                       <button
                         key={index}
                         className={`
-                        ${selectedAnswer === option ? "selected" : ""}
-                        ${isFrozen ? "freeze-effect" : ""}
-                        ${
-                          is5050 && selectedIndexes.includes(index)
-                            ? "incorrect-answer disabled"
-                            : ""
-                        }
-                        `}
+                          ${selectedAnswer === option ? "selected" : ""}
+                          ${isFrozen ? "freeze-effect" : ""}
+                          ${
+                            is5050 && selectedIndexes.includes(index)
+                              ? "incorrect-answer disabled"
+                              : ""
+                          }
+                          `}
+
                         onClick={() =>
                           handleAnswer(selectedAnswer === option ? "" : option)
                         }
