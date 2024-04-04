@@ -144,8 +144,11 @@ const Dashboard = () => {
     try {
       var confirmation = window.confirm("Are you sure you want to logout?");
       if (confirmation) {
-        await axios.post(`${BACKEND_URL}/oauth/logout`);
-        checkLoginState();
+        localStorage.removeItem('token');
+        localStorage.removeItem('userToken');
+        delete axios.defaults.headers.common['Authorization'];
+        window.location.assign('/');
+
       }
     } catch (err) {
       console.error(err);

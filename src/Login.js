@@ -60,6 +60,8 @@ const Login = () => {
         password
       });
 
+
+      //Success case
       if (response.status === 200) {
         console.log("Login successful:", response.data);
         localStorage.setItem('token',response.data.token);
@@ -67,15 +69,14 @@ const Login = () => {
         console.log("before getting sent to dashboard");
         window.location.assign('/');
 
-        // navigate('/dashboard');
+        
 
 
-        // Update UI or redirect as necessary
+        // error
       } else if (response.status === 401){
 
         localStorage.removeItem('token');
         console.error("Login failed:", response.data);
-        // Handle errors, update UI accordingly
       }
     } catch (error) {
       console.error("Login error:", error);

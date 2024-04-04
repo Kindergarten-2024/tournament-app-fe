@@ -236,17 +236,36 @@ const Quiz = () => {
     const userDataArray = JSON.parse(payload.body);
     const leaderboardArray = userDataArray.map((user) => ({
       id: user.username,
+      email: user.email,
       score: user.score,
     }));
-    const playerIndex = leaderboardArray.findIndex(
-      (user1) => user1.id === user.login
-    );
-    setPosition(playerIndex + 1);
-    const player = leaderboardArray.find((user1) => user1.id === user.login);
-    if (player) {
+    if ( user.login != null){
+      const playerIndex = leaderboardArray.findIndex(
+    
+        (user1) => user1.id === user.login
+      );
+      setPosition(playerIndex + 1);
+      const player = leaderboardArray.find((user1) => user1.id === user.login);
+
       setScore(player.score);
+
     }
-    // setShowScore(true);
+    else {
+      const playerIndex = leaderboardArray.findIndex(
+        (user1) => user1.email === user.email
+      );
+      setPosition(playerIndex + 1);
+      const player = leaderboardArray.find((user1) => user1.email === user.email);
+      setScore(player.score);
+
+    }
+
+
+  
+    //  const player = leaderboardArray.find((user1) => user1.id === user.login);
+    // if (player) {
+    // }
+    // // setShowScore(true);
   };
 
   const handleAnswer = (selected) => {
