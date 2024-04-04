@@ -144,11 +144,18 @@ const Dashboard = () => {
     try {
       var confirmation = window.confirm("Are you sure you want to logout?");
       if (confirmation) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userToken');
-        delete axios.defaults.headers.common['Authorization'];
-        window.location.assign('/');
+        const token = localStorage.getItem('token');
+        if(token){
+          localStorage.removeItem('token');
+          // localStorage.removeItem('userToken');
+          delete axios.defaults.headers.common['Authorization'];
+          window.location.assign('/');
 
+        }
+        else{
+          await axios.post(`${BACKEND_URL}/logout`);
+          checkLoginState();
+        }
       }
     } catch (err) {
       console.error(err);
@@ -201,7 +208,7 @@ const Dashboard = () => {
             {user.name ? (
               <h4 className="start2p">{user?.name}</h4>
             ) : (
-              <h4 className="start2p">{user?.login}</h4>
+              <h4 className="start2p">{user?.email}</h4>
             )}
           </div>
         </div>

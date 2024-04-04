@@ -175,7 +175,6 @@ const Quiz = () => {
     //   setSoundPlayedForQuestion(false);
     // } 
     console.log(soundPlayedForQuestion)
-    console.log("find me !!!!!!!!!!!!!!!!!!!!!!!!{@{@@{@{@{@{@")
     if (question) {
       axios
         .get(`${BACKEND_URL}/admin/questions/time-now`)
