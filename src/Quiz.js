@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  Fragment,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import "./Quiz.css";
 import { AuthContext } from "./App";
@@ -19,17 +13,13 @@ import fiftyimg from "./images/fiftyfifty.png";
 import iceimg from "./images/ice.png";
 import maskimg from "./images/mask.png";
 import stepimg from "./images/step.png";
-import {
-  IoIosCheckmarkCircle,
-  IoIosCloseCircle,
-  IoIosRemoveCircle,
-} from "react-icons/io";
 import countdownSound from "./music/countdown.mp3";
 import SockJS from "sockjs-client";
 import { over } from "stompjs";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { Modal } from "./Powers";
 import "./Powers.css";
+import { StolenPointsAnimation, ReceivePointsAnimation } from "./bubble";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -63,14 +53,13 @@ const useRenderTime = ({ remainingTime }) => {
   }
 
   if (
-      typeof remainingTime !== "number" ||
-      isNaN(remainingTime) ||
-      remainingTime < 0 ||
-      remainingTime > 15
+    typeof remainingTime !== "number" ||
+    isNaN(remainingTime) ||
+    remainingTime < 0 ||
+    remainingTime > 15
   ) {
-      return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
+    return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
   }
-
 
   const isTimeUp = isNewTimeFirstTick.current;
 
@@ -100,7 +89,6 @@ const Quiz = () => {
   const [streakGif, setStreakGif] = useState(redFire);
   const [streakText, setstreakText] = useState("x1");
   const [streak, setStreak] = useState(0);
-  const [progress, setProgress] = useState(0);
   const [answerTime, setAnswerTime] = useState(Date.now());
   const [questionTimer, setQuestionTimer] = useState(Date.now());
   const [decryptedAnswer, setDecryptedAnswer] = useState();
@@ -123,6 +111,8 @@ const Quiz = () => {
   const [showEnemies, setShowEnemies] = useState(false);
   const [selectedEnemy, setSelectedEnemy] = useState(null);
   const [selectedIndexes, setSelectedIndexes] = useState([]);
+  const [stolenPoints, setStolenPoints] = useState("");
+  const [receivePoints, setReceivePoints] = useState("");
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -216,24 +206,6 @@ const Quiz = () => {
     fetchCurrentQuestion();
   }, []);
 
-  // useEffect(() => {
-  //   if (stompClient && stompClient.connected) {
-  //     stompClient.subscribe("/questions", onPublicMessageReceived);
-  //     stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
-  //     stompClient.subscribe(
-  //       `/user/${user.login}/private`,
-  //       onPrivateMessageReceived
-  //     );
-  //   }
-  //   // Clean up subscriptions when the component unmounts
-  //   return () => {
-  //     if (stompClient) {
-  //       stompClient.unsubscribe("/questions");
-  //       stompClient.unsubscribe("/leaderboard");
-  //     }
-  //   };
-  // }, [stompClient]);
-
   useEffect(() => {
     if (question) {
       axios
@@ -250,16 +222,6 @@ const Quiz = () => {
         });
     }
   }, [question]);
-
-  // useEffect(() => {
-  //   if (questionIndex % 10 == 1) {
-  //     setProgress(0);
-  //   } else if (questionIndex % 10 == 0) {
-  //     setProgress(100);
-  //   } else {
-  //     setProgress((((questionIndex - 1) % 10) * 100) / 9);
-  //   }
-  // }, [questionIndex]);
 
   function decrypt(encryptedValue) {
     if (encryptedValue === undefined) {
@@ -280,6 +242,8 @@ const Quiz = () => {
     setIsMask(false);
     setIs5050(false);
     setTimerKey(Math.random());
+    setReceivePoints("");
+    setStolenPoints("");
     // Only try to decrypt if the answer is not an empty string
     if (payloadData.answer) {
       setDecryptedAnswer(decrypt(payloadData.answer));
@@ -298,10 +262,14 @@ const Quiz = () => {
       const actualMessage = messageBody.slice("freeze:".length);
       setReceivedMessage(actualMessage);
       setIsFrozen(true);
-    } else {
-      //change this else if 50-50 added
-      setReceivedMessage(messageBody);
+    } else if (messageBody.includes("used mask power on you")) {
+      const [message, points] = messageBody.split(":");
+      setReceivedMessage(message);
       setIsMask(true);
+      setStolenPoints(points);
+    } else if (messageBody.includes("using mask power")) {
+      const [message, points] = messageBody.split(":");
+      setReceivePoints(points);
     }
   };
 
@@ -635,7 +603,6 @@ const Quiz = () => {
                   )}
                 </Step>
               </ProgressBar>
-
             </div>
             {!showScore ? (
               <div className="timer-wrapper">
@@ -706,7 +673,6 @@ const Quiz = () => {
                               : ""
                           }
                           `}
-
                         onClick={() =>
                           handleAnswer(selectedAnswer === option ? "" : option)
                         }
@@ -722,6 +688,12 @@ const Quiz = () => {
                       </button>
                     ))}
                   </div>
+                  {stolenPoints && (
+                    <StolenPointsAnimation text={-stolenPoints} />
+                  )}
+                  {receivePoints && (
+                    <ReceivePointsAnimation text={+receivePoints} />
+                  )}
                   {showPowerButton && (
                     <button
                       className="use-power-button"
@@ -787,7 +759,6 @@ const Quiz = () => {
                 )}
               </Modal>
             )}
-
             {isMask && (
               <div className="gif-image-container">
                 {isMask && (
