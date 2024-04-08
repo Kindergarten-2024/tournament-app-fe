@@ -492,11 +492,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9998; 
+  z-index: 9998;
 }
 
 .rotate-scale-up {
-  animation: rotate-scale-up 1s linear both, rotate-scale-down 1s linear 4s forwards;
+  animation: rotate-scale-up 1s linear both,
+    rotate-scale-down 1s linear 4s forwards;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -505,19 +506,20 @@
 }
 
 .text-overlay {
-  animation: text-overlay-up 1s linear both, text-overlay-down 1s linear 4s forwards;
+  animation: text-overlay-up 1s linear both,
+    text-overlay-down 1s linear 4s forwards;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(1) rotateZ(0);
-  color: white; 
+  color: white;
   font-weight: bold;
   text-align: center;
   overflow: hidden;
   font-family: "Press Start 2P";
   font-size: 40px;
   line-height: 1.5;
-  z-index: 9999; 
+  z-index: 9999;
 }
 
 @keyframes rotate-scale-up {
@@ -569,16 +571,19 @@
 }
 
 .slide-out-right {
-	animation: slide-out-right 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) both !important;
+  animation: slide-out-right 1s cubic-bezier(0.55, 0.085, 0.68, 0.53) both !important;
+}
+body {
+  overflow: hidden;
 }
 
 @keyframes slide-out-right {
   0% {
-            transform: translateX(0);
+    transform: translateX(0);
     opacity: 1;
   }
   100% {
-            transform: translateX(1000px);
+    transform: translateX(1000px);
     opacity: 0;
   }
 }
