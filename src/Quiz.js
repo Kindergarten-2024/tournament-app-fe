@@ -101,6 +101,7 @@ const Quiz = () => {
   const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
   const [receivedMessage, setReceivedMessage] = useState("");
   const [isFrozen, setIsFrozen] = useState(false);
+  const [disableButtons, setDisableButtons] = useState(false);
   const [isMask, setIsMask] = useState(false);
   const [is5050, setIs5050] = useState(false);
   const [power, setPower] = useState(" ");
@@ -113,6 +114,7 @@ const Quiz = () => {
   const [selectedIndexes, setSelectedIndexes] = useState([]);
   const [stolenPoints, setStolenPoints] = useState("");
   const [receivePoints, setReceivePoints] = useState("");
+  const [debuffAtm, setDebuffAtm] = useState("");
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -239,6 +241,7 @@ const Quiz = () => {
     var payloadData = JSON.parse(payload.body);
     setQuestion(payloadData);
     setIsFrozen(false);
+    setDisableButtons(false);
     setIsMask(false);
     setIs5050(false);
     setTimerKey(Math.random());
@@ -262,6 +265,7 @@ const Quiz = () => {
       const actualMessage = messageBody.slice("freeze:".length);
       setReceivedMessage(actualMessage);
       setIsFrozen(true);
+      setDisableButtons(true);
     } else if (messageBody.includes("used mask power on you")) {
       const [message, points] = messageBody.split(":");
       setReceivedMessage(message);
@@ -329,6 +333,37 @@ const Quiz = () => {
     };
     fetchPlayerStreak();
   }, [showScore]);
+
+  useEffect(() => {
+    const fetchPlayerDebuff = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/player-debuff`);
+        setDebuffAtm(response.data);
+
+        if (response.data == "freeze") {
+          setDisableButtons(true);
+        } else if (response.data == "5050") {
+          console.log(question);
+          setIs5050(true);
+          const indexesToChange = [];
+          while (indexesToChange.length < 2) {
+            const randomIndex = Math.floor(Math.random() * 3); // 3 incorrect options
+            if (
+              !indexesToChange.includes(randomIndex) &&
+              question.options[randomIndex] !== decryptedAnswer
+            ) {
+              indexesToChange.push(randomIndex);
+            }
+          }
+          setSelectedIndexes(indexesToChange);
+        } else {
+        }
+      } catch (error) {
+        console.error("Error fetching player streak: ", error);
+      }
+    };
+    fetchPlayerDebuff();
+  }, [question]);
 
   const switchSetPowerDescription = (power) => {
     switch (power) {
@@ -662,10 +697,11 @@ const Quiz = () => {
                         key={index}
                         className={`
                           ${selectedAnswer === option ? "selected" : ""}
-                          ${isFrozen ? "freeze-effect" : ""}
-                          ${is5050 && selectedIndexes.includes(index)
-                            ? "slide-out-right disable"
-                            : ""
+                          ${isFrozen || disableButtons ? "freeze-effect" : ""}
+                          ${
+                            is5050 && selectedIndexes.includes(index)
+                              ? "slide-out-right disable"
+                              : ""
                           }
                           `}
                         onClick={() =>
