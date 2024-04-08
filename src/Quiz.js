@@ -273,15 +273,6 @@ const Quiz = () => {
     }
   };
 
-  useEffect(() => {
-    if (receivedMessage) {
-      const timeout = setTimeout(() => {
-        setReceivedMessage(""); // Clear the received message after 5 seconds
-      }, 5000);
-      return () => clearTimeout(timeout); // Clear the timeout when component unmounts
-    }
-  }, [receivedMessage]);
-
   const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
     const leaderboardArray = userDataArray.map((user) => ({
@@ -521,8 +512,13 @@ const Quiz = () => {
   };
 
   return (
-    <div>
-      {isFrozen && <Snowstorm />}
+    <div style={{ position: "relative" }}>
+      {isFrozen && (
+        <div className="overlay-container">
+          <img src={iceimg} className="rotate-scale-up" />
+          <div className="text-overlay">{receivedMessage} freezed you!</div>
+        </div>
+      )}
       <div className="streak-container">
         <img src={streakGif} alt="Streak GIF" className="streak-image" />
         <p className="streak-text">{streakText}</p>
@@ -667,10 +663,9 @@ const Quiz = () => {
                         className={`
                           ${selectedAnswer === option ? "selected" : ""}
                           ${isFrozen ? "freeze-effect" : ""}
-                          ${
-                            is5050 && selectedIndexes.includes(index)
-                              ? "incorrect-answer disabled"
-                              : ""
+                          ${is5050 && selectedIndexes.includes(index)
+                            ? "slide-out-right disable"
+                            : ""
                           }
                           `}
                         onClick={() =>
@@ -771,11 +766,11 @@ const Quiz = () => {
               </div>
             )}
 
-            {receivedMessage && (
+            {/* {receivedMessage && (
               <div className="received-message-container">
                 <p className="message-text">{receivedMessage}</p>
               </div>
-            )}
+            )} */}
           </>
         ) : (
           <div className="loading-spinner">
