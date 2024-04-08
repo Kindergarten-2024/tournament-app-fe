@@ -63,12 +63,12 @@ const useRenderTime = ({ remainingTime }) => {
   }
 
   if (
-      typeof remainingTime !== "number" ||
-      isNaN(remainingTime) ||
-      remainingTime < 0 ||
-      remainingTime > 15
+    typeof remainingTime !== "number" ||
+    isNaN(remainingTime) ||
+    remainingTime < 0 ||
+    remainingTime > 15
   ) {
-      return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
+    return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
   }
 
 
@@ -216,24 +216,6 @@ const Quiz = () => {
     fetchCurrentQuestion();
   }, []);
 
-  // useEffect(() => {
-  //   if (stompClient && stompClient.connected) {
-  //     stompClient.subscribe("/questions", onPublicMessageReceived);
-  //     stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
-  //     stompClient.subscribe(
-  //       `/user/${user.login}/private`,
-  //       onPrivateMessageReceived
-  //     );
-  //   }
-  //   // Clean up subscriptions when the component unmounts
-  //   return () => {
-  //     if (stompClient) {
-  //       stompClient.unsubscribe("/questions");
-  //       stompClient.unsubscribe("/leaderboard");
-  //     }
-  //   };
-  // }, [stompClient]);
-
   useEffect(() => {
     if (question) {
       axios
@@ -250,16 +232,6 @@ const Quiz = () => {
         });
     }
   }, [question]);
-
-  // useEffect(() => {
-  //   if (questionIndex % 10 == 1) {
-  //     setProgress(0);
-  //   } else if (questionIndex % 10 == 0) {
-  //     setProgress(100);
-  //   } else {
-  //     setProgress((((questionIndex - 1) % 10) * 100) / 9);
-  //   }
-  // }, [questionIndex]);
 
   function decrypt(encryptedValue) {
     if (encryptedValue === undefined) {
@@ -304,15 +276,6 @@ const Quiz = () => {
       setIsMask(true);
     }
   };
-
-  useEffect(() => {
-    if (receivedMessage) {
-      const timeout = setTimeout(() => {
-        setReceivedMessage(""); // Clear the received message after 5 seconds
-      }, 5000);
-      return () => clearTimeout(timeout); // Clear the timeout when component unmounts
-    }
-  }, [receivedMessage]);
 
   const onLeaderboardMessageReceived = (payload) => {
     const userDataArray = JSON.parse(payload.body);
@@ -553,8 +516,13 @@ const Quiz = () => {
   };
 
   return (
-    <div>
-      {isFrozen && <Snowstorm />}
+    <div style={{ position: "relative" }}>
+      {isFrozen && (
+        <div className="overlay-container">
+          <img src={iceimg} className="rotate-scale-up" />
+          <div className="text-overlay">{receivedMessage} freezed you!</div>
+        </div>
+      )}
       <div className="streak-container">
         <img src={streakGif} alt="Streak GIF" className="streak-image" />
         <p className="streak-text">{streakText}</p>
@@ -700,10 +668,9 @@ const Quiz = () => {
                         className={`
                           ${selectedAnswer === option ? "selected" : ""}
                           ${isFrozen ? "freeze-effect" : ""}
-                          ${
-                            is5050 && selectedIndexes.includes(index)
-                              ? "incorrect-answer disabled"
-                              : ""
+                          ${is5050 && selectedIndexes.includes(index)
+                            ? "slide-out-right disable"
+                            : ""
                           }
                           `}
 
@@ -800,11 +767,11 @@ const Quiz = () => {
               </div>
             )}
 
-            {receivedMessage && (
+            {/* {receivedMessage && (
               <div className="received-message-container">
                 <p className="message-text">{receivedMessage}</p>
               </div>
-            )}
+            )} */}
           </>
         ) : (
           <div className="loading-spinner">
