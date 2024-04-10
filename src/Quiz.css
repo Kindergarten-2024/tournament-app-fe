@@ -39,11 +39,9 @@
 
 .selected {
   /*background: linear-gradient(170deg, #bfae4d, #afc313) !important;*/
-  background-image: linear-gradient(
-    45deg,
-    rgb(155, 0, 255),
-    rgb(255, 0, 0)
-  ) !important;
+  background-image: linear-gradient(45deg,
+      rgb(155, 0, 255),
+      rgb(255, 0, 0)) !important;
   background-size: 200% 200%;
   animation: gradientShift 2s ease infinite;
   color: white;
@@ -104,11 +102,13 @@
 }
 
 @keyframes blinking {
+
   0%,
   50%,
   100% {
     opacity: 1;
   }
+
   25%,
   75% {
     opacity: 0;
@@ -150,6 +150,7 @@
 
 /* Small Devices (Mobile Phones) */
 @media only screen and (max-width: 600px) {
+
   .leaderboard-results-2 thead th,
   .leaderboard-font-2 {
     font-size: 15px;
@@ -158,6 +159,7 @@
 
 /* Medium Devices (Tablets) */
 @media only screen and (min-width: 600px) and (max-width: 900px) {
+
   .leaderboard-results-2 thead th,
   .leaderboard-font-2 {
     font-size: 20px;
@@ -166,6 +168,7 @@
 
 /* Large Devices (Desktops) */
 @media only screen and (min-width: 900px) {
+
   .leaderboard-results-2 thead th,
   .leaderboard-font-2 {
     font-size: 25px;
@@ -198,6 +201,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -266,7 +270,8 @@
 
 .answer-buttons button.freeze-effect {
   background: #2984e5 !important;
-  color: #ffffff; /* Change to the desired text color when disabled */
+  color: #ffffff;
+  /* Change to the desired text color when disabled */
   border: 2px solid #bfe2ff;
   box-shadow: 0 0 10px #bfe2ff;
   transition: background-color 2s ease, border 2s ease, box-shadow 2s ease;
@@ -349,7 +354,8 @@
   align-items: center;
   border: 1px solid white;
   transition: transform 0.2s, background-color 0.2s, color 0.2s;
-  background-color: #333; /* Dark background */
+  background-color: #333;
+  /* Dark background */
 }
 
 .enemies-container ul li span {
@@ -357,16 +363,20 @@
 }
 
 .available-enemies li:active {
-  animation: pulsate 0.2s ease; /* Pulsating effect on click */
+  animation: pulsate 0.2s ease;
+  /* Pulsating effect on click */
 }
+
 /* Animation for a pulsating effect */
 @keyframes pulsate {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -391,13 +401,15 @@
 
 .gif-image {
   max-width: 30%;
-  height: auto; /* This ensures that the image maintains its aspect ratio */
+  height: auto;
+  /* This ensures that the image maintains its aspect ratio */
 }
 
 .message-text {
   text-align: center;
   background: #89b0da !important;
-  color: #ffffff; /* Change to the desired text color when disabled */
+  color: #ffffff;
+  /* Change to the desired text color when disabled */
   border: 2px solid #bfe2ff;
   box-shadow: 0 0 10px #bfe2ff;
   transition: background-color 1.5s ease, border 1.5s ease, box-shadow 1.5s ease;
@@ -425,6 +437,7 @@
   from {
     left: -100%;
   }
+
   to {
     left: calc(100% - 100px);
   }
@@ -439,6 +452,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 9998;
   z-index: 9998;
 }
 
@@ -460,6 +474,7 @@
   left: 50%;
   transform: translate(-50%, -50%) scale(1) rotateZ(0);
   color: white;
+  color: white;
   font-weight: bold;
   text-align: center;
   overflow: hidden;
@@ -467,15 +482,18 @@
   font-size: 40px;
   line-height: 1.5;
   z-index: 9999;
+  z-index: 9999;
 }
 
 @keyframes rotate-scale-up {
   0% {
     transform: translate(-50%, -50%) scale(0) rotateZ(0);
   }
+
   50% {
     transform: translate(-50%, -50%) scale(0.1) rotateZ(180deg);
   }
+
   100% {
     transform: translate(-50%, -50%) scale(0.25) rotateZ(360deg);
   }
@@ -485,9 +503,11 @@
   0% {
     transform: translate(-50%, -50%) scale(0.25) rotateZ(360deg);
   }
+
   50% {
     transform: translate(-50%, -50%) scale(0.1) rotateZ(180deg);
   }
+
   100% {
     transform: translate(-50%, -50%) scale(0) rotateZ(0);
   }
@@ -497,9 +517,11 @@
   0% {
     transform: translate(-50%, -50%) scale(0) rotateZ(0);
   }
+
   50% {
     transform: translate(-50%, -50%) scale(0.1) rotateZ(180deg);
   }
+
   100% {
     transform: translate(-50%, -50%) scale(0.25) rotateZ(360deg);
   }
@@ -509,9 +531,11 @@
   0% {
     transform: translate(-50%, -50%) scale(0.25) rotateZ(360deg);
   }
+
   50% {
     transform: translate(-50%, -50%) scale(0.1) rotateZ(180deg);
   }
+
   100% {
     transform: translate(-50%, -50%) scale(0) rotateZ(0);
   }
@@ -524,9 +548,12 @@
 @keyframes slide-out-right {
   0% {
     transform: translateX(0);
+    transform: translateX(0);
     opacity: 1;
   }
+
   100% {
+    transform: translateX(1000px);
     transform: translateX(1000px);
     opacity: 0;
   }
@@ -558,4 +585,214 @@
     font-size: 12px !important;
   }
 
+}
+.jello-horizontal {
+  animation: jello-horizontal 0.9s both !important;
+}
+
+@-webkit-keyframes jello-horizontal {
+  0% {
+    transform: scale3d(1, 1, 1);
+  }
+
+  30% {
+    transform: scale3d(1.25, 0.75, 1);
+  }
+
+  40% {
+    transform: scale3d(0.75, 1.25, 1);
+  }
+
+  50% {
+    transform: scale3d(1.15, 0.85, 1);
+  }
+
+  65% {
+    transform: scale3d(0.95, 1.05, 1);
+  }
+
+  75% {
+    transform: scale3d(1.05, 0.95, 1);
+  }
+
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+@keyframes jello-horizontal {
+  0% {
+    transform: scale3d(1, 1, 1);
+  }
+
+  30% {
+    transform: scale3d(1.25, 0.75, 1);
+  }
+
+  40% {
+    transform: scale3d(0.75, 1.25, 1);
+  }
+
+  50% {
+    transform: scale3d(1.15, 0.85, 1);
+  }
+
+  65% {
+    transform: scale3d(0.95, 1.05, 1);
+  }
+
+  75% {
+    transform: scale3d(1.05, 0.95, 1);
+  }
+
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.bounce-top {
+  animation: bounce-top 0.9s both !important;
+}
+
+@-webkit-keyframes bounce-top {
+  0% {
+    transform: translateY(-45px);
+    animation-timing-function: ease-in;
+    opacity: 1;
+  }
+
+  24% {
+    opacity: 1;
+  }
+
+  40% {
+    transform: translateY(-24px);
+    animation-timing-function: ease-in;
+  }
+
+  65% {
+    transform: translateY(-12px);
+    animation-timing-function: ease-in;
+  }
+
+  82% {
+    transform: translateY(-6px);
+    animation-timing-function: ease-in;
+  }
+
+  93% {
+    transform: translateY(-4px);
+    animation-timing-function: ease-in;
+  }
+
+  25%,
+  55%,
+  75%,
+  87% {
+    transform: translateY(0px);
+    animation-timing-function: ease-out;
+  }
+
+  100% {
+    transform: translateY(0px);
+    animation-timing-function: ease-out;
+    opacity: 1;
+  }
+}
+
+@keyframes bounce-top {
+  0% {
+    transform: translateY(-45px);
+    animation-timing-function: ease-in;
+    opacity: 1;
+  }
+
+  24% {
+    opacity: 1;
+  }
+
+  40% {
+    transform: translateY(-24px);
+    animation-timing-function: ease-in;
+  }
+
+  65% {
+    transform: translateY(-12px);
+    animation-timing-function: ease-in;
+  }
+
+  82% {
+    transform: translateY(-6px);
+    animation-timing-function: ease-in;
+  }
+
+  93% {
+    transform: translateY(-4px);
+    animation-timing-function: ease-in;
+  }
+
+  25%,
+  55%,
+  75%,
+  87% {
+    transform: translateY(0px);
+    animation-timing-function: ease-out;
+  }
+
+  100% {
+    transform: translateY(0px);
+    animation-timing-function: ease-out;
+    opacity: 1;
+  }
+}
+
+.shake-horizontal {
+  animation: shake-horizontal 0.8s cubic-bezier(0.455, 0.030, 0.515, 0.955) both !important;
+}
+
+@keyframes shake-horizontal {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70% {
+    transform: translateX(-10px);
+  }
+
+  20%,
+  40%,
+  60% {
+    transform: translateX(10px);
+  }
+
+  80% {
+    transform: translateX(8px);
+  }
+
+  90% {
+    transform: translateX(-8px);
+  }
+}
+
+.blink-1 {
+  animation: blink-1 0.6s both !important;
+}
+
+@keyframes blink-1 {
+
+  0%,
+  50%,
+  100% {
+    opacity: 1;
+  }
+
+  25%,
+  75% {
+    opacity: 0;
+  }
 }
