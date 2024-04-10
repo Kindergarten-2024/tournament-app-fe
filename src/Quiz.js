@@ -114,7 +114,6 @@ const Quiz = () => {
   const [selectedIndexes, setSelectedIndexes] = useState([]);
   const [stolenPoints, setStolenPoints] = useState("");
   const [receivePoints, setReceivePoints] = useState("");
-  const [debuffAtm, setDebuffAtm] = useState("");
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -294,6 +293,48 @@ const Quiz = () => {
       setScore(player.score);
       setPower(player.item);
     }
+    updateEnemies(userDataArray);
+  };
+
+  const updateEnemies = (playerListData) => {
+    const playerList = playerListData.map((player) => ({
+      id: player.id,
+      name: player.username,
+      freeze_debuff: player.freeze_debuff,
+      mask_debuff: player.mask_debuff,
+      score: player.score,
+      debuffAtm: player.debuffAtm,
+    }));
+
+    let updatedenemyList;
+    switch (power) {
+      case "freeze":
+        updatedenemyList = playerList.filter(
+          (player) =>
+            player.name !== user.login &&
+            player.freeze_debuff < 2 &&
+            player.debuffAtm != "freeze"
+        );
+        break;
+      case "mask":
+        updatedenemyList = playerList.filter(
+          (player) =>
+            player.name !== user.login &&
+            !player.mask_debuff &&
+            player.debuffAtm != "mask"
+        );
+        break;
+      default:
+        updatedenemyList = playerList.filter(
+          (player) => player.name !== user.login
+        );
+    }
+    updateModal(updatedenemyList);
+  };
+
+  const updateModal = (updatedenemyList) => {
+    setEnemies(null);
+    setEnemies(updatedenemyList);
   };
 
   useEffect(() => {
@@ -338,7 +379,6 @@ const Quiz = () => {
     const fetchPlayerDebuff = async () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/player-debuff`);
-        setDebuffAtm(response.data);
 
         if (response.data == "freeze") {
           setDisableButtons(true);
@@ -484,18 +524,24 @@ const Quiz = () => {
         freeze_debuff: player.freeze_debuff,
         mask_debuff: player.mask_debuff,
         score: player.score,
+        debuffAtm: player.debuffAtm,
       }));
-
       let enemyList;
       switch (power) {
         case "freeze":
           enemyList = playerList.filter(
-            (player) => player.name !== user.login && player.freeze_debuff < 2
+            (player) =>
+              player.name !== user.login &&
+              player.freeze_debuff < 2 &&
+              player.debuffAtm == null
           );
           break;
         case "mask":
           enemyList = playerList.filter(
-            (player) => player.name !== user.login && !player.mask_debuff
+            (player) =>
+              player.name !== user.login &&
+              !player.mask_debuff &&
+              player.debuffAtm == null
           );
           break;
         default:
