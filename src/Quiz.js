@@ -533,7 +533,7 @@ const Quiz = () => {
             (player) =>
               player.name !== user.login &&
               player.freeze_debuff < 2 &&
-              player.debuffAtm == null
+              player.debuffAtm != "freeze"
           );
           break;
         case "mask":
@@ -541,7 +541,7 @@ const Quiz = () => {
             (player) =>
               player.name !== user.login &&
               !player.mask_debuff &&
-              player.debuffAtm == null
+              player.debuffAtm != "mask"
           );
           break;
         default:
