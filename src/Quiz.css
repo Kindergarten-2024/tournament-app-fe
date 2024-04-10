@@ -62,27 +62,6 @@
   cursor: pointer;
 }
 
-.progress-bar-container {
-  display: flex;
-  justify-content: center;
-}
-
-.progress-bar {
-  width: 200px;
-  background-color: #ccc;
-  height: 20px;
-  border-radius: 5px;
-  margin-top: 10px;
-}
-
-.progress {
-  width: 0;
-  height: 100%;
-  background-color: #3498db;
-  border-radius: 5px;
-  transition: width 0.5s;
-}
-
 .submit-button {
   background-color: red;
   color: rgb(255, 255, 255);
@@ -229,10 +208,7 @@
 }
 
 .timer-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 10%;
-  margin-top: 10%;
+  margin: 5% auto 5% auto;
 }
 
 .time-wrapper {
@@ -278,8 +254,6 @@
 }
 
 .question-container {
-  top: 50%;
-  left: 50%;
   margin-left: 5%;
   margin-right: 5%;
 }
@@ -299,7 +273,7 @@
 }
 
 .use-power-button {
-  margin: 1rem auto;
+  margin: 1rem auto 0 auto;
   padding: 0.5rem;
   border: none;
   border-radius: 100rem;
@@ -456,33 +430,6 @@
   }
 }
 
-.streak-container {
-  position: fixed;
-  top: -15px;
-  right: 10px;
-  width: 75px;
-  height: 100px;
-}
-
-.streak-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.streak-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: black;
-  font-weight: bold;
-  width: 100%;
-}
-
 .overlay-container {
   position: fixed;
   top: 0;
@@ -573,9 +520,6 @@
 .slide-out-right {
   animation: slide-out-right 1s cubic-bezier(0.55, 0.085, 0.68, 0.53) both !important;
 }
-body {
-  overflow: hidden;
-}
 
 @keyframes slide-out-right {
   0% {
@@ -586,4 +530,32 @@ body {
     transform: translateX(1000px);
     opacity: 0;
   }
+}
+
+.empty {
+  margin-top: 60px;
+  width: 100%;
+  height: 1px;
+
+}
+.progress-bar-container {
+  width: 80%;
+  margin: 10% auto 20% auto;
+}
+
+.App-header {
+  overflow: hidden;
+}
+
+/* Media query for small mobile screens */
+@media only screen and (max-height: 750px) {
+
+  .progress-bar-container {
+    margin: 5% auto;
+  }
+
+  .start2p {
+    font-size: 12px !important;
+  }
+
 }

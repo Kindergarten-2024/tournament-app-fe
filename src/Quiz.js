@@ -3,7 +3,6 @@ import axios from "axios";
 import "./Quiz.css";
 import { AuthContext } from "./App";
 import CryptoJS from "crypto-js";
-import Snowstorm from "react-snowstorm";
 import "react-step-progress-bar/styles.css";
 import { ProgressBar, Step } from "react-step-progress-bar";
 import gifImage from "./images/wolf.gif";
@@ -214,7 +213,7 @@ const Quiz = () => {
         .then((response) => {
           const question_time = new Date(question.time);
           const currentTime = new Date(response.data);
-          const timer = Math.abs(question_time - currentTime + 15499);
+          const timer = Math.abs(question_time - currentTime + 1549900000000);
           const timer_in_sec = Math.round(timer / 1000);
           setQuestionTimer(timer_in_sec);
         })
@@ -257,6 +256,7 @@ const Quiz = () => {
     // updateString(questionIndex - 1, "current");
     setShowScore(false);
   };
+
   const onPrivateMessageReceived = (payload) => {
     const messageBody = payload.body;
     console.log("Received message:", messageBody);
@@ -593,200 +593,159 @@ const Quiz = () => {
   };
 
   return (
-    <div style={{ position: "relative" }}>
-      {isFrozen && (
-        <div className="overlay-container">
-          <img src={iceimg} className="rotate-scale-up" />
-          <div className="text-overlay">{receivedMessage} freezed you!</div>
-        </div>
-      )}
-      <div className="streak-container">
-        <img src={streakGif} alt="Streak GIF" className="streak-image" />
-        <p className="streak-text">{streakText}</p>
-      </div>
-      <div>
-        {question && !loading ? (
-          <>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                position: "relative",
-              }}
+    <>
+      {question && !loading ? (
+        <>
+          <div className="empty"></div>
+          <div className="progress-bar-container">
+            <ProgressBar
+              percent={streak * 20}
+              filledBackground="linear-gradient(to right, #0f3587, #8c1bc5)"
             >
-              <ProgressBar
-                percent={streak * 20}
-                filledBackground="linear-gradient(to right, #0f3587, #8c1bc5)"
-                width={300}
-              >
-                <Step transition="scale">
-                  {({ accomplished }) => (
-                    <img
-                      style={{
-                        filter: `grayscale(${accomplished ? 50 : 80}%)`,
-                      }}
-                      width="15"
-                      src={stepimg}
-                    />
-                  )}
-                </Step>
-                <Step transition="scale">
-                  {({ accomplished }) => (
-                    <img
-                      style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                      width="50"
-                      src={fiftyimg}
-                    />
-                  )}
-                </Step>
-                <Step transition="scale">
-                  {({ accomplished }) => (
-                    <img
-                      style={{
-                        filter: `grayscale(${accomplished ? 50 : 80}%)`,
-                      }}
-                      width="15"
-                      src={stepimg}
-                    />
-                  )}
-                </Step>
-                <Step transition="scale">
-                  {({ accomplished }) => (
-                    <img
-                      style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                      width="50"
-                      src={iceimg}
-                    />
-                  )}
-                </Step>
-                <Step transition="scale">
-                  {({ accomplished }) => (
-                    <img
-                      style={{
-                        filter: `grayscale(${accomplished ? 50 : 80}%)`,
-                      }}
-                      width="15"
-                      src={stepimg}
-                    />
-                  )}
-                </Step>
-                <Step transition="scale">
-                  {({ accomplished }) => (
-                    <img
-                      style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                      width="50"
-                      src={maskimg}
-                    />
-                  )}
-                </Step>
-              </ProgressBar>
-            </div>
-            {!showScore ? (
-              <div className="timer-wrapper">
-                <CountdownCircleTimer
-                  isPlaying
-                  duration={questionTimer}
-                  size={120}
-                  colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
-                  colorsTime={[15, 10, 5, 0]}
-                  onComplete={() => {
-                    //method to stop countdown
-                    if (soundPlayedForQuestion) {
-                      countdownAudioRef.current.pause();
-                      countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
-                      setSoundPlayedForQuestion(false);
-                    }
-                    checkAnswer();
-                    setShowScore(true);
-                    return { shouldRepeat: true, delay: 0 };
-                  }}
-                  onUpdate={(remainingTime) => {
-                    if (remainingTime === 5) {
-                      playCountdownSound();
-                    }
-                  }}
-                >
-                  {useRenderTime}
-                </CountdownCircleTimer>
-              </div>
-            ) : (
-              <section className="centered-section">
-                <table
-                  id="rankings"
-                  className="leaderboard-results-2"
-                  width="100"
-                >
-                  <thead>
-                    <tr>
-                      <th className="leaderboard-font-2">Rank</th>
-                      <th className="leaderboard-font-2">PTS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="leaderboard-font-2">{position}</td>
-                      <td className="leaderboard-font-2">{score}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </section>
-            )}
+              <Step transition="scale">
+                {({ accomplished }) => (
+                  <img
+                    style={{
+                      filter: `grayscale(${accomplished ? 50 : 80}%)`,
+                    }}
+                    width="15"
+                    src={stepimg}
+                  />
+                )}
+              </Step>
+              <Step transition="scale">
+                {({ accomplished }) => (
+                  <img
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                    width="50"
+                    src={fiftyimg}
+                  />
+                )}
+              </Step>
+              <Step transition="scale">
+                {({ accomplished }) => (
+                  <img
+                    style={{
+                      filter: `grayscale(${accomplished ? 50 : 80}%)`,
+                      position: 'relative',
+                      top: '-10px',
+                      width: '40px'
+                    }}
+                    
+                    src={redFire}
+                  />
+                )}
+              </Step>
+              <Step transition="scale">
+                {({ accomplished }) => (
+                  <img
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                    width="50"
+                    src={iceimg}
+                  />
+                )}
+              </Step>
+              <Step transition="scale">
+                {({ accomplished }) => (
+                  <img
+                    style={{
+                      filter: `grayscale(${accomplished ? 50 : 80}%)`,
+                      position: 'relative',
+                      top: '-10px',
+                      width: '38px'
+                    }}
+                    src={blueFire}
+                  />
+                )}
+              </Step>
+              <Step transition="scale">
+                {({ accomplished }) => (
+                  <img
+                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                    width="50"
+                    src={maskimg}
+                  />
+                )}
+              </Step>
+            </ProgressBar>
+          </div>
 
-            <div className="question-container">
-              <h2 className="start2p">Question {question.questionNumber}</h2>
-              <p className="start2p">{question.question}</p>
-              {!showScore ? (
-                <>
-                  <div className="answer-buttons">
-                    {question.options.map((option, index) => (
-                      <button
-                        key={index}
-                        className={`
-                          ${selectedAnswer === option ? "selected" : ""}
-                          ${isFrozen || disableButtons ? "freeze-effect" : ""}
-                          ${
-                            is5050 && selectedIndexes.includes(index)
-                              ? "slide-out-right disable"
-                              : ""
-                          }
-                          `}
-                        onClick={() =>
-                          handleAnswer(selectedAnswer === option ? "" : option)
-                        }
-                        disabled={
-                          isFrozen ||
-                          (is5050 && selectedIndexes.includes(index))
-                        }
-                      >
-                        <span className="option-letter">
-                          {String.fromCharCode(65 + index)}.
-                        </span>
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                  {stolenPoints && (
-                    <StolenPointsAnimation text={-stolenPoints} />
-                  )}
-                  {receivePoints && (
-                    <ReceivePointsAnimation text={+receivePoints} />
-                  )}
-                  {showPowerButton && (
-                    <button
-                      className="use-power-button"
-                      onClick={handleUsePower}
-                    >
-                      ⚡ Power ⚡
-                    </button>
-                  )}
-                </>
-              ) : (
+          {!showScore ? (
+            <div className="timer-wrapper">
+              <CountdownCircleTimer
+                isPlaying
+                duration={questionTimer}
+                size={120}
+                colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
+                colorsTime={[15, 10, 5, 0]}
+                onComplete={() => {
+                  //method to stop countdown
+                  if (soundPlayedForQuestion) {
+                    countdownAudioRef.current.pause();
+                    countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
+                    setSoundPlayedForQuestion(false);
+                  }
+                  checkAnswer();
+                  setShowScore(true);
+                  return { shouldRepeat: true, delay: 0 };
+                }}
+                onUpdate={(remainingTime) => {
+                  if (remainingTime === 5) {
+                    playCountdownSound();
+                  }
+                }}
+              >
+                {useRenderTime}
+              </CountdownCircleTimer>
+            </div>
+          ) : (
+            <section className="centered-section">
+              <table
+                id="rankings"
+                className="leaderboard-results-2"
+                width="100"
+              >
+                <thead>
+                  <tr>
+                    <th className="leaderboard-font-2">Rank</th>
+                    <th className="leaderboard-font-2">PTS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="leaderboard-font-2">{position}</td>
+                    <td className="leaderboard-font-2">{score}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+          )}
+
+          <div className="question-container">
+            <h2 className="start2p">Question {question.questionNumber}</h2>
+            <p className="start2p">{question.question}</p>
+            {!showScore ? (
+              <>
                 <div className="answer-buttons">
-                  {question?.options.map((option, index) => (
+                  {question.options.map((option, index) => (
                     <button
                       key={index}
-                      className={`${getOptionClass(option)}`}
-                      disabled
+                      className={`
+                        ${selectedAnswer === option ? "selected" : ""}
+                        ${isFrozen || disableButtons ? "freeze-effect" : ""}
+                        ${
+                          is5050 && selectedIndexes.includes(index)
+                            ? "slide-out-right disable"
+                            : ""
+                        }
+                        `}
+                      onClick={() =>
+                        handleAnswer(selectedAnswer === option ? "" : option)
+                      }
+                      disabled={
+                        isFrozen ||
+                        (is5050 && selectedIndexes.includes(index))
+                      }
                     >
                       <span className="option-letter">
                         {String.fromCharCode(65 + index)}.
@@ -795,73 +754,106 @@ const Quiz = () => {
                     </button>
                   ))}
                 </div>
+                {stolenPoints && (
+                  <StolenPointsAnimation text={-stolenPoints} />
+                )}
+                {receivePoints && (
+                  <ReceivePointsAnimation text={+receivePoints} />
+                )}
+                {showPowerButton && (
+                  <button
+                    className="use-power-button"
+                    onClick={handleUsePower}
+                  >
+                    ⚡ Power ⚡
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className="answer-buttons">
+                {question?.options.map((option, index) => (
+                  <button
+                    key={index}
+                    className={`${getOptionClass(option)}`}
+                    disabled
+                  >
+                    <span className="option-letter">
+                      {String.fromCharCode(65 + index)}.
+                    </span>
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {showModal && (
+            <Modal
+              onCancel={handeCancelPower}
+              onApply={handleApplyPower}
+              onClose={handeCancelPower}
+            >
+              <div className="powers-container">
+                <button className="select-power-button">{power}</button>
+                <p>{powerDescription}</p>
+              </div>
+              {showEnemies && (
+                <div className="enemies-container">
+                  <ul>
+                    {loading ? (
+                      <p>Loading...</p>
+                    ) : (
+                      enemies.map((enemy) => (
+                        <li
+                          key={enemy.name}
+                          onClick={() => setSelectedEnemy(enemy.id)}
+                          className={
+                            selectedEnemy === enemy.id ? "selected" : ""
+                          }
+                        >
+                          <span>
+                            {enemy.name.length > 20
+                              ? enemy.name.slice(0, 17) + "..."
+                              : enemy.name}
+                          </span>
+                          <span>{enemy.score}</span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              )}
+            </Modal>
+          )}
+
+          {isMask && (
+            <div className="gif-image-container">
+              {isMask && (
+                <img
+                  src={gifImage}
+                  alt="GIF"
+                  className="gif-image moving-from-left"
+                />
               )}
             </div>
+          )}
 
-            {showModal && (
-              <Modal
-                onCancel={handeCancelPower}
-                onApply={handleApplyPower}
-                onClose={handeCancelPower}
-              >
-                <div className="powers-container">
-                  <button className="select-power-button">{power}</button>
-                  <p>{powerDescription}</p>
-                </div>
-                {showEnemies && (
-                  <div className="enemies-container">
-                    <ul>
-                      {loading ? (
-                        <p>Loading...</p>
-                      ) : (
-                        enemies.map((enemy) => (
-                          <li
-                            key={enemy.name}
-                            onClick={() => setSelectedEnemy(enemy.id)}
-                            className={
-                              selectedEnemy === enemy.id ? "selected" : ""
-                            }
-                          >
-                            <span>
-                              {enemy.name.length > 20
-                                ? enemy.name.slice(0, 17) + "..."
-                                : enemy.name}
-                            </span>
-                            <span>{enemy.score}</span>
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  </div>
-                )}
-              </Modal>
-            )}
-            {isMask && (
-              <div className="gif-image-container">
-                {isMask && (
-                  <img
-                    src={gifImage}
-                    alt="GIF"
-                    className="gif-image moving-from-left"
-                  />
-                )}
-              </div>
-            )}
-
-            {/* {receivedMessage && (
-              <div className="received-message-container">
-                <p className="message-text">{receivedMessage}</p>
-              </div>
-            )} */}
-          </>
-        ) : (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-          </div>
-        )}
-      </div>
-    </div>
+          {isFrozen && (
+            <div className="overlay-container">
+              <img src={iceimg} className="rotate-scale-up" />
+              <div className="text-overlay">{receivedMessage} freezed you!</div>
+            </div>
+          )}
+        </>
+      ) : (
+        // Render loading spinner
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+        </div>
+      )}
+    </>
   );
-};
+
+}
 
 export default Quiz;
