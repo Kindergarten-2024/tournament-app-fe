@@ -185,7 +185,7 @@ const Dashboard = () => {
       <div className="user-info-container">
         <div className="user-info">
           <img
-            src={user?.avatar_url}
+            src={user.avatar_url ? user.avatar_url : user.picture} 
             alt={user?.name}
             className="user-avatar"
             style={{
