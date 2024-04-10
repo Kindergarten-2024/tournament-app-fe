@@ -11,7 +11,7 @@ import { getFirebaseToken, onMessageListener } from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SockJS from "sockjs-client";
-import {over} from 'stompjs';
+import { over } from 'stompjs';
 
 var stompClient = null;
 

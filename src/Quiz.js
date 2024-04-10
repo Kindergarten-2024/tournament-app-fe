@@ -19,6 +19,7 @@ import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { Modal } from "./Powers";
 import "./Powers.css";
 import { StolenPointsAnimation, ReceivePointsAnimation } from "./bubble";
+import { useWakeLock } from 'react-screen-wake-lock';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -113,6 +114,16 @@ const Quiz = () => {
   const [selectedIndexes, setSelectedIndexes] = useState([]);
   const [stolenPoints, setStolenPoints] = useState("");
   const [receivePoints, setReceivePoints] = useState("");
+
+  const { isSupported, released, request, release } = useWakeLock({
+    onRequest: () => console.log('Screen Wake Lock: ON'),
+    onError: () => console.log('Screen Wake Lock: Error'),
+    onRelease: () => console.log('Screen Wake Lock: OFF'),
+  });
+
+  useEffect(() => {
+    request();
+  }, [])
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -213,7 +224,7 @@ const Quiz = () => {
         .then((response) => {
           const question_time = new Date(question.time);
           const currentTime = new Date(response.data);
-          const timer = Math.abs(question_time - currentTime + 1549900000000);
+          const timer = Math.abs(question_time - currentTime + 15499);
           const timer_in_sec = Math.round(timer / 1000);
           setQuestionTimer(timer_in_sec);
         })
@@ -440,12 +451,12 @@ const Quiz = () => {
 
   const getOptionClass = (option) => {
     if (option === decryptedAnswer) {
-      return "correct-answer";
+      return "correct-answer blink-1";
     } else if (
       option === lastSelectedAnswer &&
       lastSelectedAnswer !== decryptedAnswer
     ) {
-      return "incorrect-answer";
+      return "incorrect-answer shake-horizontal";
     }
     return "";
   };
@@ -731,7 +742,7 @@ const Quiz = () => {
                     <button
                       key={index}
                       className={`
-                        ${selectedAnswer === option ? "selected" : ""}
+                        ${selectedAnswer === option ? "selected jello-horizontal" : ""}
                         ${isFrozen || disableButtons ? "freeze-effect" : ""}
                         ${
                           is5050 && selectedIndexes.includes(index)
@@ -762,7 +773,7 @@ const Quiz = () => {
                 )}
                 {showPowerButton && (
                   <button
-                    className="use-power-button"
+                    className="use-power-button bounce-top"
                     onClick={handleUsePower}
                   >
                     ⚡ Power ⚡
