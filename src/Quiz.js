@@ -169,8 +169,9 @@ const Quiz = () => {
   const onConnected = () => {
     stompClient.subscribe("/questions", onPublicMessageReceived);
     stompClient.subscribe("/leaderboard", onLeaderboardMessageReceived);
+    const userIdentifier = user.login ? user.login : user.email;
     stompClient.subscribe(
-      `/user/${user.login}/private`,
+      `/user/${userIdentifier}/private`,
       onPrivateMessageReceived
     );
   };
@@ -293,13 +294,15 @@ const Quiz = () => {
       id: user.username,
       score: user.score,
       item: user.item,
-    }));
+    }));                                                                                                               
+    const userIdentifier = user.login ? user.login : user.email;
+
     const playerIndex = leaderboardArray.findIndex(
-      (user1) => user1.id === user.login
+      (user1) => user1.id === userIdentifier
     );
     setPosition(playerIndex + 1);
 
-    const player = leaderboardArray.find((user1) => user1.id === user.login);
+    const player = leaderboardArray.find((user1) => user1.id === userIdentifier);
     if (player) {
       setScore(player.score);
       setPower(player.item);
@@ -318,11 +321,13 @@ const Quiz = () => {
     }));
 
     let updatedenemyList;
+    const userIdentifier = user.login ? user.login : user.email;
+
     switch (power) {
       case "freeze":
         updatedenemyList = playerList.filter(
           (player) =>
-            player.name !== user.login &&
+            player.name !== userIdentifier &&
             player.freeze_debuff < 2 &&
             player.debuffAtm !== "freeze"
         );
@@ -330,14 +335,14 @@ const Quiz = () => {
       case "mask":
         updatedenemyList = playerList.filter(
           (player) =>
-            player.name !== user.login &&
+            player.name !== userIdentifier &&
             !player.mask_debuff &&
             player.debuffAtm !== "mask"
         );
         break;
       default:
         updatedenemyList = playerList.filter(
-          (player) => player.name !== user.login
+          (player) => player.name !== userIdentifier
         );
     }
     updateModal(updatedenemyList);
@@ -391,9 +396,9 @@ const Quiz = () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/player-debuff`);
 
-        if (response.data == "freeze") {
+        if (response.data === "freeze") {
           setDisableButtons(true);
-        } else if (response.data == "5050") {
+        } else if (response.data === "5050") {
           console.log(question);
           setIs5050(true);
           const indexesToChange = [];
@@ -479,7 +484,7 @@ const Quiz = () => {
       console.log(
         "Selected: " + selectedAnswer + " Decrypted: " + decryptedAnswer
       );
-      if (selectedAnswer == decryptedAnswer) {
+      if (selectedAnswer === decryptedAnswer) {
         updateString(questionIndex - 1, "correct");
       } else {
         updateString(questionIndex - 1, "false");
@@ -538,11 +543,12 @@ const Quiz = () => {
         debuffAtm: player.debuffAtm,
       }));
       let enemyList;
+      const userIdentifier = user.login ? user.login : user.email;
       switch (power) {
         case "freeze":
           enemyList = playerList.filter(
             (player) =>
-              player.name !== user.login &&
+              player.name !== userIdentifier &&
               player.freeze_debuff < 2 &&
               player.debuffAtm !== "freeze"
           );
@@ -550,13 +556,13 @@ const Quiz = () => {
         case "mask":
           enemyList = playerList.filter(
             (player) =>
-              player.name !== user.login &&
+              player.name !== userIdentifier &&
               !player.mask_debuff &&
               player.debuffAtm !== "mask"
           );
           break;
         default:
-          enemyList = playerList.filter((player) => player.name !== user.login);
+          enemyList = playerList.filter((player) => player.name !== userIdentifier);
       }
       setEnemies(enemyList);
     } catch (error) {
