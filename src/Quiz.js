@@ -52,14 +52,14 @@ const useRenderTime = ({ remainingTime }) => {
     return null; // If remainingTime is null, don't render anything
   }
 
-  if (
-    typeof remainingTime !== "number" ||
-    isNaN(remainingTime) ||
-    remainingTime < 0 ||
-    remainingTime > 15
-  ) {
-    return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
-  }
+  // if (
+  //   typeof remainingTime !== "number" ||
+  //   isNaN(remainingTime) ||
+  //   remainingTime < 0 ||
+  //   remainingTime > 15
+  // ) {
+  //   return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
+  // }
 
   const isTimeUp = isNewTimeFirstTick.current;
 
@@ -194,28 +194,28 @@ const Quiz = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchCurrentQuestion = async () => {
-      try {
-        const response = await axios.get(
-          `${BACKEND_URL}/admin/questions/get-current-question`
-        );
-        setQuestion(response.data);
-        setQuestionIndex(response.data.questionNumber);
+  // useEffect(() => {
+  //   const fetchCurrentQuestion = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         `${BACKEND_URL}/admin/questions/get-current-question`
+  //       );
+  //       setQuestion(response.data);
+  //       setQuestionIndex(response.data.questionNumber);
 
-        // updateString(questionIndex - 1, "current");
-        if (response.data.answer) {
-          setDecryptedAnswer(decrypt(response.data.answer));
-        } else {
-          console.warn("Received empty answer string");
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching current question: ", error);
-      }
-    };
-    fetchCurrentQuestion();
-  }, []);
+  //       // updateString(questionIndex - 1, "current");
+  //       if (response.data.answer) {
+  //         setDecryptedAnswer(decrypt(response.data.answer));
+  //       } else {
+  //         console.warn("Received empty answer string");
+  //       }
+  //       setLoading(false);
+  //     } catch (error) {
+  //       console.error("Error fetching current question: ", error);
+  //     }
+  //   };
+  //   fetchCurrentQuestion();
+  // }, []);
 
   useEffect(() => {
     if (question) {
