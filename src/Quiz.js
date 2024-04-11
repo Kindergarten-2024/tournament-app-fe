@@ -605,7 +605,7 @@ const Quiz = () => {
 
   return (
     <>
-      {question && !loading ? (
+      {question ? (
         <>
           <div className="empty"></div>
           <div className="progress-bar-container">
