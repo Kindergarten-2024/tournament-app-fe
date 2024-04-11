@@ -19,7 +19,7 @@ import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { Modal } from "./Powers";
 import "./Powers.css";
 import { StolenPointsAnimation, ReceivePointsAnimation } from "./bubble";
-import { useWakeLock } from 'react-screen-wake-lock';
+import { useWakeLock } from "react-screen-wake-lock";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -116,14 +116,14 @@ const Quiz = () => {
   const [receivePoints, setReceivePoints] = useState("");
 
   const { isSupported, released, request, release } = useWakeLock({
-    onRequest: () => console.log('Screen Wake Lock: ON'),
-    onError: () => console.log('Screen Wake Lock: Error'),
-    onRelease: () => console.log('Screen Wake Lock: OFF'),
+    onRequest: () => console.log("Screen Wake Lock: ON"),
+    onError: () => console.log("Screen Wake Lock: Error"),
+    onRelease: () => console.log("Screen Wake Lock: OFF"),
   });
 
   useEffect(() => {
     request();
-  }, [])
+  }, []);
 
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
@@ -324,7 +324,7 @@ const Quiz = () => {
           (player) =>
             player.name !== user.login &&
             player.freeze_debuff < 2 &&
-            player.debuffAtm != "freeze"
+            player.debuffAtm !== "freeze"
         );
         break;
       case "mask":
@@ -332,7 +332,7 @@ const Quiz = () => {
           (player) =>
             player.name !== user.login &&
             !player.mask_debuff &&
-            player.debuffAtm != "mask"
+            player.debuffAtm !== "mask"
         );
         break;
       default:
@@ -544,7 +544,7 @@ const Quiz = () => {
             (player) =>
               player.name !== user.login &&
               player.freeze_debuff < 2 &&
-              player.debuffAtm != "freeze"
+              player.debuffAtm !== "freeze"
           );
           break;
         case "mask":
@@ -552,7 +552,7 @@ const Quiz = () => {
             (player) =>
               player.name !== user.login &&
               !player.mask_debuff &&
-              player.debuffAtm != "mask"
+              player.debuffAtm !== "mask"
           );
           break;
         default:
@@ -638,11 +638,10 @@ const Quiz = () => {
                   <img
                     style={{
                       filter: `grayscale(${accomplished ? 50 : 80}%)`,
-                      position: 'relative',
-                      top: '-10px',
-                      width: '40px'
+                      position: "relative",
+                      top: "-10px",
+                      width: "40px",
                     }}
-                    
                     src={redFire}
                   />
                 )}
@@ -661,9 +660,9 @@ const Quiz = () => {
                   <img
                     style={{
                       filter: `grayscale(${accomplished ? 50 : 80}%)`,
-                      position: 'relative',
-                      top: '-10px',
-                      width: '38px'
+                      position: "relative",
+                      top: "-10px",
+                      width: "38px",
                     }}
                     src={blueFire}
                   />
@@ -742,7 +741,11 @@ const Quiz = () => {
                     <button
                       key={index}
                       className={`
-                        ${selectedAnswer === option ? "selected jello-horizontal" : ""}
+                        ${
+                          selectedAnswer === option
+                            ? "selected jello-horizontal"
+                            : ""
+                        }
                         ${isFrozen || disableButtons ? "freeze-effect" : ""}
                         ${
                           is5050 && selectedIndexes.includes(index)
@@ -754,8 +757,7 @@ const Quiz = () => {
                         handleAnswer(selectedAnswer === option ? "" : option)
                       }
                       disabled={
-                        isFrozen ||
-                        (is5050 && selectedIndexes.includes(index))
+                        isFrozen || (is5050 && selectedIndexes.includes(index))
                       }
                     >
                       <span className="option-letter">
@@ -765,9 +767,7 @@ const Quiz = () => {
                     </button>
                   ))}
                 </div>
-                {stolenPoints && (
-                  <StolenPointsAnimation text={-stolenPoints} />
-                )}
+                {stolenPoints && <StolenPointsAnimation text={-stolenPoints} />}
                 {receivePoints && (
                   <ReceivePointsAnimation text={+receivePoints} />
                 )}
@@ -864,7 +864,6 @@ const Quiz = () => {
       )}
     </>
   );
-
-}
+};
 
 export default Quiz;
