@@ -741,16 +741,14 @@ const Quiz = () => {
                     <button
                       key={index}
                       className={`
-                        ${
-                          selectedAnswer === option
-                            ? "selected jello-horizontal"
-                            : ""
+                        ${selectedAnswer === option
+                          ? "selected jello-horizontal"
+                          : ""
                         }
-                        ${isFrozen || disableButtons ? "freeze-effect" : ""}
-                        ${
-                          is5050 && selectedIndexes.includes(index)
-                            ? "slide-out-right disable"
-                            : ""
+                        ${isFrozen || disableButtons ? "freeze-effect disable" : ""}
+                        ${is5050 && selectedIndexes.includes(index)
+                          ? "slide-out-right disable"
+                          : ""
                         }
                         `}
                       onClick={() =>
@@ -811,9 +809,7 @@ const Quiz = () => {
               {showEnemies && (
                 <div className="enemies-container">
                   <ul>
-                    {loading ? (
-                      <p>Loading...</p>
-                    ) : (
+                    {
                       enemies.map((enemy) => (
                         <li
                           key={enemy.name}
@@ -830,7 +826,7 @@ const Quiz = () => {
                           <span>{enemy.score}</span>
                         </li>
                       ))
-                    )}
+                    }
                   </ul>
                 </div>
               )}
