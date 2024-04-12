@@ -54,17 +54,10 @@
     }
 }
 
-.logout-icon {
+.notification-status {
     position: fixed;
     top: 13px;
     right: 15px;
-    font-size: 20px;
-}
-
-.notification-status {
-    position: fixed;
-    top: 12px;
-    right: 50px;
     font-size: 20px;
 }
 
