@@ -12,6 +12,8 @@ import fiftyimg from "./images/fiftyfifty.png";
 import iceimg from "./images/ice.png";
 import maskimg from "./images/mask.png";
 import stepimg from "./images/step.png";
+import x2img from "./images/x2.png";
+import x3img from "./images/x3.png";
 import countdownSound from "./music/countdown.mp3";
 import SockJS from "sockjs-client";
 import { over } from "stompjs";
@@ -52,14 +54,14 @@ const useRenderTime = ({ remainingTime }) => {
     return null; // If remainingTime is null, don't render anything
   }
 
-  // if (
-  //   typeof remainingTime !== "number" ||
-  //   isNaN(remainingTime) ||
-  //   remainingTime < 0 ||
-  //   remainingTime > 15
-  // ) {
-  //   return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
-  // }
+  if (
+    typeof remainingTime !== "number" ||
+    isNaN(remainingTime) ||
+    remainingTime < 0 ||
+    remainingTime > 15
+  ) {
+    return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
+  }
 
   const isTimeUp = isNewTimeFirstTick.current;
 
@@ -93,7 +95,6 @@ const Quiz = () => {
   const [questionTimer, setQuestionTimer] = useState(Date.now());
   const [decryptedAnswer, setDecryptedAnswer] = useState();
   const [questionIndex, setQuestionIndex] = useState();
-  const [question, setQuestion] = useState();
   const [loading, setLoading] = useState(true);
   const [stringsArray, setStringsArray] = useState([]);
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState("");
@@ -125,6 +126,11 @@ const Quiz = () => {
     request();
   }, []);
 
+  const [question, setQuestion] = useState(() => {
+    const storedQuestion = localStorage.getItem("question");
+    return storedQuestion ? JSON.parse(storedQuestion) : null;
+  });
+
   const [showScore, setShowScore] = useState(() => {
     const storedShowScore = localStorage.getItem("showScore");
     return storedShowScore ? JSON.parse(storedShowScore) : false;
@@ -143,6 +149,10 @@ const Quiz = () => {
   });
 
   useEffect(() => {
+    localStorage.setItem("question", JSON.stringify(question));
+  }, [question]);
+
+  useEffect(() => {
     localStorage.setItem("showScore", JSON.stringify(showScore));
   }, [showScore]);
 
@@ -158,6 +168,14 @@ const Quiz = () => {
 
   useEffect(() => {
     connect();
+  }, []);
+
+  useEffect(() => {
+    if (question?.answer) {
+      setDecryptedAnswer(decrypt(question.answer));
+    } else {
+      console.warn("Received empty answer string");
+    }
   }, []);
 
   const connect = () => {
@@ -183,17 +201,6 @@ const Quiz = () => {
       connect();
     }, 1000);
   };
-
-  useEffect(() => {
-    const storedArray = JSON.parse(localStorage.getItem("stringsArray"));
-    if (storedArray === null) {
-      const initialArray = Array(10).fill("pending"); // If array is null, initialize with 10 "pending" strings
-      setStringsArray(initialArray);
-      localStorage.setItem("stringsArray", JSON.stringify(initialArray));
-    } else {
-      setStringsArray(storedArray);
-    }
-  }, []);
 
   // useEffect(() => {
   //   const fetchCurrentQuestion = async () => {
@@ -642,12 +649,10 @@ const Quiz = () => {
                 {({ accomplished }) => (
                   <img
                     style={{
-                      filter: `grayscale(${accomplished ? 50 : 80}%)`,
-                      position: "relative",
-                      top: "-10px",
-                      width: "40px",
+                      filter: `grayscale(${accomplished ? 0 : 80}%)`,
+                      width: "50px",
                     }}
-                    src={redFire}
+                    src={x2img}
                   />
                 )}
               </Step>
@@ -664,12 +669,10 @@ const Quiz = () => {
                 {({ accomplished }) => (
                   <img
                     style={{
-                      filter: `grayscale(${accomplished ? 50 : 80}%)`,
-                      position: "relative",
-                      top: "-10px",
-                      width: "38px",
+                      filter: `grayscale(${accomplished ? 0 : 80}%)`,
+                      width: "40px",
                     }}
-                    src={blueFire}
+                    src={x3img}
                   />
                 )}
               </Step>

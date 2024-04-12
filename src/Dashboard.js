@@ -141,21 +141,9 @@ const Dashboard = () => {
     localStorage.removeItem("showScore");
     localStorage.removeItem("position");
     localStorage.removeItem("score");
-    localStorage.removeItem("stringsArray");
+    localStorage.removeItem("decryptedAnswer");
+    localStorage.removeItem("question");
   }, []);
-
-  // Logout, session clear
-  const handleLogout = async () => {
-    try {
-      var confirmation = window.confirm("Are you sure you want to logout?");
-      if (confirmation) {
-        await axios.post(`${BACKEND_URL}/oauth/logout`);
-        checkLoginState();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const handleNotificationPermission = () => {
     getFirebaseToken(setTokenFound);
@@ -202,14 +190,6 @@ const Dashboard = () => {
             )}
           </div>
         </div>
-      </div>
-
-      <div className="logout-container">
-        <FaSignOutAlt
-          onClick={handleLogout}
-          className="logout-icon"
-          style={{ cursor: "pointer" }}
-        />
       </div>
 
       {!loading ? (
