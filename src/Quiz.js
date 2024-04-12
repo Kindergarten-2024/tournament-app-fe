@@ -824,8 +824,8 @@ const Quiz = () => {
                           }
                         >
                           <span>
-                            {enemy.name.length > 20
-                              ? enemy.name.slice(0, 17) + "..."
+                            {enemy.name.length > 15
+                              ? enemy.name.slice(0, 12) + "..."
                               : enemy.name}
                           </span>
                           <span>{enemy.score}</span>

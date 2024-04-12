@@ -28,13 +28,14 @@ export const Modal = ({ onClose, onApply}) => {
         </div>
 
         <div className="modal-content">
-            <h1>? How To Play ?</h1>
-            <p>🏆 Earn points by answering questions correctly!</p>
-            <p>🎲 Unlock the <b>50-50</b> power at your first correct answer, removing 2 incorrect options!</p>
-            <p>🔥 Get 3 correct answers in a row to double your earned points and unlock the <b>Freeze</b> power!</p>
-            <p>❄️ Use <b>Freeze</b> to temporarily halt an opponent from answering the next question!</p>
-            <p>💪 Maintain a streak of 5 correct answers to triple your earned points and gain access to the <b>Mask</b> power!</p>
-            <p>🎭 Use <b>Mask</b> to seize a quarter of points from any chosen opponent!</p>
+          <h1>? How To Play ?</h1>
+          <p>🏆 Earn points by answering questions correctly and earn new powers!</p>
+          <p>❌ But be careful! Answering wrong breaks your streak and loses all your powers!</p>
+          <p>🎲 Unlock the <b>50-50</b> power on your first correct answer, removing 2 incorrect options!</p>
+          <p>🔥 At 2 consecutive correct answers, you earn double your points!</p>
+          <p>🥶 Reach a streak of 3 to upgrade to <b>Freeze</b> power! Use it to stop an opponent from answering the question!</p>
+          <p>🔥 At 4 consecutive correct answers, you earn triple your points!</p>
+          <p>🎭 Reach a streak of 5 to unlock the <b>Mask</b> power! Use it to seize points from an opponent!</p>
         </div>
 
         <div className="modal-footer">

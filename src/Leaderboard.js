@@ -59,7 +59,7 @@ const Leaderboard = () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/leaderboard`);
         const leaderboardArray = response.data.map((user) => ({
-          id: user.username,
+          id: user.username.includes('@') ? user.username.split('@')[0] : user.username,
           score: user.score,
           avatar: user.avatarUrl,
           streak: user.correctAnswerStreak,

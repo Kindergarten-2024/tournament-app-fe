@@ -2,11 +2,6 @@
   padding: 50px;
 }
 
-.start2p {
-  font-family: "Press Start 2P";
-  font-size: 18px;
-}
-
 .ladder-nav {
   display: flex;
   flex-wrap: wrap;
