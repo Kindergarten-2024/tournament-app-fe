@@ -1,34 +1,43 @@
-import { RouterProvider, createBrowserRouter, useNavigate } from "react-router-dom";
-import { useEffect, useState, createContext, useContext, useCallback } from "react";
-import { GithubLoginButton, GoogleLoginButton } from "react-social-login-buttons";
+import React, {
+    useEffect,
+    useRef,
+    useState,
+    createContext,
+    useContext,
+    useCallback,
+} from "react";
+import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import InteractiveBackground from "./InteractiveBackground";
-import FlipClockCountdown from '@leenguyen/react-flip-clock-countdown';
-import logo from "./images/opapLogo.png";
 import axios from "axios";
 import "./App.css";
+import backgroundMusic from "./music/Retro 80s.mp3"
 import Quiz from "./Quiz";
-import Leaderboard from "./Leaderboard";
 import Dashboard from "./Dashboard";
-import Clicker from "./Clicker";
-import { over } from 'stompjs';
-import SockJS from 'sockjs-client';
+import Login from "./Login";
+import MainLeaderboard from "./Leaderboard";
+import QRcode from "./QRcode";
+import opap_logo from "./images/opap_logo.png";
+import {IoMdHelpCircleOutline} from "react-icons/io";
+import {MdMusicNote, MdMusicOff} from "react-icons/md";
+import {Modal} from "./Instructions";
+import "./Instructions.css";
+import SockJS from "sockjs-client";
+import {over} from 'stompjs';
 
+var stompClient = null;
 // Ensures cookie is sent
 axios.defaults.withCredentials = true;
-
 const AuthContext = createContext();
-
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-
-const AuthContextProvider = ({ children }) => {
+const AuthContextProvider = ({children}) => {
     const [loggedIn, setLoggedIn] = useState(null);
     const [user, setUser] = useState(null);
 
     const checkLoginState = useCallback(async () => {
         try {
             const {
-                data: { loggedIn: logged_in, user },
+                data: {loggedIn: logged_in, user},
             } = await axios.get(`${BACKEND_URL}/loggedin`);
             setLoggedIn(logged_in);
             setUser(user);
@@ -42,201 +51,160 @@ const AuthContextProvider = ({ children }) => {
     }, [checkLoginState]);
 
     return (
-        <AuthContext.Provider value={{ loggedIn, checkLoginState, user }}>
+        <AuthContext.Provider value={{loggedIn, checkLoginState, user}}>
             {children}
         </AuthContext.Provider>
     );
 };
 
-const useWebSocket = () => {
-    const [timerOn, setTimerOn] = useState(true);
+const Home = () => {
+    const {loggedIn, checkLoginState} = useContext(AuthContext);
+    const [isLoading, setIsLoading] = useState(true);
+    const [timerOn, setTimerOn] = useState(null);
     const [round, setRound] = useState(1);
-    const { checkLoginState } = useContext(AuthContext);
-    let stompClient;
+
+    useEffect(() => {
+        connect();
+    }, []);
 
     const connect = () => {
-        let Sock = new SockJS(`${BACKEND_URL}/ws-message`);
+        let Sock = new SockJS(`${BACKEND_URL}/ws-message/public`);
         stompClient = over(Sock);
         stompClient.connect({}, onConnected, onError);
     }
 
     const onConnected = () => {
-        stompClient.subscribe('/registrations-time', onEndingRecieve);
+        stompClient.subscribe("/registrations-time", onEndingReceive);
     }
 
-    const onError = (err) => {
-        console.log(err);
+    const onError = (error) => {
+        console.error('WebSocket error: ', error);
+        setTimeout(() => {
+            console.log('Attempting to reconnect to WebSocket...');
+            connect();
+        }, 1000);
     }
 
-    const onEndingRecieve = (payload) => {
+    const onEndingReceive = (payload) => {
         var payloadData = JSON.parse(payload.body);
         setTimerOn(payloadData.timerOn);
         setRound(payloadData.round);
-    }
+    };
 
     useEffect(() => {
-        // Connect only if the user is logged in
-        if (checkLoginState()) {
-            connect();
-        }
-
+        const fetchData = async () => {
+            await checkLoginState();
+            setIsLoading(false);
+        };
+        fetchData();
     }, [checkLoginState]);
-
-    return { timerOn, round };
-};
-
-const Login = () => {
-    const [endTime, setEndTime] = useState(new Date());
-    const [loading, setLoading] = useState(true);
-    const { timerOn, round } = useWebSocket();
-
-    const handleGithubLogin = async () => {
-        try {
-            window.location.assign(`${BACKEND_URL}/oauth/login/github`);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-    const handleGoogleLogin = async () => {
-        try {
-            window.location.assign(`${BACKEND_URL}/oauth/login/google`);
-        } catch (err) {
-            console.error(err);
-        }
-    };
 
     useEffect(() => {
         const checkRegistrations = async () => {
             try {
                 const {
-                    data: { registrationsOpen: registrationsOpen, registrationsEndTime, rounds },
+                    data: {
+                        registrationsOpen: registrationsOpen,
+                        rounds: rounds,
+                    },
                 } = await axios.get(`${BACKEND_URL}/admin/check/endtime`);
-                setEndTime(registrationsEndTime);
-                setLoading(false);
+                setTimerOn(registrationsOpen);
+                setRound(rounds);
+                setIsLoading(false);
             } catch (err) {
                 console.error(err);
             }
         };
         checkRegistrations();
-    }, [endTime]);
+    }, [timerOn]);
 
-    return (
-        <>
-            <div className="top-container">
-                <h1 className="start2p">Welcome to Opap Tournament</h1>
+    if (isLoading) {
+        return (
+            <div className="loading-spinner">
+                <div className="spinner"></div>
             </div>
-            <img src={logo} className="App-logo" alt="logo" />
+        );
+    }
 
-            {loading ? (
+    if (round >= 3) {
+        return <p className="start2p">Quiz Finished</p>;
+    } else if (loggedIn === true) {
+        if (timerOn === null) {
+            return (
                 <div className="loading-spinner">
                     <div className="spinner"></div>
                 </div>
-            ) : (
-                <div className="middle-container">
-                    {timerOn ? (
-                        <div>
-                            <h1 className="start2p">Round {round} starts in</h1>
-                            <FlipClockCountdown
-                                to={endTime}
-                                renderMap={[false, true, true, true]}
-                            />
-                        </div>
-                    ) : (
-                        <div className="middle-container">
-                            <h1 className="start2p">Round {round} in progress...</h1>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            <div className="bottom-container">
-                <GithubLoginButton className="btn" onClick={handleGithubLogin} />
-                <GoogleLoginButton className="btn" onClick={handleGoogleLogin} />
-
-            </div>
-        </>
-    );
-};
-
-const Callback = () => {
-    const { checkLoginState, loggedIn } = useContext(AuthContext);
-    const navigate = useNavigate();
-    useEffect(() => {
-        (async () => {
-            if (loggedIn === false) {
-                try {
-                    navigate("/");
-                } catch (err) {
-                    console.error(err);
-                    navigate("/");
-                }
-            } else if (loggedIn === true) {
-                navigate("/");
-            }
-        })();
-    }, [checkLoginState, loggedIn, navigate]);
-    return <></>;
-};
-
-const Home = () => {
-    const { loggedIn } = useContext(AuthContext);
-    const { timerOn, round } = useWebSocket();
-
-    if (round >= 3) {
-        return <p className="start2p">Quiz Finished</p>
-    } else if (loggedIn === true) {
-        if (timerOn === true) {
-            return <Dashboard />;
-        } else {
-            return <Question />;
+            );
+        } else if (timerOn === true) {
+            return <Dashboard/>;
+        } else if (timerOn === false) {
+            return <Quiz/>;
         }
     } else if (loggedIn === false) {
-        return <Login />;
+        return <Login/>;
     }
 
     return <></>;
 };
 
-const Question = () => {
-    const { loggedIn } = useContext(AuthContext);
-
-    if (loggedIn === true)
-        return (
-            <div>
-                <Quiz />
-            </div>
-        );
-    if (loggedIn === false) return <Login />;
-    return <></>;
-};
-
-const router = createBrowserRouter([
-    {
-        path: '/',
-        element: <Home />,
-    },
-    {
-        path: '/auth/callback', // github will redirect here
-        element: <Callback />,
-    },
-    {
-        path: '/leaderboard',
-        element: <Leaderboard />,
-    }
-]);
-
-export { AuthContext };
+export {AuthContext};
 
 function App() {
+
+    const audioRef = useRef();
+    const [isPlaying, setIsPlaying] = useState(false); // state to track if the music is playing
+    const [showInstructions, setShowInstructions] = useState(false); // state to show game instructions
+
+    useEffect(() => {
+        // Function to play or pause music based on `isPlaying` state
+        if (audioRef.current) {
+            if (isPlaying) {
+                audioRef.current.play().catch(error => console.error("Error playing the music:", error));
+            } else {
+                audioRef.current.pause();
+            }
+        }
+    }, [isPlaying]);
+
+    // Toggle play/pause
+    const toggleMusic = () => {
+        setIsPlaying(!isPlaying);
+    };
+
     return (
         <div className="App">
-            <Clicker />
-            <InteractiveBackground />
+            <InteractiveBackground/>
             <header className="App-header">
                 <AuthContextProvider>
-                    <RouterProvider router={router} />
+                    <Router>
+                        <img src={opap_logo} className="opap-logo" alt="opap logo"></img>
+                        <div className="instructions-toggle">
+                            <IoMdHelpCircleOutline onClick={() => setShowInstructions(!showInstructions)}/>
+                        </div>
+                        <div className="music-toggle">
+                            {isPlaying ? (
+                                <MdMusicNote onClick={toggleMusic}/>
+                            ) : (
+                                <MdMusicOff onClick={toggleMusic}/>
+                            )}
+                        </div>
+
+                        {showInstructions && (
+                            <Modal
+                                onApply={() => setShowInstructions(false)}
+                                onClose={() => setShowInstructions(false)}>
+                            </Modal>
+                        )}
+
+                        <Routes>
+                            <Route path="/" element={<Home/>}/>
+                            <Route path="/qr" element={<QRcode/>}/>
+                            <Route path="/mainleaderboard" element={<MainLeaderboard/>}/>
+                        </Routes>
+                    </Router>
                 </AuthContextProvider>
             </header>
+            <audio ref={audioRef} src={backgroundMusic} loop/>
         </div>
     );
 }
