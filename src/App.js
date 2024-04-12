@@ -195,12 +195,13 @@ function App() {
                                 onClose={() => setShowInstructions(false)}>
                             </Modal>
                         )}
-
+                        <div className="empty-top"></div>
                         <Routes>
                             <Route path="/" element={<Home/>}/>
                             <Route path="/qr" element={<QRcode/>}/>
                             <Route path="/mainleaderboard" element={<MainLeaderboard/>}/>
                         </Routes>
+                        <div className="empty-bottom"></div>
                     </Router>
                 </AuthContextProvider>
             </header>

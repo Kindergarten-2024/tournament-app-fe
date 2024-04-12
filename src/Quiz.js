@@ -613,7 +613,6 @@ const Quiz = () => {
     <>
       {question ? (
         <>
-          <div className="empty"></div>
           <div className="progress-bar-container">
             <ProgressBar
               percent={streak * 20}

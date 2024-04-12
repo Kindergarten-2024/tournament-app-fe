@@ -182,10 +182,8 @@
 }
 
 .loading-spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 20vh;
+  position: fixed;
+  top: 40%;
 }
 
 .spinner {
@@ -559,19 +557,9 @@
   }
 }
 
-.empty {
-  margin-top: 60px;
-  width: 100%;
-  height: 1px;
-
-}
 .progress-bar-container {
   width: 80%;
   margin: 10% auto 20% auto;
-}
-
-.App-header {
-  overflow: hidden;
 }
 
 /* Media query for small mobile screens */
@@ -582,10 +570,11 @@
   }
 
   .start2p {
-    font-size: 12px !important;
+    font-size: 14px !important;
   }
 
 }
+
 .jello-horizontal {
   animation: jello-horizontal 0.9s both !important;
 }

@@ -202,14 +202,10 @@
 }
 
 /* /end Leaderboard Results */
-
 .loading-spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 20vh;
+  position: fixed;
+  top: 40%;
 }
-
 .spinner {
   border: 6px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
