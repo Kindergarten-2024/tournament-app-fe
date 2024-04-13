@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import { FaSignOutAlt } from "react-icons/fa";
 import { IoNotifications, IoNotificationsOff } from "react-icons/io5";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import "@leenguyen/react-flip-clock-countdown/dist/index.css";
@@ -14,10 +13,10 @@ import SockJS from "sockjs-client";
 import { over } from 'stompjs';
 
 var stompClient = null;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Dashboard = () => {
-  const { user, checkLoginState } = useContext(AuthContext);
-  const [rerender, setRerender] = useState(false);
+  const { user } = useContext(AuthContext);
   const [rounds, setRounds] = useState(0);
   const [totalRegistered, setTotalRegistered] = useState(0);
   const [endTime, setEndTime] = useState(new Date());
@@ -27,8 +26,6 @@ const Dashboard = () => {
   const [notification, setNotification] = useState({ title: "", body: "" });
   const [position, setPosition] = useState();
   const [score, setScore] = useState();
-
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     connect();
@@ -135,13 +132,12 @@ const Dashboard = () => {
       }
     };
     fetchRegisteredUsers();
-  }, [rerender]);
+  }, []);
 
   useEffect(() => {
     localStorage.removeItem("showScore");
     localStorage.removeItem("position");
     localStorage.removeItem("score");
-    localStorage.removeItem("decryptedAnswer");
     localStorage.removeItem("question");
   }, []);
 
