@@ -150,7 +150,10 @@ const Quiz = () => {
   }, [question]);
 
   useEffect(() => {
-    localStorage.setItem("showCorrectAnswer", JSON.stringify(showCorrectAnswer));
+    localStorage.setItem(
+      "showCorrectAnswer",
+      JSON.stringify(showCorrectAnswer)
+    );
   }, [showCorrectAnswer]);
 
   //position
@@ -185,6 +188,7 @@ const Quiz = () => {
       `/user/${userIdentifier}/private`,
       onPrivateMessageReceived
     );
+    stompClient.subscribe("/powers", onPowerMessageReceived);
   };
 
   const onError = (error) => {
@@ -292,13 +296,37 @@ const Quiz = () => {
     );
     setPosition(playerIndex + 1);
 
-    const player = leaderboardArray.find((user1) => user1.id === userIdentifier);
+    const player = leaderboardArray.find(
+      (user1) => user1.id === userIdentifier
+    );
     if (player) {
       setScore(player.score);
       setPower(player.item);
     }
     updateEnemies(userDataArray);
     setShowLeaderboard(true);
+  };
+
+  const onPowerMessageReceived = (payload) => {
+    const userDataArray = JSON.parse(payload.body);
+    const leaderboardArray = userDataArray.map((user) => ({
+      id: user.username,
+      score: user.score,
+      item: user.item,
+    }));
+    const userIdentifier = user.login ? user.login : user.email;
+    const playerIndex = leaderboardArray.findIndex(
+      (user1) => user1.id === userIdentifier
+    );
+    setPosition(playerIndex + 1);
+    const player = leaderboardArray.find(
+      (user1) => user1.id === userIdentifier
+    );
+    if (player) {
+      setScore(player.score);
+      setPower(player.item);
+    }
+    updateEnemies(userDataArray);
   };
 
   const updateEnemies = (playerListData) => {
@@ -538,7 +566,9 @@ const Quiz = () => {
           );
           break;
         default:
-          enemyList = playerList.filter((player) => player.name !== userIdentifier);
+          enemyList = playerList.filter(
+            (player) => player.name !== userIdentifier
+          );
       }
       setEnemies(enemyList);
     } catch (error) {
@@ -706,14 +736,20 @@ const Quiz = () => {
                     <button
                       key={index}
                       className={`
-                        ${selectedAnswer === option
-                          ? "selected jello-horizontal"
-                          : ""
+                        ${
+                          selectedAnswer === option
+                            ? "selected jello-horizontal"
+                            : ""
                         }
-                        ${isFrozen || disableButtons ? "freeze-effect disable" : ""}
-                        ${is5050 && selectedIndexes.includes(index)
-                          ? "slide-out-right disable"
-                          : ""
+                        ${
+                          isFrozen || disableButtons
+                            ? "freeze-effect disable"
+                            : ""
+                        }
+                        ${
+                          is5050 && selectedIndexes.includes(index)
+                            ? "slide-out-right disable"
+                            : ""
                         }
                         `}
                       onClick={() =>
@@ -774,24 +810,20 @@ const Quiz = () => {
               {showEnemies && (
                 <div className="enemies-container">
                   <ul>
-                    {
-                      enemies.map((enemy) => (
-                        <li
-                          key={enemy.name}
-                          onClick={() => setSelectedEnemy(enemy.id)}
-                          className={
-                            selectedEnemy === enemy.id ? "selected" : ""
-                          }
-                        >
-                          <span>
-                            {enemy.name.length > 15
-                              ? enemy.name.slice(0, 12) + "..."
-                              : enemy.name}
-                          </span>
-                          <span>{enemy.score}</span>
-                        </li>
-                      ))
-                    }
+                    {enemies.map((enemy) => (
+                      <li
+                        key={enemy.name}
+                        onClick={() => setSelectedEnemy(enemy.id)}
+                        className={selectedEnemy === enemy.id ? "selected" : ""}
+                      >
+                        <span>
+                          {enemy.name.length > 15
+                            ? enemy.name.slice(0, 12) + "..."
+                            : enemy.name}
+                        </span>
+                        <span>{enemy.score}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               )}
@@ -817,33 +849,27 @@ const Quiz = () => {
             </div>
           )}
         </>
+      ) : showLeaderboard ? (
+        <section className="centered-section">
+          <table id="rankings" className="leaderboard-results-2" width="100">
+            <thead>
+              <tr>
+                <th className="leaderboard-font-2">Rank</th>
+                <th className="leaderboard-font-2">PTS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="leaderboard-font-2">{position}</td>
+                <td className="leaderboard-font-2">{score}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
       ) : (
-        showLeaderboard ? (
-          <section className="centered-section">
-            <table
-              id="rankings"
-              className="leaderboard-results-2"
-              width="100"
-            >
-              <thead>
-                <tr>
-                  <th className="leaderboard-font-2">Rank</th>
-                  <th className="leaderboard-font-2">PTS</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="leaderboard-font-2">{position}</td>
-                  <td className="leaderboard-font-2">{score}</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-        ) : (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-          </div>
-        )
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+        </div>
       )}
     </>
   );
