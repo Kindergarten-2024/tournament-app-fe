@@ -9,11 +9,15 @@ var stompClient = null;
 
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
-  const [logs, setLogs] = useState([]);
+  // const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     connect();
+
+    return () => {
+      disconnect();
+    };
   }, []);
 
   const connect = () => {
@@ -24,8 +28,7 @@ const Leaderboard = () => {
 
   const onConnected = () => {
     stompClient.subscribe("/leaderboard", onPublicMessageReceived);
-    stompClient.subscribe("/logs", onLogMessageReceived);
-    stompClient.subscribe("/lock", onAnswerReceived);
+    // stompClient.subscribe("/logs", onLogMessageReceived);
   };
 
   const onError = (error) => {
@@ -36,11 +39,18 @@ const Leaderboard = () => {
     }, 1000);
   };
 
+  const disconnect = () => {
+    if (stompClient) {
+      stompClient.disconnect();
+    }
+    console.log("WebSocket connection closed");
+  };
+
   const onPublicMessageReceived = (payload) => {
     const topic = payload.headers.destination;
     const userDataArray = JSON.parse(payload.body);
     const leaderboardArray = userDataArray.map((user) => ({
-      id: user.username,
+      id: user.username.includes('@') ? user.username.split('@')[0] : user.username,
       score: user.score,
       avatar: user.avatarUrl,
       streak: user.correctAnswerStreak,
@@ -49,13 +59,12 @@ const Leaderboard = () => {
     if (topic === "/leaderboard") {
       setLeaderboard(leaderboardArray);
     }
-
     setLoading(false);
   };
 
   //leaderboard show correct score after reload
   useEffect(() => {
-    const fetchPlayerPosition = async () => {
+    const fetchLeaderboard = async () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/leaderboard`);
         const leaderboardArray = response.data.map((user) => ({
@@ -71,57 +80,44 @@ const Leaderboard = () => {
         console.error("Error fetching leaderboard: ", error);
       }
     };
-    fetchPlayerPosition();
+    fetchLeaderboard();
   }, []);
 
-  const onAnswerReceived = (payload) => {
-    const data = JSON.parse(payload.body);
-    const answeredUser = data.message;
-    console.log("Answered User: ", answeredUser); // Debugging line
+  // const onLogMessageReceived = (payload) => {
+  //   const data = JSON.parse(payload.body);
+  //   const message = data.message;
+  //   const randomX = Math.random() * window.innerWidth;
+  //   const randomY = Math.random() * window.innerHeight;
 
-    setLeaderboard((currentLeaderboard) =>
-      currentLeaderboard.map((user) => {
-        console.log("Checking user: ", user.id); // Debugging line
-        return user.id === answeredUser ? { ...user, answered: true } : user;
-      })
-    );
-  };
+  //   // Determine if the message indicates registration or unregistration
+  //   const isRegister = message.includes("unregister");
 
-  const onLogMessageReceived = (payload) => {
-    const data = JSON.parse(payload.body);
-    const message = data.message;
-    const randomX = Math.random() * window.innerWidth;
-    const randomY = Math.random() * window.innerHeight;
+  //   // Set the class name based on registration status
+  //   const className = !isRegister
+  //     ? "log-message-register"
+  //     : "log-message-unregister";
 
-    // Determine if the message indicates registration or unregistration
-    const isRegister = message.includes("unregister");
+  //   const newLog = {
+  //     id: Date.now() + Math.random(), // Ensures unique ID even if messages are received at the same time
+  //     text: message,
+  //     x: randomX,
+  //     y: randomY,
+  //     className: className, // Add className to the new log entry
+  //   };
 
-    // Set the class name based on registration status
-    const className = !isRegister
-      ? "log-message-register"
-      : "log-message-unregister";
+  //   setLogs((currentLogs) => [...currentLogs, newLog]);
 
-    const newLog = {
-      id: Date.now() + Math.random(), // Ensures unique ID even if messages are received at the same time
-      text: message,
-      x: randomX,
-      y: randomY,
-      className: className, // Add className to the new log entry
-    };
-
-    setLogs((currentLogs) => [...currentLogs, newLog]);
-
-    // Set a timeout for this specific message
-    setTimeout(() => {
-      setLogs((currentLogs) =>
-        currentLogs.filter((log) => log.id !== newLog.id)
-      );
-    }, 3000);
-  };
+  //   // Set a timeout for this specific message
+  //   setTimeout(() => {
+  //     setLogs((currentLogs) =>
+  //       currentLogs.filter((log) => log.id !== newLog.id)
+  //     );
+  //   }, 3000);
+  // };
 
   return (
     <div className="container-wrap">
-      {logs.map((log) => (
+      {/* {logs.map((log) => (
         <div
           key={log.id}
           className={log.className}
@@ -132,7 +128,7 @@ const Leaderboard = () => {
         >
           {log.text}
         </div>
-      ))}
+      ))} */}
 
       <section id="leaderboard">
         <nav className="ladder-nav">
