@@ -87,16 +87,12 @@ const Quiz = () => {
   const { remainingTime } = CountdownCircleTimer;
   const renderTimeComponent = useRenderTime({ remainingTime });
   const [selectedAnswer, setSelectedAnswer] = useState("");
-  const [timerKey, setTimerKey] = useState(0);
   const [streakGif, setStreakGif] = useState(redFire);
   const [streakText, setstreakText] = useState("x1");
   const [streak, setStreak] = useState(0);
   const [answerTime, setAnswerTime] = useState(Date.now());
   const [questionTimer, setQuestionTimer] = useState(Date.now());
   const [decryptedAnswer, setDecryptedAnswer] = useState();
-  const [questionIndex, setQuestionIndex] = useState();
-  const [loading, setLoading] = useState(true);
-  const [stringsArray, setStringsArray] = useState([]);
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState("");
   const countdownAudioRef = useRef(new Audio(countdownSound));
   const [soundPlayedForQuestion, setSoundPlayedForQuestion] = useState(false);
@@ -115,6 +111,7 @@ const Quiz = () => {
   const [selectedIndexes, setSelectedIndexes] = useState([]);
   const [stolenPoints, setStolenPoints] = useState("");
   const [receivePoints, setReceivePoints] = useState("");
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const { isSupported, released, request, release } = useWakeLock({
     onRequest: () => console.log("Screen Wake Lock: ON"),
@@ -131,8 +128,8 @@ const Quiz = () => {
     return storedQuestion ? JSON.parse(storedQuestion) : null;
   });
 
-  const [showScore, setShowScore] = useState(() => {
-    const storedShowScore = localStorage.getItem("showScore");
+  const [showCorrectAnswer, setShowCorrectAnswer] = useState(() => {
+    const storedShowScore = localStorage.getItem("showCorrectAnswer");
     return storedShowScore ? JSON.parse(storedShowScore) : false;
   });
 
@@ -153,8 +150,8 @@ const Quiz = () => {
   }, [question]);
 
   useEffect(() => {
-    localStorage.setItem("showScore", JSON.stringify(showScore));
-  }, [showScore]);
+    localStorage.setItem("showCorrectAnswer", JSON.stringify(showCorrectAnswer));
+  }, [showCorrectAnswer]);
 
   //position
   useEffect(() => {
@@ -168,14 +165,10 @@ const Quiz = () => {
 
   useEffect(() => {
     connect();
-  }, []);
 
-  useEffect(() => {
-    if (question?.answer) {
-      setDecryptedAnswer(decrypt(question.answer));
-    } else {
-      console.warn("Received empty answer string");
-    }
+    return () => {
+      disconnect();
+    };
   }, []);
 
   const connect = () => {
@@ -202,28 +195,20 @@ const Quiz = () => {
     }, 1000);
   };
 
-  // useEffect(() => {
-  //   const fetchCurrentQuestion = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `${BACKEND_URL}/admin/questions/get-current-question`
-  //       );
-  //       setQuestion(response.data);
-  //       setQuestionIndex(response.data.questionNumber);
+  const disconnect = () => {
+    if (stompClient) {
+      stompClient.disconnect();
+    }
+    console.log("WebSocket connection closed");
+  };
 
-  //       // updateString(questionIndex - 1, "current");
-  //       if (response.data.answer) {
-  //         setDecryptedAnswer(decrypt(response.data.answer));
-  //       } else {
-  //         console.warn("Received empty answer string");
-  //       }
-  //       setLoading(false);
-  //     } catch (error) {
-  //       console.error("Error fetching current question: ", error);
-  //     }
-  //   };
-  //   fetchCurrentQuestion();
-  // }, []);
+  useEffect(() => {
+    if (question?.answer) {
+      setDecryptedAnswer(decrypt(question.answer));
+    } else {
+      console.warn("Received empty answer string");
+    }
+  }, []);
 
   useEffect(() => {
     if (question) {
@@ -261,7 +246,6 @@ const Quiz = () => {
     setDisableButtons(false);
     setIsMask(false);
     setIs5050(false);
-    setTimerKey(Math.random());
     setReceivePoints("");
     setStolenPoints("");
     // Only try to decrypt if the answer is not an empty string
@@ -271,9 +255,8 @@ const Quiz = () => {
       console.warn("Received empty answer string");
     }
     setQuestionTimer();
-    setQuestionIndex(payloadData.questionNumber);
-    // updateString(questionIndex - 1, "current");
-    setShowScore(false);
+    setShowCorrectAnswer(false);
+    setShowLeaderboard(false);
   };
 
   const onPrivateMessageReceived = (payload) => {
@@ -301,7 +284,7 @@ const Quiz = () => {
       id: user.username,
       score: user.score,
       item: user.item,
-    }));                                                                                                               
+    }));
     const userIdentifier = user.login ? user.login : user.email;
 
     const playerIndex = leaderboardArray.findIndex(
@@ -315,6 +298,7 @@ const Quiz = () => {
       setPower(player.item);
     }
     updateEnemies(userDataArray);
+    setShowLeaderboard(true);
   };
 
   const updateEnemies = (playerListData) => {
@@ -367,13 +351,13 @@ const Quiz = () => {
         setPower(response.data);
         switchSetPowerDescription(response.data);
         setShowPowerButton(response.data !== null && response.data !== "");
-        if (showScore) setShowModal(false);
+        if (showCorrectAnswer) setShowModal(false);
       } catch (error) {
         console.error("Error fetching player score: ", error);
       }
     };
     fetchPlayerItem();
-  }, [power, showScore]);
+  }, [power, showCorrectAnswer]);
 
   useEffect(() => {
     const fetchPlayerStreak = async () => {
@@ -396,7 +380,7 @@ const Quiz = () => {
       }
     };
     fetchPlayerStreak();
-  }, [showScore]);
+  }, [showCorrectAnswer]);
 
   useEffect(() => {
     const fetchPlayerDebuff = async () => {
@@ -453,7 +437,6 @@ const Quiz = () => {
 
   const handleAnswer = (selected) => {
     setSelectedAnswer(selected);
-    //keep time here
   };
 
   const convertToReadableTime = (timestamp) => {
@@ -476,7 +459,6 @@ const Quiz = () => {
   const checkAnswer = () => {
     setLastSelectedAnswer(selectedAnswer); // Add this line before resetting selectedAnswer
     if (selectedAnswer === "") {
-      updateString(questionIndex - 1, "false");
       const messageObject = {
         answer: "-",
         questionId: question.id,
@@ -491,11 +473,6 @@ const Quiz = () => {
       console.log(
         "Selected: " + selectedAnswer + " Decrypted: " + decryptedAnswer
       );
-      if (selectedAnswer === decryptedAnswer) {
-        updateString(questionIndex - 1, "correct");
-      } else {
-        updateString(questionIndex - 1, "false");
-      }
       setAnswerTime(Date.now());
       const messageObject = {
         time: convertToReadableTime(answerTime),
@@ -510,14 +487,6 @@ const Quiz = () => {
       );
       setSelectedAnswer("");
     }
-  };
-
-  // Function to update a string at a specific index
-  const updateString = (index, value) => {
-    const newArray = [...stringsArray];
-    newArray[index % 10] = value;
-    setStringsArray(newArray);
-    localStorage.setItem("stringsArray", JSON.stringify(newArray));
   };
 
   const playCountdownSound = () => {
@@ -618,7 +587,7 @@ const Quiz = () => {
 
   return (
     <>
-      {question ? (
+      {question && !showLeaderboard ? (
         <>
           <div className="progress-bar-container">
             <ProgressBar
@@ -688,7 +657,7 @@ const Quiz = () => {
             </ProgressBar>
           </div>
 
-          {!showScore ? (
+          {!showCorrectAnswer ? (
             <div className="timer-wrapper">
               <CountdownCircleTimer
                 isPlaying
@@ -704,7 +673,7 @@ const Quiz = () => {
                     setSoundPlayedForQuestion(false);
                   }
                   checkAnswer();
-                  setShowScore(true);
+                  setShowCorrectAnswer(true);
                   return { shouldRepeat: true, delay: 0 };
                 }}
                 onUpdate={(remainingTime) => {
@@ -717,32 +686,20 @@ const Quiz = () => {
               </CountdownCircleTimer>
             </div>
           ) : (
-            <section className="centered-section">
-              <table
-                id="rankings"
-                className="leaderboard-results-2"
-                width="100"
-              >
-                <thead>
-                  <tr>
-                    <th className="leaderboard-font-2">Rank</th>
-                    <th className="leaderboard-font-2">PTS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="leaderboard-font-2">{position}</td>
-                    <td className="leaderboard-font-2">{score}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </section>
+            <div className="loading-container">
+              <div className="start2p">Loading Results</div>
+              <div className="loading-dots-container">
+                <div className="loading-dot"></div>
+                <div className="loading-dot"></div>
+                <div className="loading-dot"></div>
+              </div>
+            </div>
           )}
 
           <div className="question-container">
             <h2 className="start2p">Question {question.questionNumber}</h2>
             <p className="start2p">{question.question}</p>
-            {!showScore ? (
+            {!showCorrectAnswer ? (
               <>
                 <div className="answer-buttons">
                   {question.options.map((option, index) => (
@@ -861,10 +818,32 @@ const Quiz = () => {
           )}
         </>
       ) : (
-        // Render loading spinner
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-        </div>
+        showLeaderboard ? (
+          <section className="centered-section">
+            <table
+              id="rankings"
+              className="leaderboard-results-2"
+              width="100"
+            >
+              <thead>
+                <tr>
+                  <th className="leaderboard-font-2">Rank</th>
+                  <th className="leaderboard-font-2">PTS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="leaderboard-font-2">{position}</td>
+                  <td className="leaderboard-font-2">{score}</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        ) : (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+          </div>
+        )
       )}
     </>
   );
