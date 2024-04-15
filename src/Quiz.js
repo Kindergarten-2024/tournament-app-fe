@@ -22,6 +22,7 @@ import { Modal } from "./Powers";
 import "./Powers.css";
 import { StolenPointsAnimation, ReceivePointsAnimation } from "./bubble";
 import { useWakeLock } from "react-screen-wake-lock";
+import "./banter-loader.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const SECRET_KEY = CryptoJS.enc.Utf8.parse("JufghajLODgaerts");
@@ -87,8 +88,6 @@ const Quiz = () => {
   const { remainingTime } = CountdownCircleTimer;
   const renderTimeComponent = useRenderTime({ remainingTime });
   const [selectedAnswer, setSelectedAnswer] = useState("");
-  const [streakGif, setStreakGif] = useState(redFire);
-  const [streakText, setstreakText] = useState("x1");
   const [streak, setStreak] = useState(0);
   const [answerTime, setAnswerTime] = useState(Date.now());
   const [questionTimer, setQuestionTimer] = useState(Date.now());
@@ -288,6 +287,7 @@ const Quiz = () => {
       id: user.username,
       score: user.score,
       item: user.item,
+      streak: user.correctAnswerStreak,
     }));
     const userIdentifier = user.login ? user.login : user.email;
 
@@ -302,6 +302,7 @@ const Quiz = () => {
     if (player) {
       setScore(player.score);
       setPower(player.item);
+      setStreak(player.streak);
     }
     updateEnemies(userDataArray);
     setShowLeaderboard(true);
@@ -392,17 +393,6 @@ const Quiz = () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/player-streak`);
         setStreak(response.data);
-
-        if (response.data < 3) {
-          setstreakText("x1");
-          setStreakGif(redFire);
-        } else if (response.data < 5) {
-          setstreakText("x2");
-          setStreakGif(blueFire);
-        } else {
-          setstreakText("x3");
-          setStreakGif(blueFire);
-        }
       } catch (error) {
         console.error("Error fetching player streak: ", error);
       }
@@ -718,10 +708,16 @@ const Quiz = () => {
           ) : (
             <div className="loading-container">
               <div className="start2p">Loading Results</div>
-              <div className="loading-dots-container">
-                <div className="loading-dot"></div>
-                <div className="loading-dot"></div>
-                <div className="loading-dot"></div>
+              <div class="banter-loader">
+                <div class="banter-loader__box"></div>
+                <div class="banter-loader__box"></div>
+                <div class="banter-loader__box"></div>
+                <div class="banter-loader__box"></div>
+                <div class="banter-loader__box"></div>
+                <div class="banter-loader__box"></div>
+                <div class="banter-loader__box"></div>
+                <div class="banter-loader__box"></div>
+                <div class="banter-loader__box"></div>
               </div>
             </div>
           )}
@@ -850,22 +846,41 @@ const Quiz = () => {
           )}
         </>
       ) : showLeaderboard ? (
-        <section className="centered-section">
-          <table id="rankings" className="leaderboard-results-2" width="100">
-            <thead>
-              <tr>
-                <th className="leaderboard-font-2">Rank</th>
-                <th className="leaderboard-font-2">PTS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="leaderboard-font-2">{position}</td>
-                <td className="leaderboard-font-2">{score}</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+        <div className="user-info user-info-container">
+          <img
+            src={user.avatar_url ? user.avatar_url : user.picture}
+            alt={user?.name}
+            className="user-avatar"
+            style={{
+              width: "100px",
+              height: "100px",
+              borderRadius: "50%",
+            }}
+          />
+
+          <div className="user-details">
+            {user.name ? (
+              <h4 className="start2p">{user?.name}</h4>
+            ) : (
+              <h4 className="start2p">{user?.login}</h4>
+            )}
+          </div>
+
+          <div className="user-info-item start2p">
+            <span>Position</span>
+            <span>{position}</span>
+          </div>
+
+          <div className="user-info-item start2p">
+            <span>Score</span>
+            <span>{score}</span>
+          </div>
+
+          <div className="user-info-item start2p">
+            <span>Streak</span>
+            <span>{streak}</span>
+          </div>
+        </div>
       ) : (
         <div className="loading-spinner">
           <div className="spinner"></div>
