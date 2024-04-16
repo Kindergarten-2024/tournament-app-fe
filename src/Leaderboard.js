@@ -170,7 +170,7 @@ const Leaderboard = () => {
               width="100%"
             >
               <tbody>
-                {leaderboard.slice(3, 20).map((user, index) => (
+                {leaderboard.slice(3, 15).map((user, index) => (
                   <tr>
                     <td className="start2p">{index + 4}</td>
                     <td className="start2p">

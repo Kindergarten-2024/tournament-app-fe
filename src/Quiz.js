@@ -110,7 +110,6 @@ const Quiz = () => {
   const [selectedIndexes, setSelectedIndexes] = useState([]);
   const [stolenPoints, setStolenPoints] = useState("");
   const [receivePoints, setReceivePoints] = useState("");
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const { isSupported, released, request, release } = useWakeLock({
     onRequest: () => console.log("Screen Wake Lock: ON"),
@@ -125,6 +124,11 @@ const Quiz = () => {
   const [question, setQuestion] = useState(() => {
     const storedQuestion = localStorage.getItem("question");
     return storedQuestion ? JSON.parse(storedQuestion) : null;
+  });
+
+  const [showLeaderboard, setShowLeaderboard] = useState(() => {
+    const storedShowLeaderboard = localStorage.getItem("showLeaderboard");
+    return storedShowLeaderboard ? JSON.parse(storedShowLeaderboard) : false;
   });
 
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(() => {
@@ -147,6 +151,10 @@ const Quiz = () => {
   useEffect(() => {
     localStorage.setItem("question", JSON.stringify(question));
   }, [question]);
+
+  useEffect(() => {
+    localStorage.setItem("showLeaderboard", JSON.stringify(showLeaderboard));
+  }, [showLeaderboard]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -609,102 +617,104 @@ const Quiz = () => {
     <>
       {question && !showLeaderboard ? (
         <>
-          <div className="progress-bar-container">
-            <ProgressBar
-              percent={streak * 20}
-              filledBackground="linear-gradient(to right, #0f3587, #8c1bc5)"
-            >
-              <Step transition="scale">
-                {({ accomplished }) => (
-                  <img
-                    style={{
-                      filter: `grayscale(${accomplished ? 50 : 80}%)`,
-                    }}
-                    width="15"
-                    src={stepimg}
-                  />
-                )}
-              </Step>
-              <Step transition="scale">
-                {({ accomplished }) => (
-                  <img
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    width="50"
-                    src={fiftyimg}
-                  />
-                )}
-              </Step>
-              <Step transition="scale">
-                {({ accomplished }) => (
-                  <img
-                    style={{
-                      filter: `grayscale(${accomplished ? 0 : 80}%)`,
-                      width: "50px",
-                    }}
-                    src={x2img}
-                  />
-                )}
-              </Step>
-              <Step transition="scale">
-                {({ accomplished }) => (
-                  <img
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    width="50"
-                    src={iceimg}
-                  />
-                )}
-              </Step>
-              <Step transition="scale">
-                {({ accomplished }) => (
-                  <img
-                    style={{
-                      filter: `grayscale(${accomplished ? 0 : 80}%)`,
-                      width: "40px",
-                    }}
-                    src={x3img}
-                  />
-                )}
-              </Step>
-              <Step transition="scale">
-                {({ accomplished }) => (
-                  <img
-                    style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
-                    width="50"
-                    src={maskimg}
-                  />
-                )}
-              </Step>
-            </ProgressBar>
-          </div>
-
           {!showCorrectAnswer ? (
-            <div className="timer-wrapper">
-              <CountdownCircleTimer
-                isPlaying
-                duration={questionTimer}
-                size={120}
-                colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
-                colorsTime={[15, 10, 5, 0]}
-                onComplete={() => {
-                  //method to stop countdown
-                  if (soundPlayedForQuestion) {
-                    countdownAudioRef.current.pause();
-                    countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
-                    setSoundPlayedForQuestion(false);
-                  }
-                  checkAnswer();
-                  setShowCorrectAnswer(true);
-                  return { shouldRepeat: true, delay: 0 };
-                }}
-                onUpdate={(remainingTime) => {
-                  if (remainingTime === 5) {
-                    playCountdownSound();
-                  }
-                }}
-              >
-                {useRenderTime}
-              </CountdownCircleTimer>
-            </div>
+            <>
+              <div className="progress-bar-container">
+                <ProgressBar
+                  percent={streak * 20}
+                  filledBackground="linear-gradient(to right, #0f3587, #8c1bc5)"
+                >
+                  <Step transition="scale">
+                    {({ accomplished }) => (
+                      <img
+                        style={{
+                          filter: `grayscale(${accomplished ? 50 : 80}%)`,
+                        }}
+                        width="15"
+                        src={stepimg}
+                      />
+                    )}
+                  </Step>
+                  <Step transition="scale">
+                    {({ accomplished }) => (
+                      <img
+                        style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                        width="50"
+                        src={fiftyimg}
+                      />
+                    )}
+                  </Step>
+                  <Step transition="scale">
+                    {({ accomplished }) => (
+                      <img
+                        style={{
+                          filter: `grayscale(${accomplished ? 0 : 80}%)`,
+                          width: "50px",
+                        }}
+                        src={x2img}
+                      />
+                    )}
+                  </Step>
+                  <Step transition="scale">
+                    {({ accomplished }) => (
+                      <img
+                        style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                        width="50"
+                        src={iceimg}
+                      />
+                    )}
+                  </Step>
+                  <Step transition="scale">
+                    {({ accomplished }) => (
+                      <img
+                        style={{
+                          filter: `grayscale(${accomplished ? 0 : 80}%)`,
+                          width: "40px",
+                        }}
+                        src={x3img}
+                      />
+                    )}
+                  </Step>
+                  <Step transition="scale">
+                    {({ accomplished }) => (
+                      <img
+                        style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                        width="50"
+                        src={maskimg}
+                      />
+                    )}
+                  </Step>
+                </ProgressBar>
+              </div>
+
+              <div className="timer-wrapper">
+                <CountdownCircleTimer
+                  isPlaying
+                  duration={questionTimer}
+                  size={120}
+                  colors={["#0F3587", "#8C1BC5", "#BFAA30", "#D61818"]}
+                  colorsTime={[15, 10, 5, 0]}
+                  onComplete={() => {
+                    //method to stop countdown
+                    if (soundPlayedForQuestion) {
+                      countdownAudioRef.current.pause();
+                      countdownAudioRef.current.currentTime = 0; // Reset audio playback to start
+                      setSoundPlayedForQuestion(false);
+                    }
+                    checkAnswer();
+                    setShowCorrectAnswer(true);
+                    return { shouldRepeat: true, delay: 0 };
+                  }}
+                  onUpdate={(remainingTime) => {
+                    if (remainingTime === 5) {
+                      playCountdownSound();
+                    }
+                  }}
+                >
+                  {useRenderTime}
+                </CountdownCircleTimer>
+              </div>
+            </>
           ) : (
             <div className="loading-container">
               <div className="start2p">Loading Results</div>
@@ -732,20 +742,17 @@ const Quiz = () => {
                     <button
                       key={index}
                       className={`
-                        ${
-                          selectedAnswer === option
-                            ? "selected jello-horizontal"
-                            : ""
+                        ${selectedAnswer === option
+                          ? "selected jello-horizontal"
+                          : ""
                         }
-                        ${
-                          isFrozen || disableButtons
-                            ? "freeze-effect disable"
-                            : ""
+                        ${isFrozen || disableButtons
+                          ? "freeze-effect disable"
+                          : ""
                         }
-                        ${
-                          is5050 && selectedIndexes.includes(index)
-                            ? "slide-out-right disable"
-                            : ""
+                        ${is5050 && selectedIndexes.includes(index)
+                          ? "slide-out-right disable"
+                          : ""
                         }
                         `}
                       onClick={() =>

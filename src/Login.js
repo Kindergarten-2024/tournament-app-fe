@@ -40,7 +40,7 @@ const Login = () => {
             registrationsEndTime,
             rounds,
           },
-        } = await axios.get(`${BACKEND_URL}/admin/check/endtime`);
+        } = await axios.get(`${BACKEND_URL}/public/check/endtime`);
         setTimerOn(registrationsOpen);
         setEndTime(registrationsEndTime);
         setRound(rounds);
