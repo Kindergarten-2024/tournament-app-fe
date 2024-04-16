@@ -108,7 +108,7 @@ const Dashboard = () => {
             registrationsEndTime,
             rounds,
           },
-        } = await axios.get(`${BACKEND_URL}/admin/check/endtime`);
+        } = await axios.get(`${BACKEND_URL}/public/check/endtime`);
         setRegisterUp(registrationsOpen);
         setEndTime(registrationsEndTime);
         setLoading(false);
@@ -135,10 +135,11 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.removeItem("showScore");
+    localStorage.removeItem("showCorrectAnswer");
     localStorage.removeItem("position");
     localStorage.removeItem("score");
     localStorage.removeItem("question");
+    localStorage.removeItem("showLeaderboard");
   }, []);
 
   const handleNotificationPermission = () => {

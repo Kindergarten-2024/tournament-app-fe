@@ -107,7 +107,7 @@ const Home = () => {
                         registrationsOpen: registrationsOpen,
                         rounds: rounds,
                     },
-                } = await axios.get(`${BACKEND_URL}/admin/check/endtime`);
+                } = await axios.get(`${BACKEND_URL}/public/check/endtime`);
                 setTimerOn(registrationsOpen);
                 setRound(rounds);
                 setIsLoading(false);
