@@ -6,7 +6,7 @@ import React, {
     useContext,
     useCallback,
 } from "react";
-import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import InteractiveBackground from "./InteractiveBackground";
 import axios from "axios";
 import "./App.css";
@@ -17,12 +17,12 @@ import Login from "./Login";
 import MainLeaderboard from "./Leaderboard";
 import QRcode from "./QRcode";
 import opap_logo from "./images/opap_logo.png";
-import {IoMdHelpCircleOutline} from "react-icons/io";
-import {MdMusicNote, MdMusicOff} from "react-icons/md";
-import {Modal} from "./Instructions";
+import { IoMdHelpCircleOutline } from "react-icons/io";
+import { MdMusicNote, MdMusicOff } from "react-icons/md";
+import { Modal } from "./Instructions";
 import "./Instructions.css";
 import SockJS from "sockjs-client";
-import {over} from 'stompjs';
+import { over } from 'stompjs';
 import GameOver from "./GameOver";
 
 var stompClient = null;
@@ -31,14 +31,14 @@ axios.defaults.withCredentials = true;
 const AuthContext = createContext();
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-const AuthContextProvider = ({children}) => {
+const AuthContextProvider = ({ children }) => {
     const [loggedIn, setLoggedIn] = useState(null);
     const [user, setUser] = useState(null);
 
     const checkLoginState = useCallback(async () => {
         try {
             const {
-                data: {loggedIn: logged_in, user},
+                data: { loggedIn: logged_in, user },
             } = await axios.get(`${BACKEND_URL}/loggedin`);
             setLoggedIn(logged_in);
             setUser(user);
@@ -52,20 +52,24 @@ const AuthContextProvider = ({children}) => {
     }, [checkLoginState]);
 
     return (
-        <AuthContext.Provider value={{loggedIn, checkLoginState, user}}>
+        <AuthContext.Provider value={{ loggedIn, checkLoginState, user }}>
             {children}
         </AuthContext.Provider>
     );
 };
 
 const Home = () => {
-    const {loggedIn, checkLoginState} = useContext(AuthContext);
+    const { loggedIn, checkLoginState } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);
     const [timerOn, setTimerOn] = useState(null);
     const [round, setRound] = useState(1);
 
     useEffect(() => {
         connect();
+
+        return () => {
+            disconnect();
+        };
     }, []);
 
     const connect = () => {
@@ -86,10 +90,17 @@ const Home = () => {
         }, 1000);
     }
 
+    const disconnect = () => {
+        if (stompClient) {
+            stompClient.disconnect();
+        }
+        console.log("WebSocket connection closed");
+    };
+
     const onEndingReceive = (payload) => {
         var payloadData = JSON.parse(payload.body);
-        setTimerOn(payloadData.timerOn);
-        setRound(payloadData.round);
+        setTimerOn(payloadData.registrationsOpen);
+        setRound(payloadData.rounds);
     };
 
     useEffect(() => {
@@ -117,7 +128,7 @@ const Home = () => {
             }
         };
         checkRegistrations();
-    }, [timerOn]);
+    }, []);
 
     if (isLoading) {
         return (
@@ -137,18 +148,18 @@ const Home = () => {
                 </div>
             );
         } else if (timerOn === true) {
-            return <Dashboard/>;
+            return <Dashboard />;
         } else if (timerOn === false) {
-            return <Quiz/>;
+            return <Quiz />;
         }
     } else if (loggedIn === false) {
-        return <Login/>;
+        return <Login />;
     }
 
     return <></>;
 };
 
-export {AuthContext};
+export { AuthContext };
 
 function App() {
 
@@ -174,19 +185,19 @@ function App() {
 
     return (
         <div className="App">
-            <InteractiveBackground/>
+            <InteractiveBackground />
             <header className="App-header">
                 <AuthContextProvider>
                     <Router>
                         <img src={opap_logo} className="opap-logo" alt="opap logo"></img>
                         <div className="instructions-toggle">
-                            <IoMdHelpCircleOutline onClick={() => setShowInstructions(!showInstructions)}/>
+                            <IoMdHelpCircleOutline onClick={() => setShowInstructions(!showInstructions)} />
                         </div>
                         <div className="music-toggle">
                             {isPlaying ? (
-                                <MdMusicNote onClick={toggleMusic}/>
+                                <MdMusicNote onClick={toggleMusic} />
                             ) : (
-                                <MdMusicOff onClick={toggleMusic}/>
+                                <MdMusicOff onClick={toggleMusic} />
                             )}
                         </div>
 
@@ -198,15 +209,15 @@ function App() {
                         )}
                         <div className="empty-top"></div>
                         <Routes>
-                            <Route path="/" element={<Home/>}/>
-                            <Route path="/qr" element={<QRcode/>}/>
-                            <Route path="/mainleaderboard" element={<MainLeaderboard/>}/>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/qr" element={<QRcode />} />
+                            <Route path="/mainleaderboard" element={<MainLeaderboard />} />
                         </Routes>
                         <div className="empty-bottom"></div>
                     </Router>
                 </AuthContextProvider>
             </header>
-            <audio ref={audioRef} src={backgroundMusic} loop/>
+            <audio ref={audioRef} src={backgroundMusic} loop />
         </div>
     );
 }

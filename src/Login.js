@@ -7,7 +7,10 @@ import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import logo from "./images/opapLogo.png";
 import axios from "axios";
 import "./App.css";
+import SockJS from "sockjs-client";
+import { over } from 'stompjs';
 
+var stompClient = null;
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Login = () => {
@@ -15,6 +18,46 @@ const Login = () => {
   const [timerOn, setTimerOn] = useState(null);
   const [round, setRound] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    connect();
+
+    return () => {
+      disconnect();
+    };
+  }, []);
+
+  const connect = () => {
+    let Sock = new SockJS(`${BACKEND_URL}/ws-message/public`);
+    stompClient = over(Sock);
+    stompClient.connect({}, onConnected, onError);
+  }
+
+  const onConnected = () => {
+    stompClient.subscribe("/registrations-time", onEndingReceive);
+  }
+
+  const onError = (error) => {
+    console.error('WebSocket error: ', error);
+    setTimeout(() => {
+      console.log('Attempting to reconnect to WebSocket...');
+      connect();
+    }, 1000);
+  }
+
+  const disconnect = () => {
+    if (stompClient) {
+      stompClient.disconnect();
+    }
+    console.log("WebSocket connection closed");
+  };
+
+  const onEndingReceive = (payload) => {
+    var payloadData = JSON.parse(payload.body);
+    setTimerOn(payloadData.registrationsOpen);
+    setRound(payloadData.rounds);
+    setEndTime(payloadData.registrationsEndTime);
+  };
 
   const handleGithubLogin = async () => {
     try {
@@ -50,7 +93,8 @@ const Login = () => {
       }
     };
     checkRegistrations();
-  }, [endTime]);
+  }, []);
+
   return (
     <>
       <div className="top-container">

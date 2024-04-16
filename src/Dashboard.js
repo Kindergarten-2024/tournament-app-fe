@@ -29,6 +29,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     connect();
+
+    return () => {
+      disconnect();
+    };
   }, []);
 
   const connect = () => {
@@ -49,6 +53,13 @@ const Dashboard = () => {
       connect();
     }, 1000);
   }
+
+  const disconnect = () => {
+    if (stompClient) {
+      stompClient.disconnect();
+    }
+    console.log("WebSocket connection closed");
+  };
 
   useEffect(() => {
     const fetchPlayerPosition = async () => {
@@ -90,8 +101,9 @@ const Dashboard = () => {
 
   const onEndingReceive = (payload) => {
     var payloadData = JSON.parse(payload.body);
-    setRegisterUp(payloadData.timerOn);
-    setRounds(payloadData.round);
+    setRegisterUp(payloadData.registrationsOpen);
+    setRounds(payloadData.rounds);
+    setEndTime(payloadData.registrationsEndTime);
   };
 
   const onRegisterReceive = (message) => {
@@ -117,7 +129,7 @@ const Dashboard = () => {
       }
     };
     checkRegistrations();
-  }, [registerUp, endTime]);
+  }, []);
 
   // Fetch the number or registered users, used for display the number
   useEffect(() => {
