@@ -1,0 +1,36 @@
+.game-over-top-container {
+    position: fixed;
+    top: 15%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.game-over-middle-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.game-over-middle-container img {
+    margin: 20px 0;
+    border: 2px solid gold;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    padding: 5px;
+}
+
+.winner-name {
+    font-family: "Press Start 2P";
+}
+
+.game-over-middle-container p {
+    margin: 20px 0;
+}
+
+.game-over-bottom-container {
+    position: fixed;
+    top: 85%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

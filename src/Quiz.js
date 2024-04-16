@@ -853,7 +853,7 @@ const Quiz = () => {
           )}
         </>
       ) : showLeaderboard ? (
-        <div className="user-info user-info-container">
+        <div className="user-info">
           <img
             src={user.avatar_url ? user.avatar_url : user.picture}
             alt={user?.name}
@@ -864,14 +864,7 @@ const Quiz = () => {
               borderRadius: "50%",
             }}
           />
-
-          <div className="user-details">
-            {user.name ? (
-              <h4 className="start2p">{user?.name}</h4>
-            ) : (
-              <h4 className="start2p">{user?.login}</h4>
-            )}
-          </div>
+          <h4 className="start2p">{user?.name || user?.login}</h4>
 
           <div className="user-info-item start2p">
             <span>Position</span>

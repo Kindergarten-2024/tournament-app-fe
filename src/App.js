@@ -23,6 +23,7 @@ import {Modal} from "./Instructions";
 import "./Instructions.css";
 import SockJS from "sockjs-client";
 import {over} from 'stompjs';
+import GameOver from "./GameOver";
 
 var stompClient = null;
 // Ensures cookie is sent
@@ -127,7 +128,7 @@ const Home = () => {
     }
 
     if (round >= 3) {
-        return <p className="start2p">Quiz Finished</p>;
+        return <GameOver/>
     } else if (loggedIn === true) {
         if (timerOn === null) {
             return (

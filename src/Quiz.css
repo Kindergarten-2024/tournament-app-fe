@@ -252,6 +252,13 @@
   margin-right: 5%;
 }
 
+.user-info {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .user-info-item {
   width: 100%;
   margin: 10px 0;
