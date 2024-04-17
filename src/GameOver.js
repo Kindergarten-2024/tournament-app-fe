@@ -12,6 +12,7 @@ const GameOver = () => {
     const [loading, setLoading] = useState(true);
     const [leaderboard, setLeaderboard] = useState([]);
     const { user } = useContext(AuthContext);
+    const [position, setPosition] = useState(0);
     const [winner, setWinner] = useState(null);
     
     const fireworks = new Fireworks(document.body, { /* options */ });
@@ -20,6 +21,7 @@ const GameOver = () => {
     useEffect(() => {
         const fetchLeaderboard = async () => {
             try {
+                
                 const response = await axios.get(`${BACKEND_URL}/leaderboard`);
                 const leaderboardArray = response.data.map((player) => ({
                     name: player.username.includes('@') ? player.username.split('@')[0] : player.username,
@@ -27,10 +29,16 @@ const GameOver = () => {
                     score: player.score,
                     streak: player.correctAnswerStreak,
                 }));
+                const userIdentifier = user.login ? user.login : user.email;
                 console.log(leaderboardArray);
                 setLeaderboard(leaderboardArray);
                 setWinner(leaderboardArray[0]);
                 setLoading(false);
+                
+                // Find the index where name equals userIdentifier
+                const userIndex = leaderboardArray.findIndex((player) => player.name === userIdentifier);
+                console.log("User Index:", userIndex);
+                setPosition(userIndex + 1);
             } catch (error) {
                 console.error("Error fetching leaderboard: ", error);
             }
@@ -61,6 +69,7 @@ const GameOver = () => {
                     </div>
 
                     <div className="game-over-bottom-container">
+                        <p className="start2p">YOU FINISHED #{position}</p>
                         <h2 className="start2p">THANKS FOR PLAYING</h2>
                     </div>
                 </div>

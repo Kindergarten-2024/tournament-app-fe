@@ -5,12 +5,10 @@ import { AuthContext } from "./App";
 import CryptoJS from "crypto-js";
 import "react-step-progress-bar/styles.css";
 import { ProgressBar, Step } from "react-step-progress-bar";
-import gifImage from "./images/wolf.gif";
-import blueFire from "./images/bluefire.gif";
-import redFire from "./images/redfire.gif";
 import fiftyimg from "./images/fiftyfifty.png";
 import iceimg from "./images/ice.png";
-import maskimg from "./images/mask.png";
+import maskimg from "./images/robber.png";
+import wolfgif from "./images/wolf.gif";
 import stepimg from "./images/step.png";
 import x2img from "./images/x2.png";
 import x3img from "./images/x3.png";
@@ -273,20 +271,21 @@ const Quiz = () => {
   const onPrivateMessageReceived = (payload) => {
     const messageBody = payload.body;
     console.log("Received message:", messageBody);
-    if (messageBody.startsWith("freeze:")) {
-      const actualMessage = messageBody.slice("freeze:".length);
-      setReceivedMessage(actualMessage);
+    if (messageBody.startsWith("freeze")) {
+      const [, name] = messageBody.split(/\s+/);
+      setReceivedMessage(name);
       setIsFrozen(true);
       setDisableButtons(true);
-    } else if (messageBody.includes("used mask power on you")) {
-      const [message, points] = messageBody.split(":");
-      setReceivedMessage(message);
-      setIsMask(true);
-      setStolenPoints(points);
-    } else if (messageBody.includes("using mask power")) {
-      const [message, points] = messageBody.split(":");
-      setReceivePoints(points);
+    } else if (messageBody.startsWith("mask")) {
+      const [, name, , points] = messageBody.split(/\s+/);
+      setReceivedMessage(name);
+      if (messageBody.includes("-points")) {
+        setIsMask(true);
+        setStolenPoints(points);
+      }
+      else if (messageBody.includes("+points")) setReceivePoints(points);
     }
+
   };
 
   const onLeaderboardMessageReceived = (payload) => {
@@ -442,17 +441,17 @@ const Quiz = () => {
     switch (power) {
       case "50-50":
         setPowerDescription(
-          "Cut through the clutter by removing two incorrect answers, leaving you with a clearer path to victory."
+          "Remove two incorrect answers and clear your path to victory."
         );
         break;
       case "freeze":
         setPowerDescription(
-          "Freeze your enemies and shatter them into a thousand pieces! Pick a player to be trapped in ice, unable to answer the question."
+          "Pick a player to be trapped in ice, unable to answer the question."
         );
         break;
       case "mask":
         setPowerDescription(
-          "Embrace the power of the Mask where deception reigns supreme! Steal from your enemies, stripping away their points and leaving them vulnerable in your wake."
+          "Steal from a player, stripping away their points and leaving them vulnerable in your wake."
         );
         break;
 
@@ -669,7 +668,7 @@ const Quiz = () => {
                       <img
                         style={{
                           filter: `grayscale(${accomplished ? 0 : 80}%)`,
-                          width: "40px",
+                          width: "40px"
                         }}
                         src={x3img}
                       />
@@ -678,7 +677,11 @@ const Quiz = () => {
                   <Step transition="scale">
                     {({ accomplished }) => (
                       <img
-                        style={{ filter: `grayscale(${accomplished ? 0 : 80}%)` }}
+                        style={{ 
+                          filter: `grayscale(${accomplished ? 0 : 80}%)`,
+                          position: "relative",
+                          top: "-3px"
+                        }}
                         width="50"
                         src={maskimg}
                       />
@@ -769,16 +772,16 @@ const Quiz = () => {
                     </button>
                   ))}
                 </div>
-                {stolenPoints && <StolenPointsAnimation text={-stolenPoints} />}
-                {receivePoints && (
-                  <ReceivePointsAnimation text={+receivePoints} />
-                )}
+
+                {stolenPoints && <StolenPointsAnimation text={"-" + stolenPoints}/>}
+                {receivePoints && (<StolenPointsAnimation text={"+" + receivePoints}/>)}
+
                 {showPowerButton && (
                   <button
                     className="use-power-button bounce-top"
                     onClick={handleUsePower}
                   >
-                    ⚡ Power ⚡
+                  {power}
                   </button>
                 )}
               </>
@@ -834,21 +837,16 @@ const Quiz = () => {
           )}
 
           {isMask && (
-            <div className="gif-image-container">
-              {isMask && (
-                <img
-                  src={gifImage}
-                  alt="GIF"
-                  className="gif-image moving-from-left"
-                />
-              )}
+            <div className="overlay-container">
+              <img src={wolfgif} alt="wolf gif" className="rotate-scale-up"/>
+              <div className="text-overlay" style={{ color: 'white' }}>{receivedMessage} stole your points!</div>
             </div>
           )}
 
           {isFrozen && (
             <div className="overlay-container">
-              <img src={iceimg} className="rotate-scale-up" />
-              <div className="text-overlay">{receivedMessage} freezed you!</div>
+              <img src={iceimg} alt="ice img" className="rotate-scale-up" />
+              <div className="text-overlay" style={{ color: 'black' }}>{receivedMessage} freezed you!</div>
             </div>
           )}
         </>

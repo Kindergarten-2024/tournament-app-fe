@@ -279,6 +279,7 @@
 .use-power-button {
   margin: 1rem auto 0 auto;
   padding: 0.5rem;
+  width: 8rem;
   border: none;
   border-radius: 100rem;
   color: white;
@@ -444,21 +445,17 @@
 
 .overlay-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 9998;
 }
 
 .rotate-scale-up {
   animation: rotate-scale-up 1s linear both,
     rotate-scale-down 1s linear 4s forwards;
-  position: absolute;
-  top: 50%;
+  position: fixed;
+  top: 25%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.25) rotateZ(0);
   z-index: 9998;
@@ -467,18 +464,15 @@
 .text-overlay {
   animation: text-overlay-up 1s linear both,
     text-overlay-down 1s linear 4s forwards;
-  position: absolute;
-  top: 50%;
+  position: fixed;
+  top: 25%;
   left: 50%;
   transform: translate(-50%, -50%) scale(1) rotateZ(0);
-  color: white;
   font-weight: bold;
-  text-align: center;
-  overflow: hidden;
   font-family: "Press Start 2P";
-  font-size: 40px;
+  font-size: 3.5rem;
   line-height: 1.5;
-  z-index: 9999;
+  z-index: 9998;
 }
 
 @keyframes rotate-scale-up {
