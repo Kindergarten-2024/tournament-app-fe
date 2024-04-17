@@ -226,7 +226,7 @@ const Quiz = () => {
         .then((response) => {
           const question_time = new Date(question.time);
           const currentTime = new Date(response.data);
-          const timer = Math.abs(question_time - currentTime + 15499);
+          const timer = Math.abs(question_time - currentTime + 20499);
           const timer_in_sec = Math.round(timer / 1000);
           setQuestionTimer(timer_in_sec);
         })
