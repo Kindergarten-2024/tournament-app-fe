@@ -57,7 +57,7 @@ const useRenderTime = ({ remainingTime }) => {
     typeof remainingTime !== "number" ||
     isNaN(remainingTime) ||
     remainingTime < 0 ||
-    remainingTime > 15
+    remainingTime > 20
   ) {
     return " "; // If remainingTime is not a number or outside the range 0 to 15, don't render anything
   }
