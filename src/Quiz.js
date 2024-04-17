@@ -273,12 +273,14 @@ const Quiz = () => {
     console.log("Received message:", messageBody);
     if (messageBody.startsWith("freeze")) {
       const [, name] = messageBody.split(/\s+/);
-      setReceivedMessage(name);
+      if (name.includes('@')) setReceivedMessage(name.split('@')[0]);
+      else setReceivedMessage(name);
       setIsFrozen(true);
       setDisableButtons(true);
     } else if (messageBody.startsWith("mask")) {
       const [, name, , points] = messageBody.split(/\s+/);
-      setReceivedMessage(name);
+      if (name.includes('@')) setReceivedMessage(name.split('@')[0]);
+      else setReceivedMessage(name);
       if (messageBody.includes("-points")) {
         setIsMask(true);
         setStolenPoints(points);

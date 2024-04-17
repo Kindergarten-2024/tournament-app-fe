@@ -29,13 +29,14 @@ const GameOver = () => {
                     score: player.score,
                     streak: player.correctAnswerStreak,
                 }));
-                const userIdentifier = user.login ? user.login : user.email;
+                
                 console.log(leaderboardArray);
                 setLeaderboard(leaderboardArray);
                 setWinner(leaderboardArray[0]);
                 setLoading(false);
                 
                 // Find the index where name equals userIdentifier
+                const userIdentifier = user.login ? user.login : user.email.split('@')[0];
                 const userIndex = leaderboardArray.findIndex((player) => player.name === userIdentifier);
                 console.log("User Index:", userIndex);
                 setPosition(userIndex + 1);
