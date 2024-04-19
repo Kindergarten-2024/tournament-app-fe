@@ -1,10 +1,12 @@
 .Qr {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
 }
 
 .centered-image {
     max-width: 400px;
     max-height: 300px;
-    margin: auto;
-    display: block;
 }
